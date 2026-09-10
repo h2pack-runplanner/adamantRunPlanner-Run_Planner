@@ -124,14 +124,14 @@ end
 
 function primitives.placeRefill(prepared, store)
     if prepared == nil
-        or (prepared.kind ~= "shopRefill" and prepared.kind ~= "wellRefill"
-            and prepared.kind ~= "shrineRefill")
+        or (prepared.kind ~= "travelDealWorldShop" and prepared.kind ~= "travelDealStygianWell"
+            and prepared.kind ~= "travelDealHermesShrine")
         or type(store) ~= "table"
         or type(store.StoreOptions) ~= "table" then return store end
     local option = store.StoreOptions[1]
     if option == nil then return store end
     local refill = prepared.expected[1]
-    local index = prepared.kind == "shopRefill" and refill.slotIndex + 1 or refill.slotIndex
+    local index = prepared.kind == "travelDealWorldShop" and refill.slotIndex + 1 or refill.slotIndex
     store.StoreOptions = { [index] = option }
     return store
 end
@@ -152,9 +152,9 @@ function primitives.verify(prepared, store)
         return true
     end
     local offset = 0
-    if prepared.kind == "shopRefill" then offset = prepared.expected[1].slotIndex end
-    if prepared.kind == "wellRefill" then offset = prepared.expected[1].slotIndex - 1 end
-    if prepared.kind == "shrineRefill" then offset = prepared.expected[1].slotIndex - 1 end
+    if prepared.kind == "travelDealWorldShop" then offset = prepared.expected[1].slotIndex end
+    if prepared.kind == "travelDealStygianWell" then offset = prepared.expected[1].slotIndex - 1 end
+    if prepared.kind == "travelDealHermesShrine" then offset = prepared.expected[1].slotIndex - 1 end
     for index, offer in ipairs(prepared.expected) do
         local option = store.StoreOptions[index + offset]
         local expectedKey = offer.optionKey or offer.offerKey
@@ -163,14 +163,12 @@ function primitives.verify(prepared, store)
             return nil, { checkpoint = "inventory-generation", expected = expectedKey, observed = observedKey }
         end
         option.__runPlannerOfferKey = offer.offerKey or offer.sourceOfferKey or expectedKey
-        option.__runPlannerPaidShopOffer = prepared.kind == "shop" or nil
         option.__runPlannerGenerationKey = offer.generationKey
-            or (prepared.kind == "shopRefill" and "travelDealRefill" or nil)
-        option.__runPlannerSourceOwner = prepared.kind == "shopRefill" and offer.sourceOwner or nil
-        option.__runPlannerShrine = (prepared.kind == "shrine" or prepared.kind == "shrineRefill")
+            or (prepared.kind == "travelDealWorldShop" and "travelDealRefill" or nil)
+        option.__runPlannerShrine = (prepared.kind == "shrine" or prepared.kind == "travelDealHermesShrine")
             or nil
         option.__runPlannerShrineSourceKey =
-            (prepared.kind == "shrine" or prepared.kind == "shrineRefill")
+            (prepared.kind == "shrine" or prepared.kind == "travelDealHermesShrine")
             and offer.deliverySourceKey or nil
         option.__runPlannerTwistResultKey = offer.twistResultKey
     end

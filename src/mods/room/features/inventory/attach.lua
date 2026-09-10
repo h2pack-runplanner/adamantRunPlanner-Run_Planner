@@ -12,6 +12,12 @@ local poolHooks = type(import) == "function"
 local worldItemHooks = type(import) == "function"
     and import("mods/room/features/inventory/world_item_hooks.lua")
     or require("mods.room.features.inventory.world_item_hooks")
+local shrineRefill = type(import) == "function"
+    and import("mods/room/features/inventory/shrine_refill.lua")
+    or require("mods.room.features.inventory.shrine_refill")
+local wellRefill = type(import) == "function"
+    and import("mods/room/features/inventory/well_refill.lua")
+    or require("mods.room.features.inventory.well_refill")
 local attach = {}
 
 function attach.attach(module, session, getState, report, room, route)
@@ -19,10 +25,13 @@ function attach.attach(module, session, getState, report, room, route)
     inventoryHooks.attach(module, session, getState, report, room, route, scope)
     buttonHooks.attach(module, session, getState, report, room, route)
     poolHooks.attach(module, session, getState, report, room, route)
-    local bindings = worldItemHooks.attach(module, session, getState, report, room, route, scope)
-    bindings.setWellRefillScope = function(value) scope.wellRefill = value end
-    bindings.setShrineRefillScope = function(value) scope.shrineRefill = value end
-    return bindings
+    worldItemHooks.attach(module, session, getState, report, room, route, scope)
+    local refillScopes = {
+        setWell = function(value) scope.wellRefill = value end,
+        setShrine = function(value) scope.shrineRefill = value end,
+    }
+    shrineRefill.attach(module, session, getState, report, room, refillScopes)
+    wellRefill.attach(module, session, getState, report, room, refillScopes)
 end
 
 return attach

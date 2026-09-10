@@ -3,12 +3,12 @@
 local twist = {}
 
 function twist.scope(state, handle, transaction)
-    if transaction == nil or transaction.kind ~= "wellPurchase"
-        or transaction.twistResultKey == nil then return nil end
+    if transaction == nil or transaction.kind ~= "transformation"
+        or transaction.transformation == nil or transaction.transformation.kind ~= "stygianWellTwist" then return nil end
     return {
         state = state,
         handle = handle,
-        target = transaction.twistResultKey,
+        target = transaction.transformation.resultItemKey,
         awarded = false,
         unavailable = false,
     }

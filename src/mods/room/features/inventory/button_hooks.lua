@@ -7,7 +7,7 @@ local hooks = {}
 
 local bindingFields = {
     "__runPlannerOfferKey", "__runPlannerGenerationKey", "__runPlannerTwistResultKey",
-    "__runPlannerSourceOwner", "__runPlannerContractSourceOwner", "__runPlannerPaidShopOffer",
+    "__runPlannerContractSourceOwner",
     "__runPlannerShrine", "__runPlannerShrineSourceKey",
 }
 
@@ -70,10 +70,21 @@ function hooks.attach(module, _, getState, report, room, route)
                 button.Data.RoomDelay = offer.purchase.roomDelay
             end
         end
-        local refill = shrine and shrine.travelDealRefill
-        local refillOption = refill and options and options[refill.slotIndex]
-        if type(refillOption) == "table" and refill.purchase ~= nil then
-            refillOption.RoomDelay = refill.purchase.roomDelay
+        local refillHandle = active and room.resolve(state, active,
+            { kind = "travelDealRefill", carrier = "hermesShrine" }) or nil
+        local refillPayload = refillHandle and room.peek(state, refillHandle) or nil
+        local refill = refillPayload and refillPayload.transaction and refillPayload.transaction.refill
+        local replacement = refill and refill.replacement
+        local refillOption = replacement and options and options[replacement.slotIndex]
+        local refillButton = replacement and type(screen) == "table"
+            and type(screen.Components) == "table"
+            and screen.Components["PurchaseButton" .. replacement.slotIndex] or nil
+        if type(refillOption) == "table" and replacement.purchase ~= nil then
+            refillOption.RoomDelay = replacement.purchase.roomDelay
+        end
+        if type(refillButton) == "table" and type(refillButton.Data) == "table"
+            and replacement.purchase ~= nil then
+            refillButton.Data.RoomDelay = replacement.purchase.roomDelay
         end
         report(runtime)
         return result

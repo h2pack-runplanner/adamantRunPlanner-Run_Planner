@@ -14,31 +14,21 @@ end
 
 function bindings.index(occurrence)
     local index = {
-        owner = {}, producer = {}, offer = {}, generation = {}, hermesShrineSource = {},
-        wellPurchase = {}, wellRefill = {}, source = {},
+        owner = {}, producer = {}, offer = {}, generation = {}, hermesShrineSource = {}, refill = {}, source = {},
         slot = {}, keepsake = {}, automatic = {}, encounterInteraction = {}, interaction = {}, produced = {},
         materialized = {}, keepsakeReplay = {}, rewardWheel = {}, rewardWheelAcquisition = {},
     }
     for owner, transaction in pairs(occurrence.transactionsByOwner or {}) do
         index.owner[owner] = { transaction = transaction }
         local ok, errorValue
-        -- Well inventory has two distinct contacts for the same generated
-        -- offer: realizing the refill and optionally purchasing the replacement
-        -- item.  Their published generation/offer payload is intentionally the
-        -- same, so keep those carriers in separate namespaces rather than
-        -- making a same-contact refill impossible to bind.
-        if transaction.kind == "wellPurchase" then
-            ok, errorValue = add(index, "wellPurchase", transaction.generationKey, transaction)
-            if not ok then return nil, errorValue end
-        elseif transaction.kind == "wellRefill" then
-            ok, errorValue = add(index, "wellRefill", transaction.generationKey, transaction)
-            if not ok then return nil, errorValue end
-        else
-            ok, errorValue = add(index, "offer", transaction.offerKey, transaction)
-            if not ok then return nil, errorValue end
-            ok, errorValue = add(index, "generation", transaction.generationKey, transaction)
+        if transaction.kind == "travelDealRefill" then
+            ok, errorValue = add(index, "refill", transaction.refill.carrier, transaction)
             if not ok then return nil, errorValue end
         end
+        ok, errorValue = add(index, "offer", transaction.offerKey, transaction)
+        if not ok then return nil, errorValue end
+        ok, errorValue = add(index, "generation", transaction.generationKey, transaction)
+        if not ok then return nil, errorValue end
         if transaction.hermesShrineSourceKey ~= nil then
             ok, errorValue = add(index, "hermesShrineSource", transaction.hermesShrineSourceKey, transaction)
             if not ok then return nil, errorValue end
@@ -97,10 +87,9 @@ function bindings.resolve(index, contact, source)
     end
     if contact.kind == "offer" then return indexed(index, "offer", contact.offerKey)
     elseif contact.kind == "generation" then return indexed(index, "generation", contact.generationKey)
-    elseif contact.kind == "wellPurchase" then return indexed(index, "wellPurchase", contact.generationKey)
     elseif contact.kind == "hermesShrineDelivery" then
         return indexed(index, "hermesShrineSource", contact.sourceKey)
-    elseif contact.kind == "wellRefill" then return indexed(index, "wellRefill", contact.generationKey)
+    elseif contact.kind == "travelDealRefill" then return indexed(index, "refill", contact.carrier)
     elseif contact.kind == "source" then return indexed(index, "source", contact.sourceOwner)
     elseif contact.kind == "encounterInteraction" then
         return indexed(index, "encounterInteraction", contact.phaseKey)

@@ -62,7 +62,7 @@ local function capture(state, payload, treeAdapter, spellAdapter, isBound)
     return callbacks, completed, mismatches, function() return claims end
 end
 
-function TestSpellAcquisitions.testUnboundPurchasedSpellClaimsItsPublishedRole()
+function TestSpellAcquisitions.testUnboundSpellClaimsItsPublishedRole()
     local prior = _G.SpellData
     _G.SpellData = {
         SpellOne = { TraitName = "SpellOneTrait" }, SpellTwo = { TraitName = "SpellTwoTrait" },
@@ -76,9 +76,9 @@ function TestSpellAcquisitions.testUnboundPurchasedSpellClaimsItsPublishedRole()
         hexTree = { layoutKey = "Lung", rareTalentKeys = {}, epicTalentKeys = {} },
     }
     local detail = {
-        disposition = "normal", lifecyclePoint = "purchase", gameName = "SpellDrop", traitOffer = offer,
+        disposition = "normal", lifecyclePoint = "roomRewardPickup", gameName = "SpellDrop", traitOffer = offer,
     }
-    local payload = { transaction = { kind = "shopPurchase", roles = { detail } }, detail = detail }
+    local payload = { transaction = { kind = "acquisition", roles = { detail } }, detail = detail }
     local callbacks, completed, mismatches, claims = capture(
         { state = "synchronized" }, payload, nil, nil, false)
     local item = { Name = "SpellDrop" }

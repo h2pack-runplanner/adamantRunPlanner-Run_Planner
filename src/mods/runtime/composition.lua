@@ -47,7 +47,6 @@ function composition.bind(root)
         local roomFeatureHooks = import("mods/room/features/hooks.lua")
         local navigationHooks = import("mods/navigation/hooks.lua")
         local featureInventory = import("mods/room/features/inventory/attach.lua")
-        local commerceHooks = import("mods/room/timeline/commerce/hooks.lua")
         local interactionHooks = import("mods/room/timeline/interactions/hooks.lua")
         local transformationHooks = import("mods/room/timeline/transformations/hooks.lua")
 
@@ -98,8 +97,7 @@ function composition.bind(root)
                 activePlanSlot = loadoutRuntime.activePlanSlot,
             })
         encounterHooks.attach(module, session, getState, report, room, shipCombat)
-        local inventoryBindings = featureInventory.attach(module, session, getState, report, room, route)
-        commerceHooks.attach(module, session, getState, report, room, inventoryBindings)
+        featureInventory.attach(module, session, getState, report, room, route)
         interactionHooks.attach(module, session, getState, report, room)
     end
 

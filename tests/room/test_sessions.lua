@@ -472,7 +472,7 @@ function TestRouteRoomSessions.testMultiRoleMysteryBoonBindsEachWorldCarrierToIt
     local transaction = entry.transactionsByOwner.required
     transaction.offerKey = "Boon"
     transaction.roles = {
-        { role = "box", lifecyclePoint = "purchase", gameName = "BlindBoxLoot" },
+        { role = "box", lifecyclePoint = "roomRewardPickup", gameName = "BlindBoxLoot" },
         { role = "hiddenSource", lifecyclePoint = "afterUnwrap", gameName = "HeraUpgrade" },
     }
     local port = timeline.new(entry, assert(bindings.index(entry)))
@@ -498,9 +498,9 @@ function TestRouteRoomSessions.testBoundMysteryProviderAdvancesTheSameHandleToIt
     local entry = occurrence()
     local transaction = entry.transactionsByOwner.required
     transaction.offerKey = "Boon"
-    transaction.kind = "shopPurchase"
+    transaction.kind = "acquisition"
     transaction.roles = {
-        { role = "box", lifecyclePoint = "purchase", kind = "consumable", gameName = "BlindBoxLoot" },
+        { role = "box", lifecyclePoint = "roomRewardPickup", kind = "consumable", gameName = "BlindBoxLoot" },
         {
             role = "hiddenSource", lifecyclePoint = "afterUnwrap", kind = "loot", gameName = "HeraUpgrade",
             traitOffer = { kind = "traits", giver = "Hera", options = {} },

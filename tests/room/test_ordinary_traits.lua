@@ -64,10 +64,10 @@ function TestOrdinaryTraits.testHammerAndHermesAreOrdinaryNativeCarriers()
     lu.assertFalse(ordinary.isCarrier({ Name = "Chaos" }, { kind = "traits", options = {} }))
 end
 
-function TestOrdinaryTraits.testPublishedNormalRoleDoesNotDependOnPurchaseOrPickupCarrier()
+function TestOrdinaryTraits.testPublishedNormalRoleUsesOneSourceAgnosticAcquisitionCarrier()
     for _, carrier in ipairs({
         { kind = "acquisition", lifecyclePoint = "roomRewardPickup" },
-        { kind = "shopPurchase", lifecyclePoint = "purchase" },
+        { kind = "acquisition", lifecyclePoint = "roomRewardPickup" },
     }) do
         local role = {
             role = "self", disposition = "normal", lifecyclePoint = carrier.lifecyclePoint,

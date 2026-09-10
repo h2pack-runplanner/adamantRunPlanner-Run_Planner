@@ -255,7 +255,7 @@ function TestRuntimeComposition.testRuntimeCompositionInstallsSupportedHookGroup
         "CirceRemoveShrineUpgrades", "RandomChance", "GetRandomKey",
         "FillInShopOptions", "CreateStoreButtons", "RestockWorldItem", "CreateConsumableItem",
         "ChaosHammerUpgrade",
-        "SpawnStoreItemInWorld", "RemoveStoreItem", "HandleStorePurchase", "AwardRandomStoreItem",
+        "SpawnStoreItemInWorld", "HandleStorePurchase", "AwardRandomStoreItem",
     }) do
         lu.assertNotNil(names[name], name)
     end

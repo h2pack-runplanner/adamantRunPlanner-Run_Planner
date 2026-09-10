@@ -31,18 +31,15 @@ local function retainOffer(storeData, offer)
     return matched or count > 0
 end
 
-function wellInventory.prepareRefill(well, storeData, args, scope)
-    if scope == nil or scope.kind ~= "well" or well == nil or not well.interacted then return nil end
-    local refill = offersByGeneration(well)["travelDealRefill"]
-    if refill == nil then
-        return nil, { checkpoint = "well-refill", expected = "published refill", observed = nil }
-    end
+function wellInventory.prepareRefill(storeData, args, scope)
+    if scope == nil or scope.kind ~= "well" or scope.refill == nil then return nil end
+    local refill = primitives.copy(scope.refill.replacement)
     if not retainOffer(storeData, refill) then
         return nil, { checkpoint = "well-refill-inventory", expected = refill.offerKey, observed = nil }
     end
     local expectedRefill = primitives.copy(refill)
     expectedRefill.slotIndex = scope.slotIndex
-    return { kind = "wellRefill", expected = { expectedRefill },
+    return { kind = "travelDealStygianWell", expected = { expectedRefill },
         args = primitives.withStoreData(args, storeData) }
 end
 

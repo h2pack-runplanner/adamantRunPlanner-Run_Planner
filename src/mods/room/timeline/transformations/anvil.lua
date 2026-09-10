@@ -67,7 +67,10 @@ function anvil.attach(module, session, report)
 
     return {
         beginUse = function(state, payload)
-            local result = payload and payload.transaction and payload.transaction.anvilResult
+            local transaction = payload and payload.transaction
+            local result = transaction and transaction.kind == "transformation"
+                and transaction.transformation and transaction.transformation.kind == "anvilOfFates"
+                and transaction.transformation or nil
             if result == nil then return nil end
             activeUse = {
                 state = state, result = result, stage = 1, called = false,

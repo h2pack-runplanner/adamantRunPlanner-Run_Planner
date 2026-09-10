@@ -237,94 +237,130 @@ local function automatic(value, label)
     return record
 end
 
-local function shopPurchase(value, label)
-    local record, errorMessage = p.exact(
-        value,
-        {
-            "kind", "owner", "window", "offerKey", "rewardType", "sourceOwner", "reward",
-            "producerLifecycleKey", "roles",
-        },
-        { "anvilResult" },
-        label
-    )
+local function itemEffect(value, label)
+    local record, errorMessage = p.exact(value,
+        { "kind", "owner", "window", "itemKey", "effect", "extended" }, {}, label)
     if not record then return nil, errorMessage end
     local _, baseError = validateBase(record, label)
     if baseError then return nil, baseError end
-    for _, key in ipairs({ "offerKey", "rewardType", "producerLifecycleKey" }) do
-        if not p.str(record[key], label .. "." .. key) then
-            return p.fail(label .. " has invalid " .. key)
-        end
-    end
-    if not p.str(record.sourceOwner, label .. ".sourceOwner", p.MAX_OWNER_STRING) then
-        return p.fail(label .. " has invalid sourceOwner")
-    end
-    local _, rewardError = rewards.reward(record.reward, label .. ".reward")
-    if rewardError then return nil, rewardError end
-    local _, rolesError = rewards.roles(record.roles, label .. ".roles")
-    if rolesError then return nil, rolesError end
-    for _, role in ipairs(record.roles) do
-        if role.seaStarResult ~= nil then
-            return p.fail(label .. ".roles may not publish Sea Star results for purchases")
-        end
-    end
-    if record.rewardType == "ChaosWeaponUpgrade" and record.anvilResult == nil then
-        return p.fail(label .. ".anvilResult is required for an Anvil purchase")
-    end
-    if record.rewardType ~= "ChaosWeaponUpgrade" and record.anvilResult ~= nil then
-        return p.fail(label .. ".anvilResult is only valid for an Anvil purchase")
-    end
-    if record.anvilResult ~= nil then
-        local _, anvilError = rewards.anvilResult(record.anvilResult, label .. ".anvilResult")
-        if anvilError then return nil, anvilError end
-    end
-    return record
-end
-
-local function validateWell(record, label)
-    local _, baseError = validateBase(record, label)
-    if baseError then return nil, baseError end
-    if not p.one(record.generationKey, generationKeys, label .. ".generationKey")
+    if not p.str(record.itemKey, label .. ".itemKey")
         or not p.one(record.effect, wellEffects, label .. ".effect")
-        or not p.str(record.offerKey, label .. ".offerKey")
-        or (record.twistResultKey ~= nil and not p.str(record.twistResultKey, label .. ".twistResultKey")) then
-        return p.fail(label .. " has invalid Well outcome")
+        or not p.bool(record.extended, label .. ".extended") then
+        return p.fail(label .. " has invalid item effect")
     end
     return record
 end
 
-local function wellPurchase(value, label)
-    local record, errorMessage = p.exact(
-        value,
-        {
-            "kind", "owner", "window", "offerKey", "generationKey", "effect",
-            "extendedDirectPurchase",
-        },
-        { "twistResultKey" },
-        label
-    )
+local function transformation(value, label)
+    local record, errorMessage = p.exact(value, { "kind", "owner", "window", "transformation" }, {}, label)
     if not record then return nil, errorMessage end
-    local _, wellError = validateWell(record, label)
-    if wellError then return nil, wellError end
-    if not p.bool(record.extendedDirectPurchase, label .. ".extendedDirectPurchase") then
-        return p.fail(label .. " has invalid Extended marker")
+    local _, baseError = validateBase(record, label)
+    if baseError then return nil, baseError end
+    local row, rowError = p.obj(record.transformation, label .. ".transformation")
+    if not row then return nil, rowError end
+    if row.kind == "anvilOfFates" then
+        local _, resultError = rewards.anvilResult(row, label .. ".transformation")
+        if resultError then return nil, resultError end
+        return record
+    end
+    local twist, twistError = p.exact(row, { "kind", "sourceItemKey", "resultItemKey" }, {},
+        label .. ".transformation")
+    if not twist then return nil, twistError end
+    if twist.kind ~= "stygianWellTwist" or not p.str(twist.sourceItemKey, label .. ".transformation.sourceItemKey")
+        or not p.str(twist.resultItemKey, label .. ".transformation.resultItemKey") then
+        return p.fail(label .. " has invalid transformation")
     end
     return record
 end
 
-local function wellRefill(value, label)
-    local record, errorMessage = p.exact(
-        value,
-        { "kind", "owner", "window", "generationKey", "offerKey", "effect" },
-        { "twistResultKey" },
-        label
-    )
+local function travelDealRefill(value, label)
+    local record, errorMessage = p.exact(value, { "kind", "owner", "window", "refill" }, {}, label)
     if not record then return nil, errorMessage end
-    local _, wellError = validateWell(record, label)
-    if wellError then return nil, wellError end
-    if record.generationKey ~= "travelDealRefill" then
-        return p.fail(label .. " must use travelDealRefill")
+    local _, baseError = validateBase(record, label)
+    if baseError then return nil, baseError end
+    local refill, refillError = p.obj(record.refill, label .. ".refill")
+    if not refill then return nil, refillError end
+    if refill.carrier == "worldShop" then
+        local row, rowError = p.exact(refill, { "carrier", "source", "replacement" }, {}, label .. ".refill")
+        if not row then return nil, rowError end
+        local source, sourceError = p.exact(row.source, { "owner", "offerKey" }, {}, label .. ".refill.source")
+        local replacement, replacementError = p.exact(row.replacement,
+            { "slotIndex", "groupIndex", "optionKey", "reward" }, {}, label .. ".refill.replacement")
+        if not source then return nil, sourceError end
+        if not replacement then return nil, replacementError end
+        if not p.str(source.owner, label .. ".refill.source.owner", p.MAX_OWNER_STRING)
+            or not p.str(source.offerKey, label .. ".refill.source.offerKey")
+            or not p.int(replacement.slotIndex, label .. ".refill.replacement.slotIndex", 0)
+            or not p.int(replacement.groupIndex, label .. ".refill.replacement.groupIndex", 0)
+            or not p.str(replacement.optionKey, label .. ".refill.replacement.optionKey") then
+            return p.fail(label .. " has invalid World Shop refill")
+        end
+        local _, rewardError = rewards.reward(replacement.reward, label .. ".refill.replacement.reward")
+        if rewardError then return nil, rewardError end
+        return record
     end
-    return record
+    if refill.carrier == "stygianWell" then
+        local row, rowError = p.exact(refill, { "carrier", "source", "replacement" }, {}, label .. ".refill")
+        if not row then return nil, rowError end
+        local source, sourceError = p.exact(row.source, { "owner", "generationKey" }, {}, label .. ".refill.source")
+        local replacement, replacementError = p.exact(row.replacement,
+            { "generationKey", "offerKey", "effect" }, { "twistResultKey" }, label .. ".refill.replacement")
+        if not source then return nil, sourceError end
+        if not replacement then return nil, replacementError end
+        if source.generationKey == "travelDealRefill" or not p.one(source.generationKey, generationKeys,
+            label .. ".refill.source.generationKey") or not p.str(source.owner, label .. ".refill.source.owner", p.MAX_OWNER_STRING)
+            or replacement.generationKey ~= "travelDealRefill" or not p.str(replacement.offerKey,
+                label .. ".refill.replacement.offerKey") or not p.one(replacement.effect, wellEffects,
+                label .. ".refill.replacement.effect") or (replacement.twistResultKey ~= nil
+                and not p.str(replacement.twistResultKey, label .. ".refill.replacement.twistResultKey")) then
+            return p.fail(label .. " has invalid Well refill")
+        end
+        return record
+    end
+    if refill.carrier == "hermesShrine" then
+        local row, rowError = p.exact(refill, { "carrier", "source", "replacement" }, {}, label .. ".refill")
+        if not row then return nil, rowError end
+        local source, sourceError = p.exact(row.source, { "generationKey", "slotIndex" }, {}, label .. ".refill.source")
+        local replacement, replacementError = p.exact(row.replacement,
+            { "generationKey", "slotIndex", "optionKey", "rewardType" }, { "deliverySourceKey", "purchase" },
+            label .. ".refill.replacement")
+        if not source then return nil, sourceError end
+        if not replacement then return nil, replacementError end
+        if source.generationKey ~= ({ [1] = "initial:first", [2] = "initial:secondLeft", [3] = "initial:secondRight" })[source.slotIndex]
+            or not p.int(source.slotIndex, label .. ".refill.source.slotIndex", 1) or source.slotIndex > 3
+            or replacement.generationKey ~= "travelDealRefill" or replacement.slotIndex ~= source.slotIndex
+            or not p.int(replacement.slotIndex, label .. ".refill.replacement.slotIndex", 1)
+            or not p.str(replacement.optionKey, label .. ".refill.replacement.optionKey")
+            or not p.str(replacement.rewardType, label .. ".refill.replacement.rewardType") then
+            return p.fail(label .. " has invalid Shrine refill")
+        end
+        if (replacement.purchase == nil) ~= (replacement.deliverySourceKey == nil) then
+            return p.fail(label .. ".refill.replacement purchase and delivery source must be paired")
+        end
+        if replacement.deliverySourceKey ~= nil
+            and not p.str(replacement.deliverySourceKey,
+                label .. ".refill.replacement.deliverySourceKey", p.MAX_OWNER_STRING) then
+            return p.fail(label .. " has invalid Shrine refill delivery source")
+        end
+        if replacement.purchase ~= nil then
+            local purchase, purchaseError = p.exact(
+                replacement.purchase,
+                { "roomDelay", "rushed" },
+                {},
+                label .. ".refill.replacement.purchase"
+            )
+            if not purchase then return nil, purchaseError end
+            if not p.int(purchase.roomDelay,
+                    label .. ".refill.replacement.purchase.roomDelay", 2)
+                or purchase.roomDelay > 8
+                or not p.bool(purchase.rushed,
+                    label .. ".refill.replacement.purchase.rushed") then
+                return p.fail(label .. " has invalid Shrine refill purchase disposition")
+            end
+        end
+        return record
+    end
+    return p.fail(label .. " has unsupported Travel Deal carrier")
 end
 
 local function keepsakeChange(value, label)
@@ -399,9 +435,9 @@ local decoders = {
     acquisition = acquisition,
     encounterInteraction = encounterInteraction,
     automatic = automatic,
-    shopPurchase = shopPurchase,
-    wellPurchase = wellPurchase,
-    wellRefill = wellRefill,
+    itemEffect = itemEffect,
+    transformation = transformation,
+    travelDealRefill = travelDealRefill,
     keepsakeChange = keepsakeChange,
     keepsakeReplay = keepsakeReplay,
     fountainUse = fountainUse,

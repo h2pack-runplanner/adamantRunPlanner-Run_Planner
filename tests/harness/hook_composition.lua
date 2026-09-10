@@ -1,6 +1,6 @@
 local navigation = require("mods.navigation.hooks")
 local featureInventory = require("mods.room.features.inventory.attach")
-local commerceHooks = require("mods.room.timeline.commerce.hooks")
+local transformationHooks = require("mods.room.timeline.transformations.hooks")
 local interactionHooks = require("mods.room.timeline.interactions.hooks")
 
 local M = {}
@@ -108,10 +108,9 @@ function M.attachRewardHooks(module, session, getState, report)
 end
 
 function M.attachFeatureHooks(module, session, getState, report, room, route)
-    local inventoryBindings = featureInventory.attach(module, session, getState, report, room, route)
-    commerceHooks.attach(module, session, getState, report, room, inventoryBindings)
+    featureInventory.attach(module, session, getState, report, room, route)
+    transformationHooks.attach(module, session, getState, report, room)
     interactionHooks.attach(module, session, getState, report, room)
-    return inventoryBindings
 end
 
 return M

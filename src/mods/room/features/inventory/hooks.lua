@@ -23,11 +23,11 @@ local function prepareInventory(occurrence, args, refillScope, contractOnly)
     if type(storeData) ~= "table" then return nil end
     local prepared, errorValue
     if type(refillScope) == "table" and refillScope.kind == "shop" then
-        prepared, errorValue = worldShop.prepareRefill(expected.shop, storeData, args, refillScope)
+        prepared, errorValue = worldShop.prepareRefill(storeData, args, refillScope)
     elseif type(refillScope) == "table" and refillScope.kind == "well" then
-        prepared, errorValue = wellInventory.prepareRefill(expected.stygianWell, storeData, args, refillScope)
+        prepared, errorValue = wellInventory.prepareRefill(storeData, args, refillScope)
     elseif type(refillScope) == "table" and refillScope.kind == "shrine" then
-        prepared, errorValue = shrineInventory.prepareRefill(expected.hermesShrine, storeData, args, refillScope)
+        prepared, errorValue = shrineInventory.prepareRefill(storeData, args, refillScope)
     end
     if prepared ~= nil or errorValue ~= nil then return prepared, errorValue end
     if contractOnly then return worldShop.prepareContract(expected.shop, storeData, args) end
@@ -42,8 +42,8 @@ function hooks.attach(module, session, getState, report, room, route, scope)
     module.hooks.wrap("FillInShopOptions", "run-planner-inventory", function(_, runtime, base, args)
         local state = getState(runtime)
         local active = current.resolve(state, room, route)
-        local prepared, errorValue = prepareInventory(active and active.occurrence, args,
-            scope.shrineRefill or scope.wellRefill or scope.worldShopRefill,
+        local activeRefill = scope.shrineRefill or scope.wellRefill or scope.worldShopRefill
+        local prepared, errorValue = prepareInventory(active and active.occurrence, args, activeRefill,
             scope.contract ~= nil)
         if errorValue then
             session.mismatch(state, errorValue.checkpoint, errorValue.expected, errorValue.observed)
@@ -65,6 +65,9 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         local ok, verifyError = primitives.verify(prepared, result)
         if not ok then
             session.mismatch(state, verifyError.checkpoint, verifyError.expected, verifyError.observed)
+        elseif activeRefill and activeRefill.handle ~= nil then
+            local payload = room.begin(state, activeRefill.handle)
+            if payload ~= nil then session.complete(state, activeRefill.handle) end
         end
         report(runtime)
         return result

@@ -131,6 +131,29 @@ function TestDirectPickupAcquisitions.testUnboundSameNameConsumableClaimsAtAccep
     lu.assertEquals(completions[1].handle, handle)
 end
 
+function TestDirectPickupAcquisitions.testMaxHealthAndArmorUseTheSameBoundOrUnboundOutcomeTerminal()
+    for _, witness in ipairs({
+        { gameName = "MaxHealthDrop", bound = true },
+        -- ArmorBoostStore is the inventory option; the native consumable is ArmorBoost.
+        { gameName = "ArmorBoost", bound = false },
+    }) do
+        local item = { Name = witness.gameName }
+        local callbacks, handle, begins, completions = harness(acquisitionRow(item.Name), item, witness.bound)
+        lu.assertEquals(acceptedUse(callbacks, item), "native-result")
+        lu.assertEquals(begins(), 1)
+        lu.assertEquals(#completions, 1)
+        lu.assertEquals(completions[1].handle, handle)
+    end
+end
+
+function TestDirectPickupAcquisitions.testIncompatibleAcceptedConsumableDoesNotClaimTheReadyOutcome()
+    local item = { Name = "ArmorBoost" }
+    local callbacks, _, begins, completions = harness(acquisitionRow("MaxHealthDrop"), item, false)
+    lu.assertEquals(acceptedUse(callbacks, item), "native-result")
+    lu.assertEquals(begins(), 0)
+    lu.assertEquals(#completions, 0)
+end
+
 function TestDirectPickupAcquisitions.testFreshImportedPickupCarrierUsesTheProvidedSeaStar()
     for _, expected in ipairs({ "proc", "noProc" }) do
         local item = { Name = "RoomMoneyDrop" }
@@ -231,15 +254,6 @@ function TestDirectPickupAcquisitions.testTalentDropRemainsOwnedByInteractiveHex
     lu.assertEquals(#completions, 0)
 end
 
-function TestDirectPickupAcquisitions.testPurchaseTransactionRemainsWithCommerceAdapter()
-    local item = { Name = "MaxHealthDrop" }
-    local row = acquisitionRow(item.Name)
-    row.transaction.kind = "shopPurchase"
-    local callbacks, _, begins, completions = harness(row, item)
-    lu.assertEquals(acceptedUse(callbacks, item), "native-result")
-    lu.assertEquals(begins(), 0)
-    lu.assertEquals(#completions, 0)
-end
 
 function TestDirectPickupAcquisitions.testRoomRewardBindsExactDirectConsumableObject()
     local module, callbacks = capture()

@@ -8,7 +8,6 @@ local generationKeys = {
     ["initial:healing"] = true,
     ["initial:secondLeft"] = true,
     ["initial:secondRight"] = true,
-    travelDealRefill = true,
 }
 local shrineGenerationKeys = {
     ["initial:first"] = true,
@@ -18,7 +17,7 @@ local shrineGenerationKeys = {
 
 local function shop(value, label)
     local record, errorMessage = p.exact(
-        value, { "profileKey", "offers" }, { "travelDealRefill", "infernalContract" }, label
+        value, { "profileKey", "offers" }, { "infernalContract" }, label
     )
     if not record then return nil, errorMessage end
     if not p.str(record.profileKey, label .. ".profileKey") then
@@ -54,24 +53,6 @@ local function shop(value, label)
             or not p.str(contract.rewardType, label .. ".infernalContract.rewardType") then
             return p.fail(label .. " has invalid Infernal Contract pedestal")
         end
-    end
-    if record.travelDealRefill ~= nil then
-        local refill, refillError = p.exact(
-            record.travelDealRefill,
-            { "sourceOfferKey", "sourceOwner", "slotIndex", "groupIndex", "optionKey", "reward" },
-            {},
-            label .. ".travelDealRefill"
-        )
-        if not refill then return nil, refillError end
-        if not p.str(refill.sourceOfferKey, label .. ".travelDealRefill.sourceOfferKey")
-            or not p.str(refill.sourceOwner, label .. ".travelDealRefill.sourceOwner", p.MAX_OWNER_STRING)
-            or not p.int(refill.slotIndex, label .. ".travelDealRefill.slotIndex", 0)
-            or not p.int(refill.groupIndex, label .. ".travelDealRefill.groupIndex", 0)
-            or not p.str(refill.optionKey, label .. ".travelDealRefill.optionKey") then
-            return p.fail(label .. " has invalid Travel Deal refill")
-        end
-        local _, rewardError = rewards.reward(refill.reward, label .. ".travelDealRefill.reward")
-        if rewardError then return nil, rewardError end
     end
     return record
 end
@@ -118,7 +99,7 @@ local function shrinePurchase(value, label)
 end
 
 local function hermesShrine(value, label)
-    local record, errorMessage = p.exact(value, { "offers" }, { "travelDealRefill" }, label)
+    local record, errorMessage = p.exact(value, { "offers" }, {}, label)
     if not record then return nil, errorMessage end
     local offers, offersError = p.arr(record.offers, label .. ".offers")
     if not offers then return nil, offersError end
@@ -156,38 +137,6 @@ local function hermesShrine(value, label)
             if purchaseError then return nil, purchaseError end
         end
         seen[row.generationKey] = true
-    end
-    if record.travelDealRefill ~= nil then
-        local refill, refillError = p.exact(
-            record.travelDealRefill,
-            { "sourceGenerationKey", "slotIndex", "optionKey", "rewardType" },
-            { "purchase", "deliverySourceKey" },
-            label .. ".travelDealRefill"
-        )
-        if not refill then return nil, refillError end
-        local expectedSlot = ({
-            ["initial:first"] = 1, ["initial:secondLeft"] = 2, ["initial:secondRight"] = 3,
-        })
-            [refill.sourceGenerationKey]
-        if not p.one(refill.sourceGenerationKey, shrineGenerationKeys, label .. ".sourceGenerationKey")
-            or not p.int(refill.slotIndex, label .. ".slotIndex", 1)
-            or refill.slotIndex > 3
-            or refill.slotIndex ~= expectedSlot
-            or not p.str(refill.optionKey, label .. ".optionKey")
-            or not p.str(refill.rewardType, label .. ".rewardType") then
-            return p.fail(label .. " has invalid Travel Deal refill")
-        end
-        if refill.deliverySourceKey ~= nil
-            and not p.str(refill.deliverySourceKey, label .. ".deliverySourceKey", p.MAX_OWNER_STRING) then
-            return p.fail(label .. " has invalid refill delivery source")
-        end
-        if (refill.purchase == nil) ~= (refill.deliverySourceKey == nil) then
-            return p.fail(label .. " purchase and delivery source must be paired")
-        end
-        if refill.purchase ~= nil then
-            local _, purchaseError = shrinePurchase(refill.purchase, label .. ".purchase")
-            if purchaseError then return nil, purchaseError end
-        end
     end
     return record
 end

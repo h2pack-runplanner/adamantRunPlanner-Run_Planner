@@ -4,9 +4,9 @@ local primitives = type(import) == "function"
     or require("mods.room.features.inventory.primitives")
 local worldShop = {}
 
-function worldShop.prepareRefill(shop, storeData, args, scope)
-    if scope == nil or scope.kind ~= "shop" or shop == nil or shop.travelDealRefill == nil then return nil end
-    local refill = primitives.copy(shop.travelDealRefill)
+function worldShop.prepareRefill(storeData, args, scope)
+    if scope == nil or scope.kind ~= "shop" or scope.refill == nil then return nil end
+    local refill = primitives.copy(scope.refill.replacement)
     local group = storeData.GroupsOf and storeData.GroupsOf[refill.groupIndex + 1]
     if type(group) ~= "table" then
         return nil, { checkpoint = "shop-refill-group", expected = refill.groupIndex }
@@ -17,7 +17,7 @@ function worldShop.prepareRefill(shop, storeData, args, scope)
     if group.Options then group.Options = primitives.retainRawOffers(group.Options, { refill }) end
     group.Offers = 1
     storeData.GroupsOf = { group }
-    return { kind = "shopRefill", expected = { refill }, args = primitives.withStoreData(args, storeData) }
+    return { kind = "travelDealWorldShop", expected = { refill }, args = primitives.withStoreData(args, storeData) }
 end
 
 function worldShop.prepareContract(shop, storeData, args)

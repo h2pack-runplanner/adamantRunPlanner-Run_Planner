@@ -195,7 +195,7 @@ local function minimalPlan(transactions)
     end
     local plan = tagged({
         format = "run-planner-execution",
-        protocolVersion = 34,
+        protocolVersion = 35,
         catalogVersion = "0.55.0-anvil-of-fates",
         projectId = "test-project",
         planFingerprint = "00000000",
@@ -231,7 +231,19 @@ local function minimalPlan(transactions)
 end
 
 local function minimalShrinePlan()
-    local plan = minimalPlan({})
+    local plan = minimalPlan({ {
+        kind = "travelDealRefill", owner = "shrine-refill", window = window("postOutgoing"),
+        refill = {
+            carrier = "hermesShrine",
+            source = { generationKey = "initial:first", slotIndex = 1 },
+            replacement = {
+                generationKey = "travelDealRefill", slotIndex = 1,
+                optionKey = "Armor", rewardType = "ArmorDrop",
+                purchase = { roomDelay = 8, rushed = false },
+                deliverySourceKey = "hermesShrineDelivery:source:refill",
+            },
+        },
+    } })
     plan.occurrences[1].overview.hermesShrine = tagged({
         offers = {
             {
@@ -248,18 +260,14 @@ local function minimalShrinePlan()
                 slotIndex = 3,
             },
         },
-        travelDealRefill = {
-            sourceGenerationKey = "initial:first", slotIndex = 1,
-            optionKey = "Armor", rewardType = "ArmorDrop",
-            purchase = { roomDelay = 8, rushed = false },
-            deliverySourceKey = "hermesShrineDelivery:source:refill",
-        },
     })
     refreshFingerprint(plan)
     return plan
 end
 
 function TestProtocol.testHermesShrinePurchaseRequiresDeliverySourcePair()
+    local decoded, errorMessage = protocol.decode(minimalShrinePlan())
+    lu.assertNotNil(decoded, errorMessage)
     local mutations = {
         function(plan)
             plan.occurrences[1].overview.hermesShrine.offers[1].deliverySourceKey = nil
@@ -268,10 +276,10 @@ function TestProtocol.testHermesShrinePurchaseRequiresDeliverySourcePair()
             plan.occurrences[1].overview.hermesShrine.offers[1].purchase = nil
         end,
         function(plan)
-            plan.occurrences[1].overview.hermesShrine.travelDealRefill.deliverySourceKey = nil
+            plan.occurrences[1].timeline.transactions[1].refill.replacement.deliverySourceKey = nil
         end,
         function(plan)
-            plan.occurrences[1].overview.hermesShrine.travelDealRefill.purchase = nil
+            plan.occurrences[1].timeline.transactions[1].refill.replacement.purchase = nil
         end,
     }
     for _, mutate in ipairs(mutations) do
@@ -280,6 +288,16 @@ function TestProtocol.testHermesShrinePurchaseRequiresDeliverySourcePair()
         refreshFingerprint(plan)
         lu.assertNil(protocol.decode(plan))
     end
+end
+
+function TestProtocol.testWellOverviewCannotRetainTheMovedTravelDealRefill()
+    local plan = minimalPlan({})
+    plan.occurrences[1].overview.stygianWell = tagged({
+        interacted = true,
+        offers = { { generationKey = "travelDealRefill", offerKey = "RandomStoreItem" } },
+    })
+    refreshFingerprint(plan)
+    lu.assertNil(protocol.decode(plan))
 end
 
 function TestProtocol.testArtificerRoleCarriesSourceOwnedReplacement()
@@ -1246,32 +1264,35 @@ function TestProtocol.testEveryTimelineTransactionUnionDecodes()
             window = window("bossDefeated"),
         },
         {
-            kind = "shopPurchase",
-            owner = "shop",
-            window = window("postOutgoing"),
-            offerKey = "offer",
-            rewardType = "boon",
-            sourceOwner = "source",
-            reward = reward(),
-            producerLifecycleKey = "purchase",
-            roles = { role() },
+            kind = "itemEffect", owner = "well", window = window("postOutgoing"),
+            itemKey = "LastStandDrop", effect = "lastStand", extended = false,
         },
         {
-            kind = "wellPurchase",
-            owner = "well",
-            window = window("postOutgoing"),
-            offerKey = "item",
-            generationKey = "initial:healing",
-            effect = "lastStand",
-            extendedDirectPurchase = false,
+            kind = "transformation", owner = "twist", window = window("postOutgoing"),
+            transformation = { kind = "stygianWellTwist", sourceItemKey = "RandomStoreItem", resultItemKey = "HealDropRange" },
         },
         {
-            kind = "wellRefill",
-            owner = "refill",
-            window = window("postOutgoing"),
-            generationKey = "travelDealRefill",
-            offerKey = "item",
-            effect = "neutral",
+            kind = "travelDealRefill", owner = "refill", window = window("postOutgoing"),
+            refill = { carrier = "stygianWell", source = { owner = "well", generationKey = "initial:secondLeft" },
+                replacement = { generationKey = "travelDealRefill", offerKey = "item", effect = "neutral" } },
+        },
+        {
+            kind = "travelDealRefill", owner = "shop-refill", window = window("postOutgoing"),
+            refill = {
+                carrier = "worldShop", source = { owner = "shop-source", offerKey = "Boon" },
+                replacement = { slotIndex = 0, groupIndex = 0, optionKey = "ArmorBoost", reward = reward() },
+            },
+        },
+        {
+            kind = "travelDealRefill", owner = "shrine-refill", window = window("postOutgoing"),
+            refill = {
+                carrier = "hermesShrine",
+                source = { generationKey = "initial:first", slotIndex = 1 },
+                replacement = {
+                    generationKey = "travelDealRefill", slotIndex = 1,
+                    optionKey = "TalentDrop", rewardType = "TalentDrop",
+                },
+            },
         },
         {
             kind = "keepsakeChange",
@@ -1322,18 +1343,12 @@ function TestProtocol.testFountainUseRequiresItsPublishedInteractionContact()
     lu.assertNil(protocol.decode(value))
 end
 
-function TestProtocol.testAnvilResultExistsOnlyOnThePurchasedAnvilTransaction()
+function TestProtocol.testAnvilResultExistsOnlyOnTheTransformationTransaction()
     local transaction = {
-        kind = "shopPurchase",
+        kind = "transformation",
         owner = "anvil",
         window = window("postOutgoing"),
-        offerKey = "Anvil",
-        rewardType = "ChaosWeaponUpgrade",
-        sourceOwner = "source",
-        reward = { rewardType = "ChaosWeaponUpgrade", producerLifecycleKey = "Q_WorldShop" },
-        producerLifecycleKey = "Q_WorldShop",
-        roles = {},
-        anvilResult = {
+        transformation = {
             kind = "anvilOfFates",
             removedTraitKey = json.null,
             addedTraitKeys = { "HammerA", "HammerB" },
@@ -1341,15 +1356,10 @@ function TestProtocol.testAnvilResultExistsOnlyOnThePurchasedAnvilTransaction()
     }
     lu.assertNotNil(protocol.decode(minimalPlan({ transaction })))
 
-    transaction.anvilResult = nil
+    transaction.transformation = nil
     lu.assertNil(protocol.decode(minimalPlan({ transaction })))
 
-    transaction.rewardType = "MaxHealthDrop"
-    transaction.anvilResult = {
-        kind = "anvilOfFates",
-        removedTraitKey = json.null,
-        addedTraitKeys = { "HammerA", "HammerB" },
-    }
+    transaction.transformation = { kind = "stygianWellTwist", sourceItemKey = "A" }
     lu.assertNil(protocol.decode(minimalPlan({ transaction })))
 end
 

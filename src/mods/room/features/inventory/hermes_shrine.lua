@@ -4,9 +4,9 @@ local primitives = type(import) == "function"
     or require("mods.room.features.inventory.primitives")
 local shrineInventory = {}
 
-function shrineInventory.prepareRefill(shrine, storeData, args, scope)
-    if scope == nil or scope.kind ~= "shrine" or shrine == nil or shrine.travelDealRefill == nil then return nil end
-    local refill = primitives.copy(shrine.travelDealRefill)
+function shrineInventory.prepareRefill(storeData, args, scope)
+    if scope == nil or scope.kind ~= "shrine" or scope.refill == nil then return nil end
+    local refill = primitives.copy(scope.refill.replacement)
     local matched, sourceGroup = 0, nil
     for _, group in ipairs(storeData.GroupsOf or {}) do
         if type(group) == "table" then
@@ -33,9 +33,9 @@ function shrineInventory.prepareRefill(shrine, storeData, args, scope)
     sourceGroup.Offers = 1
     storeData.GroupsOf = { sourceGroup }
     refill.generationKey = "travelDealRefill"
-    refill.sourceGenerationKey = shrine.travelDealRefill.sourceGenerationKey
-    refill.slotIndex = scope.slotIndex
-    return { kind = "shrineRefill", expected = { refill }, args = primitives.withStoreData(args, storeData) }
+    refill.sourceGenerationKey = scope.refill.source.generationKey
+    refill.slotIndex = scope.refill.replacement.slotIndex
+    return { kind = "travelDealHermesShrine", expected = { refill }, args = primitives.withStoreData(args, storeData) }
 end
 
 function shrineInventory.prepare(shrine, storeData, args)

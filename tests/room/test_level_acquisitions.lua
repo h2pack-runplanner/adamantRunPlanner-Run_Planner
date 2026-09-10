@@ -75,10 +75,10 @@ local function levelRow(name, count, target)
     return { transaction = transaction, detail = detail }
 end
 
-function TestLevelAcquisitions.testPublishedVisibleLevelRoleDoesNotDependOnPurchaseOrPickupCarrier()
+function TestLevelAcquisitions.testPublishedVisibleLevelRoleUsesOneSourceAgnosticAcquisitionCarrier()
     for _, carrier in ipairs({
         { kind = "acquisition", lifecyclePoint = "roomRewardPickup" },
-        { kind = "shopPurchase", lifecyclePoint = "purchase" },
+        { kind = "acquisition", lifecyclePoint = "roomRewardPickup" },
     }) do
         local row = levelRow("StackUpgrade", 1, "Target")
         row.transaction.kind = carrier.kind
@@ -355,10 +355,10 @@ function TestLevelAcquisitions.testIneligibleNectarRestoresNativeArgumentsBefore
     _G.CurrentRun = priorRun
 end
 
-function TestLevelAcquisitions.testUnboundPurchasedDirectLevelClaimsAtAcceptedPresentation()
+function TestLevelAcquisitions.testUnboundDirectLevelClaimsAtAcceptedPresentation()
     local item, row, callbacks, _, _, _, begins, completions = directFixture("Target", 1, false)
-    row.transaction.kind = "shopPurchase"
-    row.detail.lifecyclePoint = "purchase"
+    row.transaction.kind = "acquisition"
+    row.detail.lifecyclePoint = "roomRewardPickup"
     local target = { Name = "Target", StackNum = 2 }
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = { target } } }
