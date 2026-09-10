@@ -539,9 +539,12 @@ function timeline.decode(value, label, globalOwners)
         obligationKeys[key] = true
         obligationCounts[obligation.owner] = (obligationCounts[obligation.owner] or 0) + 1
     end
-    for owner in pairs(byOwner) do
-        if obligationCounts[owner] ~= 1 then
-            return p.fail(label .. " must have exactly one obligation per transaction")
+    for owner, transaction in pairs(byOwner) do
+        local expectedCount = transaction.kind == "acquisition" and 0 or 1
+        if (obligationCounts[owner] or 0) ~= expectedCount then
+            return p.fail(transaction.kind == "acquisition"
+                and label .. " must not have an acquisition obligation"
+                or label .. " must have exactly one obligation per non-acquisition transaction")
         end
     end
     return record, byOwner

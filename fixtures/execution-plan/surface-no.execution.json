@@ -366,12 +366,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-opening\\\"]\",\"source\"]",
-            "checkpoint": "outgoingGeneration"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"N\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-n-opening\"}]",
@@ -751,12 +746,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-prehub\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-prehub\"]",
@@ -923,12 +913,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05\"]",
@@ -1057,12 +1042,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05-sideDoor2\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor2\"]",
@@ -1137,12 +1117,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05-sideDoor1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor1\"]",
@@ -1237,12 +1212,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-miniBoss01\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-miniBoss01\"]",
@@ -1393,12 +1363,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat02\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02\"]",
@@ -1493,12 +1458,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat02-sideDoor1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02-sideDoor1\"]",
@@ -1602,12 +1562,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat11\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat11\"]",
@@ -1725,12 +1680,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat11-sideDoor1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat11-sideDoor1\"]",
@@ -1886,12 +1836,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat23\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat23\"]",
@@ -2017,12 +1962,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat09\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat09\"]",
@@ -2425,10 +2365,6 @@
           {
             "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\"]",
             "checkpoint": "exitUsable"
-          },
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\",\"offer1\"]",
-            "checkpoint": "exitUsable"
           }
         ]
       },
@@ -2552,10 +2488,6 @@
           {
             "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\"]",
             "checkpoint": "exitUsable"
-          },
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\",\"offer1\"]",
-            "checkpoint": "exitUsable"
           }
         ]
       },
@@ -2678,10 +2610,6 @@
         "obligations": [
           {
             "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\"]",
-            "checkpoint": "exitUsable"
-          },
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\",\"offer1\"]",
             "checkpoint": "exitUsable"
           }
         ]
@@ -2837,16 +2765,7 @@
             "afterOwner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"chosenSource\"]"
           }
         ],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"chosenSource\"]",
-            "checkpoint": "outgoingGeneration"
-          },
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"spurnedSource\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-devotion\"}]",
@@ -3107,10 +3026,6 @@
         "obligations": [
           {
             "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\"]",
-            "checkpoint": "exitUsable"
-          },
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\",\"offer1\"]",
             "checkpoint": "exitUsable"
           }
         ]
@@ -3495,5 +3410,5 @@
       }
     }
   ],
-  "planFingerprint": "b77ef28a"
+  "planFingerprint": "62817f21"
 }

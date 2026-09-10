@@ -1,6 +1,7 @@
--- Occurrence-local Timeline DAG: readiness, completion, and obligation
--- deadlines. Native adapters own actual effects; completion only closes its
--- exact published owner.
+-- Occurrence-local Timeline DAG: readiness, intervention completion, and
+-- explicit obligation deadlines. Native adapters own actual effects;
+-- completion only releases the exact published owner and is not semantic
+-- outcome proof.
 local lifecycle = type(import) == "function" and import("mods/room/timeline/lifecycle.lua")
     or require("mods.room.timeline.lifecycle")
 local bindings = type(import) == "function" and import("mods/room/timeline/bindings.lua")

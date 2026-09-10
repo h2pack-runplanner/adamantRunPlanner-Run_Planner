@@ -370,12 +370,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-start\\\"]\",\"source\"]",
-            "checkpoint": "outgoingGeneration"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-start\"}]",
@@ -646,12 +641,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b1-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b1-e1\"}]",
@@ -775,12 +765,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b2-e1\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b2-e1\"}]",
@@ -947,12 +932,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b3-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b3-e1\"}]",
@@ -1091,12 +1071,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b4-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b4-e1\"}]",
@@ -1248,12 +1223,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b5-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b5-e1\"}]",
@@ -1401,12 +1371,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b6-e1\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b6-e1\"}]",
@@ -1565,12 +1530,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b7-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b7-e1\"}]",
@@ -1691,12 +1651,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b8-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b8-e1\"}]",
@@ -1850,12 +1805,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b9-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b9-e1\"}]",
@@ -1989,12 +1939,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b10-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b10-e1\"}]",
@@ -2486,12 +2431,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b1-e1\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b1-e1\"}]",
@@ -2638,12 +2578,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b2-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b2-e1\"}]",
@@ -2955,12 +2890,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b4-e1\\\"]\",\"self\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b4-e1\"}]",
@@ -3206,12 +3136,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b6-e1\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b6-e1\"}]",
@@ -3382,12 +3307,7 @@
           }
         ],
         "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b7-e1\\\"]\",\"source\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
+        "obligations": []
       },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b7-e1\"}]",
@@ -3737,5 +3657,5 @@
       }
     }
   ],
-  "planFingerprint": "04dd677e"
+  "planFingerprint": "e961b180"
 }

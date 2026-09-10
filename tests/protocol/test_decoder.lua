@@ -191,7 +191,9 @@ end
 local function minimalPlan(transactions)
     local obligations = {}
     for _, transaction in ipairs(transactions) do
-        obligations[#obligations + 1] = { owner = transaction.owner, checkpoint = "exitUsable" }
+        if transaction.kind ~= "acquisition" then
+            obligations[#obligations + 1] = { owner = transaction.owner, checkpoint = "exitUsable" }
+        end
     end
     local plan = tagged({
         format = "run-planner-execution",
@@ -541,7 +543,7 @@ function TestProtocol.testPoolSalesAreNotExecutionTransactions()
     lu.assertNil(protocol.decode(value))
 end
 
-function TestProtocol.testEveryPublishedTransactionHasExactlyOneObligation()
+function TestProtocol.testAcquisitionsAreNotObligations()
     local value = minimalPlan({ {
         kind = "acquisition",
         owner = "source",
@@ -553,13 +555,27 @@ function TestProtocol.testEveryPublishedTransactionHasExactlyOneObligation()
     } })
     lu.assertNotNil(protocol.decode(value))
 
+    value.occurrences[1].timeline.obligations = {
+        { owner = "source", checkpoint = "exitUsable" },
+    }
+    refreshFingerprint(value)
+    lu.assertNil(protocol.decode(value))
+end
+
+function TestProtocol.testEveryNonAcquisitionHasExactlyOneObligation()
+    local transaction = {
+        kind = "fountainUse", owner = "fountain", interactionKey = "fountain", window = window(),
+    }
+    local value = minimalPlan({ transaction })
+    lu.assertNotNil(protocol.decode(value))
+
     value.occurrences[1].timeline.obligations = {}
     refreshFingerprint(value)
     lu.assertNil(protocol.decode(value))
 
-    value = minimalPlan(value.occurrences[1].timeline.transactions)
+    value = minimalPlan({ transaction })
     value.occurrences[1].timeline.obligations[2] = {
-        owner = "source", checkpoint = "exitUsable",
+        owner = "fountain", checkpoint = "roomExit",
     }
     refreshFingerprint(value)
     lu.assertNil(protocol.decode(value))

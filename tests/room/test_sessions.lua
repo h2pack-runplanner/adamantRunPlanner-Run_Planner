@@ -46,9 +46,18 @@ local function occurrence()
     local optional, required, dependent = "optional", "required", "dependent"
     return {
         id = "one", gameName = "F_Test", transactionsByOwner = {
-            [optional] = { owner = optional, window = { kind = "standard", phase = "beforeCombat" } },
-            [required] = { owner = required, window = { kind = "standard", phase = "beforeCombat" } },
-            [dependent] = { owner = dependent, window = { kind = "standard", phase = "beforeCombat" } },
+            [optional] = {
+                owner = optional, kind = "acquisition",
+                window = { kind = "standard", phase = "beforeCombat" },
+            },
+            [required] = {
+                owner = required, kind = "fountainUse",
+                window = { kind = "standard", phase = "beforeCombat" },
+            },
+            [dependent] = {
+                owner = dependent, kind = "acquisition",
+                window = { kind = "standard", phase = "beforeCombat" },
+            },
         },
         timeline = {
             dependencies = { { owner = dependent, afterOwner = optional } },
@@ -59,11 +68,19 @@ local function occurrence()
     }
 end
 
-function TestRouteRoomSessions.testOptionalOwnerDoesNotBlockClosureButBlocksItsDependent()
+function TestRouteRoomSessions.testUnfinishedAcquisitionDoesNotBlockClosureButBlocksItsDependent()
     local session = newSession(occurrence())
     lu.assertTrue(room.openWindow(session, "roomEntered"))
     lu.assertNil(complete(session, "dependent"))
     lu.assertEquals(session.firstMismatch.checkpoint, "transaction-prerequisite")
+
+    local released = newSession(occurrence())
+    room.openWindow(released, "roomEntered")
+    lu.assertTrue(complete(released, "optional"))
+    lu.assertTrue(complete(released, "dependent"))
+    lu.assertTrue(complete(released, "required"))
+    lu.assertTrue(room.close(released, function() return true end))
+
     local closeable = newSession(occurrence())
     room.openWindow(closeable, "roomEntered")
     lu.assertTrue(complete(closeable, "required"))
@@ -363,7 +380,7 @@ function TestRouteRoomSessions.testExactHandleBindingHasOneNativeCarrier()
     lu.assertEquals(port.firstMismatch.checkpoint, "timeline-binding")
 end
 
-function TestRouteRoomSessions.testAcceptedUnboundPickupClaimCompletesAndClosesObligation()
+function TestRouteRoomSessions.testAcceptedUnboundPickupClaimCompletesWithoutAnObligation()
     local transaction = {
         owner = "pickup", kind = "acquisition",
         window = { kind = "standard", phase = "beforeCombat" },
@@ -377,7 +394,7 @@ function TestRouteRoomSessions.testAcceptedUnboundPickupClaimCompletesAndClosesO
         transactionsByOwner = { pickup = transaction },
         timeline = {
             transactions = { transaction }, dependencies = {},
-            obligations = { { owner = "pickup", checkpoint = "roomExit" } },
+            obligations = {},
         },
         roomExitConformance = { facts = {} }, conformanceExpected = {},
     }
