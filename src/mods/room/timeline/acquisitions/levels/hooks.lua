@@ -23,18 +23,6 @@ function levels.isNormalPayload(payload)
     return type(detail) == "table" and detail.disposition == "normal"
 end
 
-local function heroTraits()
-    local hero = _G.CurrentRun and _G.CurrentRun.Hero
-    return type(hero) == "table" and hero.Traits or nil
-end
-
-local function findTrait(key)
-    for _, trait in pairs(heroTraits() or {}) do
-        if type(trait) == "table" and (trait.Name == key or trait.TraitName == key) then return trait end
-    end
-    return nil
-end
-
 local function copy(value)
     local result = {}
     for key, nested in pairs(value or {}) do result[key] = nested end
@@ -58,10 +46,6 @@ function levels.prepareVisible(row, loot)
     loot.StackNum = effect.levelCount
     loot.UpgradeOptions = installed
     return true
-end
-
-local function upgradeableTargets(stackNum)
-    return _G.GetAllUpgradeableGodTraits(stackNum or 1) or {}, true
 end
 
 local function markedArguments(source, args)
@@ -112,6 +96,7 @@ function levels.attach(module, session, getState, report, room, seaStar)
     local roomCoordinator = room
     local suppressFatedPomBonus = 0
     local begunVisible = setmetatable({}, { __mode = "k" })
+    local retainedVisible = setmetatable({}, { __mode = "k" })
     local activeDirectUses = setmetatable({}, { __mode = "k" })
     local activeDirectTerminals = {}
 
@@ -194,14 +179,30 @@ function levels.attach(module, session, getState, report, room, seaStar)
             return base(screen, loot, reroll, args)
         end
         local initial = reroll ~= true
-        if initial then levels.prepareVisible(payload, loot) end
+        local installed = not initial or levels.prepareVisible(payload, loot)
+        if not installed then
+            session.mismatch(state, "level-offer-install", "published level rows", "not installed")
+        end
         loot.__runPlannerLevelCarrier = true
+        local result
         if initial then
-            return withoutFatedPomBonus(function()
+            result = withoutFatedPomBonus(function()
                 return base(screen, loot, reroll, args)
             end)
+        else
+            result = base(screen, loot, reroll, args)
         end
-        return base(screen, loot, reroll, args)
+        if initial and installed then
+            local seaStarScope = seaStar.scope(state, payload)
+            if seaStarScope.result == nil then
+                session.complete(state, handle)
+                begunVisible[handle] = nil
+                report(runtime)
+            else
+                retainedVisible[handle] = true
+            end
+        end
+        return result
     end)
 
     module.hooks.wrap("HandleUpgradeChoiceSelection", "run-planner-level-selection", function(_, runtime, base,
@@ -216,8 +217,7 @@ function levels.attach(module, session, getState, report, room, seaStar)
         end
         local effect = resolution(payload)
         if effect == nil then return base(screen, button, args) end
-        if not begunVisible[handle] then return base(screen, button, args) end
-        local selected = button and button.Data and button.Data.Name
+        if not begunVisible[handle] or not retainedVisible[handle] then return base(screen, button, args) end
         local seaStarScope = seaStar.scope(state, payload)
         local prior = loot.__runPlannerLevelCarrier
         loot.__runPlannerLevelCarrier = true
@@ -226,10 +226,9 @@ function levels.attach(module, session, getState, report, room, seaStar)
         end)
         loot.__runPlannerLevelCarrier = prior
         if not ok then error(result, 0) end
-        if effect.selectedTarget ~= selected then
-            session.mismatch(state, "level-selection", effect.selectedTarget, selected)
-        elseif seaStar.requireConsumed(seaStarScope, session.mismatch) then
+        if seaStar.requireConsumed(seaStarScope, session.mismatch) then
             session.complete(state, handle)
+            begunVisible[handle], retainedVisible[handle] = nil, nil
         end
         report(runtime)
         return result
@@ -331,36 +330,11 @@ function levels.attach(module, session, getState, report, room, seaStar)
         -- effect, so restore that exact count before native eligibility and
         -- mutation rather than applying the bonus a second time.
         local stackNum = effect.levelCount
-        local eligible, canReadEligibility = upgradeableTargets(stackNum)
-        local original = {
-            NumStacks = directArgs.NumStacks,
-            TraitName = directArgs.TraitName,
-            NumTraits = directArgs.NumTraits,
-        }
         if target ~= nil then
-            local trait = findTrait(target)
-            if trait == nil or (canReadEligibility and not eligible[target]) then
-                session.mismatch(state, "level-target", target, trait and "not-upgradeable" or "missing")
-                directArgs.NumStacks = original.NumStacks
-                directArgs.TraitName = original.TraitName
-                directArgs.NumTraits = original.NumTraits
-                clearAdapterTransport(directArgs)
-                report(runtime)
-                return base(source, args)
-            end
             directArgs.NumStacks = stackNum
             directArgs.TraitName = target
             directArgs.NumTraits = 1
         else
-            if not canReadEligibility or next(eligible) ~= nil then
-                session.mismatch(state, "level-target", "no eligible trait", eligible)
-                directArgs.NumStacks = original.NumStacks
-                directArgs.TraitName = original.TraitName
-                directArgs.NumTraits = original.NumTraits
-                clearAdapterTransport(directArgs)
-                report(runtime)
-                return base(source, args)
-            end
             directArgs.NumStacks = stackNum
             directArgs.TraitName = nil
             directArgs.NumTraits = 0

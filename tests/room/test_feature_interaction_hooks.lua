@@ -210,7 +210,7 @@ function TestFeatureInteractionHooks.testSuccessfulNativeKeepsakeEquipCompletesT
     lu.assertNotNil(completed.handle)
 end
 
-function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitResolution()
+function TestFeatureInteractionHooks.testPurchasedMysteryBoonCompletesAfterItsTraitRowsAreInstalled()
     local module, _, callbacks = capture()
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = {} } }
@@ -288,8 +288,10 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
     lu.assertNotNil(boxHandle)
     lu.assertTrue(rawequal(roomCoordinatorModule.bound(state, active, loot), boxHandle))
     lu.assertEquals(roomCoordinatorModule.peek(state, boxHandle).detail, node.roles[2])
-    callbacks.HandleLootPickup(nil, {}, function() end, _G.CurrentRun, loot, {})
-    lu.assertEquals(#completions, 0)
+    callbacks.HandleLootPickup(nil, {}, function(_, nativeLoot)
+        callbacks.CreateBoonLootButtons(nil, {}, function() return true end, {}, nativeLoot, false, {})
+    end, _G.CurrentRun, loot, {})
+    lu.assertEquals(#completions, 1)
     _G.CurrentRun.Hero.Traits = { { Name = "HeraCastBoon", Rarity = "Common", StackNum = 4 } }
     callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
         {}, { LootData = loot, Data = { Name = "HeraCastBoon" } }, {})

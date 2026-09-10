@@ -46,10 +46,27 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         return pending ~= nil and pending.context == room.current(state) and state.state == "synchronized"
     end
 
-    -- C1 remains the only terminal. D3/D4 and Concave Stone merely delay it
-    -- while their bounded native callbacks are still in flight.
+    -- Selected nested effects retain the acquisition owner through their last
+    -- steering contact. Plain acquisition offers complete when their frozen
+    -- rows are installed; non-acquisition encounter offers keep their existing
+    -- selection terminal.
     local function completeOuter(state, handle)
         concaveStone.completeOuter(state, handle)
+    end
+
+    local function isAcquisition(payload)
+        return type(payload) == "table" and type(payload.transaction) == "table"
+            and payload.transaction.kind == "acquisition"
+    end
+
+    local function requiresSelectedSteering(payload)
+        local selected = ordinary.selectedKey(payload)
+        local detail = type(payload) == "table" and payload.detail or nil
+        return ordinary.allTogetherResult(payload) ~= nil
+            or ordinary.naturalSelectionTargets(payload) ~= nil
+            or ordinary.targetTraitKeyForKey(payload, selected) ~= nil
+            or ordinary.concaveStoneResult(payload) ~= nil
+            or type(detail) == "table" and type(detail.seaStarResult) == "table"
     end
 
     local function discardPending(pending)
@@ -76,8 +93,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
     end
 
     local function completeNaturalSelection(state, pending)
-        if not pending.failed and pending.selectionReturned and pending.settled
-            and pending.cursor == #pending.targets then
+        if not pending.failed and pending.selectionReturned and pending.settled then
             naturalSelectionPending[pending.handle] = nil
             completeOuter(state, pending.handle)
         end
@@ -140,7 +156,6 @@ function hooks.attach(module, session, getState, report, room, seaStar)
                 outerKey = selected,
                 context = current,
                 targets = naturalSelectionTargets,
-                cursor = 0,
                 selectionReturned = false,
                 settled = false,
                 shuffled = false,
@@ -193,7 +208,8 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         naturalSelectionForSelection, targetedAcquisitionForSelection, residual)
         if not ordinary.isCarrier(loot, offer) then return end
         if not residual and ordinary.selectedKey(payload) ~= selected then
-            session.mismatch(state, "trait-selection", ordinary.selectedKey(payload), selected)
+            if isAcquisition(payload) then completeOuter(state, handle)
+            else session.mismatch(state, "trait-selection", ordinary.selectedKey(payload), selected) end
             return
         end
         if allTogetherForSelection == nil and naturalSelectionForSelection == nil
@@ -310,28 +326,6 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         return ordered
     end)
 
-    module.hooks.wrap("IncreaseTraitLevel", "run-planner-consume-natural-selection-target", function(_, runtime,
-        base, trait, ...)
-        local pending = activeNaturalDistribution
-        if pending ~= nil then
-            local state = getState(runtime)
-            local actual = type(trait) == "table" and trait.Name or nil
-            local expected = pending.targets[pending.cursor + 1]
-            if expected == nil then
-                pending.failed = true
-                discardNaturalSelection(pending)
-                session.mismatch(state, "natural-selection-target", "end-of-sequence", actual)
-            elseif actual ~= expected then
-                pending.failed = true
-                discardNaturalSelection(pending)
-                session.mismatch(state, "natural-selection-target", expected, actual)
-            else
-                pending.cursor = pending.cursor + 1
-            end
-        end
-        return base(trait, ...)
-    end)
-
     module.hooks.wrap("DistributeLevels", "run-planner-complete-natural-selection", function(_, runtime, base,
         args, originalTraitData)
         local state = getState(runtime)
@@ -348,12 +342,6 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         if not pending.failed and not pending.shuffled then
             pending.failed = true
             discardNaturalSelection(pending)
-            session.mismatch(state, "natural-selection-order", "FYShuffle", "missing")
-        end
-        if not pending.failed and pending.cursor < #pending.targets then
-            pending.failed = true
-            discardNaturalSelection(pending)
-            session.mismatch(state, "natural-selection-target", pending.targets[pending.cursor + 1], "missing")
         end
         pending.settled = true
         completeNaturalSelection(state, pending)
@@ -405,10 +393,6 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         pending.contacted = true
         local ok, result = pcall(base, source, forced)
         if not ok then error(result, 0) end
-        if nativeName(result) ~= pending.target then
-            pending.failed = true
-            session.mismatch(state, "targeted-acquisition-target", pending.target, nativeName(result))
-        end
         return result
     end)
 
@@ -451,17 +435,23 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         screen, loot, reroll, args)
         local state = getState(runtime)
         local current = room.current(state)
-        local _, payload = boundNormal(room, state, current, loot)
+        local handle, payload = boundNormal(room, state, current, loot)
         local offer = ordinary.offer(payload)
+        local completeAfterInstall = false
         -- A native reroll intentionally abandons the frozen initial offer.
         if ordinary.isCarrier(loot, offer) and reroll ~= true then
-            if ordinary.nativeRowsAvailable(offer) then
-                ordinary.install(payload, loot)
-            else
-                session.mismatch(state, "trait-availability", "authored native rows", nativeName(loot))
+            if ordinary.install(payload, loot) ~= true then
+                session.mismatch(state, "trait-offer-install", "published native rows", nativeName(loot))
+            elseif isAcquisition(payload) and not requiresSelectedSteering(payload) then
+                completeAfterInstall = true
             end
         end
-        return base(screen, loot, reroll, args)
+        local result = base(screen, loot, reroll, args)
+        if completeAfterInstall then
+            completeOuter(state, handle)
+            report(runtime)
+        end
+        return result
     end)
 
     module.hooks.wrap("CreateUpgradeChoiceButton", "run-planner-align-ordinary-rejected", function(_, runtime,
@@ -487,7 +477,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         local nested = type(args) == "table" and args.DoubleBoonChance == true
         if nested then
             local stone = concaveStone.active()
-            local valid, pending = concaveStone.validateResidual(state, button, selected)
+            local valid, pending = concaveStone.validateResidual(state)
             if valid == nil or not valid then return base(screen, button, args) end
             local pendingForSelection, naturalSelectionForSelection,
                 targetedAcquisitionForSelection = consequenceScopes(
@@ -517,9 +507,21 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         end
 
         if not ordinary.isCarrier(loot, offer) or ordinary.selectedKey(payload) ~= selected then
-            local result = base(screen, button, args)
+            local result
+            if ordinary.isCarrier(loot, offer) and isAcquisition(payload) then
+                result = seaStar.call(seaStarScope, function() return base(screen, button, args) end,
+                    session.mismatch)
+            else
+                result = base(screen, button, args)
+            end
             if ordinary.isCarrier(loot, offer) then
-                session.mismatch(state, "trait-selection", ordinary.selectedKey(payload), selected)
+                if isAcquisition(payload) then
+                    if seaStar.requireConsumed(seaStarScope, session.mismatch) then
+                        completeOuter(state, handle)
+                    end
+                else
+                    session.mismatch(state, "trait-selection", ordinary.selectedKey(payload), selected)
+                end
                 report(runtime)
             end
             return result

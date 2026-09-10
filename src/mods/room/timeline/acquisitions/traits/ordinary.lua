@@ -85,21 +85,6 @@ function ordinary.isEncounterTraitOfferCarrier(loot)
     return encounterTraitOfferCarriers[nativeName(loot)] ~= nil
 end
 
--- Native declarations must admit every exact authored row before the adapter
--- overwrites positional menu entries. An unavailable exact row is a contact
--- mismatch rather than a substitution.
-function ordinary.nativeRowsAvailable(offer)
-    if type(offer) ~= "table" or offer.kind == "fallbackGold" then return true end
-    local declarations = _G.TraitData
-    for _, option in ipairs(offer.options or {}) do
-        local key = option and option.key
-        local declaration = key and declarations[key]
-        if declaration == nil then return false end
-        if _G.IsTraitEligible(declaration) ~= true then return false end
-    end
-    return true
-end
-
 function ordinary.optionKey(payload, index)
     local offer = ordinary.offer(payload)
     if offer == nil or offer.kind == "fallbackGold" then return nil end

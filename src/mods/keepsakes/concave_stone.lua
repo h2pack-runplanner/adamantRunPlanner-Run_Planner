@@ -121,7 +121,7 @@ function stoneModule.create(options)
         discard = discard,
         completeOuter = completeOuter,
         steerResidual = steerResidual,
-        validateResidual = function(state, button, selected)
+        validateResidual = function(state)
             local pending = active
             if pending == nil then return nil, nil end
             if not scopeIsCurrent(state, pending) then
@@ -129,13 +129,11 @@ function stoneModule.create(options)
                 discard(pending)
                 return false, pending
             end
-            local expected = pending.result.kind == "proc"
-                and options.ordinary.optionForOptionKey(pending.payload, pending.result.optionKey) or nil
-            if pending.failed or not pending.rollConsumed or expected == nil
-                or button ~= pending.residualButton or selected ~= expected.key then
+            if pending.failed or not pending.rollConsumed or pending.result.kind ~= "proc"
+                or pending.residualButton == nil then
                 pending.failed = true
                 discard(pending)
-                options.session.mismatch(state, "concave-stone-residual", expected and expected.key or nil, selected)
+                options.session.mismatch(state, "concave-stone-residual", "steered residual", "missing")
                 return false, pending
             end
             return true, pending

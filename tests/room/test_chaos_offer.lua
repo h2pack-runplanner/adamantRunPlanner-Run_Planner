@@ -59,7 +59,7 @@ local function harness(loot, authoredOffer)
     return callbacks, state, room, payload, mismatches, completed, function() return begins end, session
 end
 
-function TestChaosOffer.testInitialRowsAreSteeredAfterNativeSortAndSelectedPairCompletes()
+function TestChaosOffer.testInitialRowsAndValuesCompleteAfterNativeScreenConstruction()
     local loot = {
         Name = "TrialUpgrade",
         UpgradeOptions = {
@@ -71,12 +71,12 @@ function TestChaosOffer.testInitialRowsAreSteeredAfterNativeSortAndSelectedPairC
     local callbacks, state, _, _, mismatches, completed, begins = harness(loot)
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = {} } }
-    local seen, buttons, screen = {}, {}, {}
+    local seen, screen = {}, {}
 
     callbacks.HandleLootPickup(nil, {}, function()
         callbacks.CreateBoonLootButtons(nil, {}, function()
             for index, item in ipairs(loot.UpgradeOptions) do
-                buttons[index] = callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, row)
+                callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, row)
                     local curse = callbacks.GetProcessedTraitData(nil, {}, function(args)
                         return { Name = args.TraitName, Rarity = args.Rarity }
                     end, { TraitName = row.SecondaryItemName, Rarity = row.Rarity })
@@ -92,9 +92,6 @@ function TestChaosOffer.testInitialRowsAreSteeredAfterNativeSortAndSelectedPairC
                 end, screen, loot, index, item, {})
             end
         end, screen, loot, false, {})
-        _G.CurrentRun.Hero.Traits = { buttons[1].Data }
-        callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
-            screen, buttons[1], {})
     end, {}, loot, {})
     _G.CurrentRun = priorRun
 
@@ -127,11 +124,11 @@ function TestChaosOffer.testSelectedCurseAndRevelationValuesAreScopedToTheirRows
     local callbacks, _, _, _, mismatches, completed = harness(loot, authored)
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = {} } }
-    local buttons, screen, seen = {}, {}, {}
+    local screen, seen = {}, {}
     callbacks.HandleLootPickup(nil, {}, function()
         callbacks.CreateBoonLootButtons(nil, {}, function()
             for index, item in ipairs(loot.UpgradeOptions) do
-                buttons[index] = callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, row)
+                callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, row)
                     local curseArgs = { TraitName = row.SecondaryItemName, Rarity = row.Rarity }
                     local blessingArgs = { TraitName = row.ItemName, Rarity = row.Rarity }
                     local curse = callbacks.GetProcessedTraitData(nil, {}, function(args)
@@ -157,9 +154,6 @@ function TestChaosOffer.testSelectedCurseAndRevelationValuesAreScopedToTheirRows
                 end, screen, loot, index, item, {})
             end
         end, screen, loot, false, {})
-        _G.CurrentRun.Hero.Traits = { buttons[2].Data }
-        callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
-            screen, buttons[2], {})
     end, {}, loot, {})
     _G.CurrentRun = priorRun
 
@@ -169,6 +163,7 @@ function TestChaosOffer.testSelectedCurseAndRevelationValuesAreScopedToTheirRows
     lu.assertNil(seen[1].weaponSpeed)
     lu.assertNil(seen[3].curse)
     lu.assertEquals(mismatches, {})
+    lu.assertEquals(#completed, 1)
 end
 
 function TestChaosOffer.testSelectedBlessingIsPlacedAtEveryAuthoredPhysicalPosition()
@@ -247,7 +242,7 @@ function TestChaosOffer.testMissingTransformingRowsReportsWithoutThrowing()
     lu.assertEquals(mismatches[1].observed, "nil")
 end
 
-function TestChaosOffer.testNativeSelectionErrorRetiresStaleChaosScope()
+function TestChaosOffer.testNativeScreenErrorRetiresStaleChaosScopeWithoutCompletion()
     local loot = {
         Name = "TrialUpgrade",
         UpgradeOptions = {
@@ -255,18 +250,19 @@ function TestChaosOffer.testNativeSelectionErrorRetiresStaleChaosScope()
         },
     }
     local callbacks, _, _, _, _, completed = harness(loot)
-    callbacks.HandleLootPickup(nil, {}, function() return true end, {}, loot, {})
-    local button = { LootData = loot, Data = { Name = "ChaosNoMoneyCurse" } }
     lu.assertError(function()
-        callbacks.HandleUpgradeChoiceSelection(nil, {}, function() error("native selection failed") end,
-            {}, button, {})
+        callbacks.HandleLootPickup(nil, {}, function()
+            callbacks.CreateBoonLootButtons(nil, {}, function()
+                error("native screen failed")
+            end, {}, loot, false, {})
+        end, {}, loot, {})
     end)
 
     local nativeCalled = false
-    callbacks.HandleUpgradeChoiceSelection(nil, {}, function()
+    callbacks.CreateBoonLootButtons(nil, {}, function()
         nativeCalled = true
         return true
-    end, {}, button, {})
+    end, {}, loot, false, {})
     lu.assertTrue(nativeCalled)
     lu.assertEquals(completed, {})
 end
@@ -305,12 +301,12 @@ function TestChaosOffer.testNativeDenialSeesOnlyAuthoredCurseNames()
                 end, screen, loot, index, item, {})
                 table.insert(screen.UpgradeButtons, button)
             end
-        end, screen, loot, false, {})
+        end, {}, loot, false, {})
 
     end, {}, loot, {})
     local selectedButton = screen.UpgradeButtons[1]
     _G.CurrentRun.Hero.Traits = { selectedButton.Data }
-    callbacks.HandleUpgradeChoiceSelection(nil, {}, function(_, button)
+    local function applyNativeSelection(_, button)
         local selected = button.Data.Name
         for _, otherButton in ipairs(screen.UpgradeButtons) do
             if otherButton.Data.Name ~= selected then
@@ -318,7 +314,8 @@ function TestChaosOffer.testNativeDenialSeesOnlyAuthoredCurseNames()
             end
         end
         return true
-    end, screen, selectedButton, {})
+    end
+    applyNativeSelection(screen, selectedButton)
     local bannedTraits = _G.CurrentRun.BannedTraits
     _G.CurrentRun = priorRun
 
@@ -335,21 +332,18 @@ function TestChaosOffer.testNativeDenialSeesOnlyAuthoredCurseNames()
     lu.assertNil(bannedTraits.ChaosHealthBlessing)
 end
 
-function TestChaosOffer.testWrongChaosSelectionFailsExactPairTerminal()
+function TestChaosOffer.testLaterPlayerSelectionIsNotAnAdapterTerminal()
     local loot = {
         Name = "TrialUpgrade",
         UpgradeOptions = {
             { ItemName = "ChaosPeerA" }, { ItemName = "ChaosPeerB" }, { ItemName = "ChaosElementalBlessing" },
         },
     }
-    local callbacks, _, _, _, _, completed = harness(loot)
-    local priorRun = _G.CurrentRun
-    _G.CurrentRun = { Hero = { Traits = {} } }
-    local buttons, screen = {}, {}
+    local callbacks, _, _, _, mismatches, completed = harness(loot)
     callbacks.HandleLootPickup(nil, {}, function()
         callbacks.CreateBoonLootButtons(nil, {}, function()
             for index, item in ipairs(loot.UpgradeOptions) do
-                buttons[index] = callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, row)
+                callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, row)
                     local curse = callbacks.GetProcessedTraitData(nil, {}, function(args)
                         return { Name = args.TraitName, Rarity = args.Rarity }
                     end, { TraitName = row.SecondaryItemName, Rarity = row.Rarity })
@@ -358,15 +352,13 @@ function TestChaosOffer.testWrongChaosSelectionFailsExactPairTerminal()
                     end, { TraitName = row.ItemName, Rarity = row.Rarity })
                     curse.OnExpire = { TraitData = blessing }
                     return { Data = curse, LootData = loot }
-                end, screen, loot, index, item, {})
+                end, {}, loot, index, item, {})
             end
-        end, screen, loot, false, {})
-        _G.CurrentRun.Hero.Traits = { buttons[2].Data }
-        callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
-            screen, buttons[2], {})
+        end, {}, loot, false, {})
     end, {}, loot, {})
-    _G.CurrentRun = priorRun
-    lu.assertEquals(completed, {})
+    lu.assertNil(callbacks.HandleUpgradeChoiceSelection)
+    lu.assertEquals(#completed, 1)
+    lu.assertEquals(mismatches, {})
 end
 
 function TestChaosOffer.testMaterializedTrialUpgradeBindsItsExactPublishedRole()

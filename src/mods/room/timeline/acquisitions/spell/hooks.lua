@@ -101,7 +101,6 @@ function hooks.attach(module, session, getState, report, room, tree)
             error(result, 0)
         end
         if scopesByLoot[spellItem] == scope then
-            session.mismatch(scope.state, "spell-selection-terminal", "AcceptAndCloseSpellScreen", "missing")
             clearScope(spellItem, scope)
         end
         report(runtime); return result
@@ -111,10 +110,7 @@ function hooks.attach(module, session, getState, report, room, tree)
         local item = screen and screen.Source
         local scope = item and scopesByLoot[item] or nil
         if not scope then return base(screen, button) end
-        local index = tonumber(type(scope.offer.selected) == "string" and scope.offer.selected:match("(%d+)$"))
-        local wanted, observed = index and expected(scope, index), button and button.TraitName
-        if scope.failed or not wanted or observed ~= wanted then
-            session.mismatch(scope.state, "spell-selection", wanted, observed)
+        if scope.failed then
             local ok, result = pcall(base, screen, button)
             clearScope(item, scope)
             if not ok then error(result, 0) end

@@ -227,7 +227,7 @@ function TestOrdinaryTraits.testUnboundHammerCarriersUsePublishedReadyOrderWitho
         rows[index] = { transaction = { owner = owner, kind = "acquisition", roles = { detail } }, detail = detail }
         handles[index] = {}
     end
-    local nativeHandles, claimed, begins, completions = {}, {}, 0, {}
+    local nativeHandles, claimed, begins, completions, completedHandles = {}, {}, 0, {}, {}
     local room = {
         current = function() return active end,
         bound = function(_, _, native) return nativeHandles[native] end,
@@ -244,12 +244,14 @@ function TestOrdinaryTraits.testUnboundHammerCarriersUsePublishedReadyOrderWitho
             for index, value in ipairs(handles) do if value == handle then return rows[index] end end
         end,
         begin = function(_, handle)
+            if completedHandles[handle] then return nil end
             begins = begins + 1
             for index, value in ipairs(handles) do if value == handle then return rows[index] end end
         end,
     }
     local session = {
         complete = function(_, handle)
+            completedHandles[handle] = true
             completions[#completions + 1] = { handle = handle }
         end,
     }
@@ -273,7 +275,7 @@ function TestOrdinaryTraits.testUnboundHammerCarriersUsePublishedReadyOrderWitho
     lu.assertEquals(completions, {
         { handle = handles[1] }, { handle = handles[2] },
     })
-    lu.assertEquals(begins, 6)
+    lu.assertEquals(begins, 4)
 end
 
 function TestOrdinaryTraits.testRerollDoesNotReinstallFrozenOffer()
@@ -286,11 +288,11 @@ function TestOrdinaryTraits.testRerollDoesNotReinstallFrozenOffer()
     lu.assertEquals(loot.UpgradeOptions[1].ItemName, "Native")
 end
 
-function TestOrdinaryTraits.testUnavailableExactRowLeavesNativeMenuIntact()
+function TestOrdinaryTraits.testPublishedRowsInstallWithoutRepeatingNativeEligibilityPolicy()
     local originalTraitData, originalEligible = _G.TraitData, _G.IsTraitEligible
     _G.TraitData = { ApolloAttack = {} }
     _G.IsTraitEligible = function() return false end
-    local callbacks, _, _, mismatches = attached({
+    local callbacks, _, completed, mismatches = attached({
         kind = "traits", selected = "option1", options = { { key = "ApolloAttack", rarity = "Rare" } },
     })
     local loot = { GodLoot = true, Name = "ApolloUpgrade", UpgradeOptions = {} }
@@ -300,9 +302,34 @@ function TestOrdinaryTraits.testUnavailableExactRowLeavesNativeMenuIntact()
         return created
     end, {}, {})
     callbacks.CreateBoonLootButtons(nil, {}, function() return true end, {}, loot, false, {})
-    lu.assertEquals(loot.UpgradeOptions, {})
-    lu.assertEquals(mismatches()[1].checkpoint, "trait-availability")
+    lu.assertEquals(loot.UpgradeOptions, {
+        { Type = "Trait", ItemName = "ApolloAttack", Rarity = "Rare" },
+    })
+    lu.assertEquals(completed(), 1)
+    lu.assertEquals(mismatches(), {})
     _G.TraitData, _G.IsTraitEligible = originalTraitData, originalEligible
+end
+
+function TestOrdinaryTraits.testLaterPlayerChoiceDoesNotBecomeAnAcquisitionAdapterMismatch()
+    local callbacks, _, completed, mismatches = attached({
+        kind = "traits", selected = "option1", options = {
+            { key = "ApolloAttack", rarity = "Rare" },
+            { key = "ApolloSpecial", rarity = "Common" },
+        },
+    })
+    local loot = { GodLoot = true, Name = "ApolloUpgrade", UpgradeOptions = {} }
+    callbacks.SpawnRoomReward(nil, {}, function()
+        local created = callbacks.CreateLoot(nil, {}, function() return loot end, {})
+        callbacks.HandleLootPickup(nil, {}, function() return true end, {}, created, {})
+        return created
+    end, {}, {})
+    callbacks.CreateBoonLootButtons(nil, {}, function() return true end, {}, loot, false, {})
+    callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end, {}, {
+        LootData = loot, Data = { Name = "ApolloSpecial" },
+    }, {})
+
+    lu.assertEquals(completed(), 1)
+    lu.assertEquals(mismatches(), {})
 end
 
 function TestOrdinaryTraits.testConcaveNestedSelectionDoesNotCompletePrimary()
@@ -562,9 +589,7 @@ local function distribute(callbacks, candidates, successfulTargets)
     callbacks.DistributeLevels(nil, {}, function()
         order = callbacks.FYShuffle(nil, {}, function(values) return values end, candidates)
         for _, target in ipairs(successfulTargets) do
-            callbacks.IncreaseTraitLevel(nil, {}, function(trait)
-                applied[#applied + 1] = trait.Name
-            end, { Name = target })
+            applied[#applied + 1] = target
         end
         return true
     end, { Slots = {} }, { Name = "GoodStuffBoon" })
@@ -616,18 +641,18 @@ function TestOrdinaryTraits.testNaturalSelectionConsumesEightSuccessfulLevelsAcr
     lu.assertEquals(mismatches(), {})
 end
 
-function TestOrdinaryTraits.testNaturalSelectionReportsMissingTargetAndCleansItsScope()
+function TestOrdinaryTraits.testNaturalSelectionDoesNotUseAppliedLevelsAsSettlementProof()
     local callbacks, _, completed, mismatches, setActive = attached(naturalOffer({ "Attack", "Special" }))
     selectNatural(callbacks, function()
         distribute(callbacks, { "Attack", "Special" }, { "Attack" })
     end)
-    lu.assertEquals(completed(), 0)
-    lu.assertEquals(mismatches()[1].checkpoint, "natural-selection-target")
+    lu.assertEquals(completed(), 1)
+    lu.assertEquals(mismatches(), {})
 
     setActive({ occurrence = { overview = {} } })
     local order = distribute(callbacks, { "NativeOne", "NativeTwo" }, {})
     lu.assertEquals(order, { "NativeOne", "NativeTwo" })
-    lu.assertEquals(#mismatches(), 1)
+    lu.assertEquals(#mismatches(), 0)
 end
 
 function TestOrdinaryTraits.testNaturalSelectionUnavailableTargetLeavesNativeShuffleAndOuterIncomplete()
@@ -654,8 +679,6 @@ function TestOrdinaryTraits.testNaturalSelectionSteersOnlyTheFirstShuffleInItsEx
         callbacks.DistributeLevels(nil, {}, function()
             firstOrder = callbacks.FYShuffle(nil, {}, function(values) return values end, { "Attack", "Special" })
             laterOrder = callbacks.FYShuffle(nil, {}, function(values) return values end, { "Attack", "Special" })
-            callbacks.IncreaseTraitLevel(nil, {}, function() end, { Name = "Special" })
-            callbacks.IncreaseTraitLevel(nil, {}, function() end, { Name = "Attack" })
         end, { Slots = {} }, { Name = "GoodStuffBoon" })
     end)
     lu.assertEquals(firstOrder, { "Special", "Attack" })

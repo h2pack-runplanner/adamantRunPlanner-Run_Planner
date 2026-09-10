@@ -28,7 +28,7 @@ function TestAcquisitionHookComposition:tearDown()
     self.restoreNative()
 end
 
-function TestAcquisitionHookComposition.testChaosChoiceCompletesItsBoundOwner()
+function TestAcquisitionHookComposition.testChaosScreenInstallationCompletesItsBoundOwner()
     local module, _, callbacks = capture()
     local completed = {}
     local chaos = {
@@ -68,10 +68,9 @@ function TestAcquisitionHookComposition.testChaosChoiceCompletesItsBoundOwner()
     _G.CurrentRun = { Hero = { Traits = {} } }
     chaosAcquisitions.attach(module, session, function() return {} end, function() end, session)
     callbacks.HandleLootPickup(nil, {}, function()
-        local selectedButton
         callbacks.CreateBoonLootButtons(nil, {}, function()
             for index, itemData in ipairs(chaosLoot.UpgradeOptions) do
-                local button = callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, item)
+                callbacks.CreateUpgradeChoiceButton(nil, {}, function(_, _, _, item)
                     return {
                         Data = {
                             Name = item.SecondaryItemName, RemainingUses = ({ 1, 2, 3 })[index],
@@ -79,15 +78,8 @@ function TestAcquisitionHookComposition.testChaosChoiceCompletesItsBoundOwner()
                         }, LootData = chaosLoot,
                     }
                 end, nil, chaosLoot, index, itemData, {})
-                selectedButton = index == 1 and button or selectedButton
             end
         end, nil, chaosLoot, false, {})
-        _G.CurrentRun.Hero.Traits = { {
-            Name = "ChaosNoMoneyCurse", RemainingUses = 1,
-            OnExpire = { TraitData = { Name = "ChaosSpeedBlessing", Rarity = "Rare" } },
-        } }
-        callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
-            nil, selectedButton, {})
     end, {}, chaosLoot, {})
     _G.CurrentRun = priorRun
     lu.assertEquals(fakePayload(completed[1].row).transaction.owner, "chaos")
@@ -178,7 +170,7 @@ function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTr
             })
         end, {}, nativeLoot, false, {})
     end, _G.CurrentRun, loot, {})
-    lu.assertEquals(#completions, 0)
+    lu.assertEquals(#completions, 1)
     _G.CurrentRun.Hero.Traits = { { Name = "HeraCastBoon", Rarity = "Common", StackNum = 4 } }
     callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
         {}, { LootData = loot, Data = { Name = "HeraCastBoon" } }, {})

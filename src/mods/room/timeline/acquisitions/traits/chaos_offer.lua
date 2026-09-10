@@ -1,7 +1,7 @@
 -- Focused execution boundary for directly collected TrialUpgrade loot.
 -- Native code owns transforming-row generation, sorting, rerolls, Denial, and
 -- trait equipment. This adapter only steers the authored initial rows and
--- binds the exact selected curse at the native terminal.
+-- completes after those rows and their values have been installed.
 local nativeChaos = type(import) == "function" and import("mods/traits/chaos.lua")
     or require("mods.traits.chaos")
 
@@ -137,7 +137,7 @@ function chaosOffer.attach(module, session, getState, report, room)
         return result
     end)
 
-    module.hooks.wrap("CreateBoonLootButtons", "run-planner-chaos-initial-screen", function(_, _runtime, base,
+    module.hooks.wrap("CreateBoonLootButtons", "run-planner-chaos-initial-screen", function(_, runtime, base,
         screen, loot, reroll, args)
         local scope = screens[loot]
         if scope == nil or reroll == true then return base(screen, loot, reroll, args) end
@@ -145,6 +145,13 @@ function chaosOffer.attach(module, session, getState, report, room)
         local ok, result = pcall(base, screen, loot, reroll, args)
         scope.inCreation = false
         if not ok then screens[loot] = nil; error(result, 0) end
+        if not scope.prepared then
+            mismatch(scope.session, scope, "native Chaos row contacts", "missing")
+        elseif scope.valid then
+            session.complete(scope.state, scope.handle)
+        end
+        screens[loot] = nil
+        report(runtime)
         return result
     end)
 
@@ -194,28 +201,6 @@ function chaosOffer.attach(module, session, getState, report, room)
         return result
     end)
 
-    module.hooks.wrap("HandleUpgradeChoiceSelection", "run-planner-chaos-terminal", function(_, runtime, base,
-        screen, button, args)
-        local loot = button and button.LootData
-        local scope = screens[loot]
-        if scope == nil then return base(screen, button, args) end
-        local selected = button and button.Data and button.Data.Name
-        local ok, result = pcall(base, screen, button, args)
-        if not ok then
-            screens[loot] = nil
-            error(result, 0)
-        end
-        local selectedIndex = optionIndex(scope.offer.selected)
-        local expected = selectedIndex and scope.offer.curseOptions[selectedIndex]
-        if expected == nil or selected ~= expected.curseKey then
-            session.mismatch(scope.state, "chaos-trait-selection", expected and expected.curseKey, selected)
-        else
-            session.complete(scope.state, scope.handle)
-        end
-        screens[loot] = nil
-        report(runtime)
-        return result
-    end)
 end
 
 return chaosOffer

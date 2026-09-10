@@ -5,11 +5,15 @@ local hooks = require("mods.room.timeline.acquisitions.traits.hooks")
 local support = {}
 
 function support.payload(offer, disposition)
-    return { detail = { traitOffer = offer, disposition = disposition or "normal" }, transaction = {} }
+    return {
+        detail = { traitOffer = offer, disposition = disposition or "normal" },
+        transaction = { kind = "acquisition" },
+    }
 end
 
 function support.attached(offer, disposition, carrierName, adapters)
     local callbacks, bound, begins, completed, mismatches = {}, setmetatable({}, { __mode = "k" }), 0, 0, {}
+    local ownerCompleted = false
     local activePayload
     local module = { hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } }
     local producer, materialized = {}, {}
@@ -42,13 +46,17 @@ function support.attached(offer, disposition, carrierName, adapters)
         begin = function(_, value)
             if state.state ~= "synchronized" then return nil end
             if value ~= materialized then return nil end
+            if ownerCompleted then return nil end
             begins = begins + 1
             if activePayload == nil then activePayload = resolvedPayload() end
             return activePayload
         end,
     }
     local session = {
-        complete = function() completed = completed + 1 end,
+        complete = function()
+            ownerCompleted = true
+            completed = completed + 1
+        end,
         mismatch = function(_, checkpoint, expected, observed)
             mismatches[#mismatches + 1] = { checkpoint = checkpoint, expected = expected, observed = observed }
         end,

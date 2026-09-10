@@ -124,7 +124,7 @@ function TestPathAcquisitions.testAspectSpellDropUsesThePathScreenWithoutConstru
     lu.assertEquals(mismatches, {})
 end
 
-function TestPathAcquisitions.testAcceptedPathUseWithoutATalentScreenReportsTheBoundedContact()
+function TestPathAcquisitions.testAcceptedPathUseWithoutATalentScreenLeavesTheNonObligatedOwnerOpen()
     local callbacks, item, began, completed, mismatches = capture(payload("TalentDrop"))
     lu.assertEquals(callbacks.UseConsumableItem(nil, {}, function(source)
         callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, source, {})
@@ -132,5 +132,5 @@ function TestPathAcquisitions.testAcceptedPathUseWithoutATalentScreenReportsTheB
     end, item, {}, {}), "native-return")
     lu.assertEquals(began(), 0)
     lu.assertEquals(#completed, 0)
-    lu.assertEquals(mismatches, { { "path-talent-screen", "OpenTalentScreen", "missing" } })
+    lu.assertEquals(mismatches, {})
 end

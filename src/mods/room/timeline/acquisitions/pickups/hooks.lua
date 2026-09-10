@@ -1,6 +1,7 @@
--- Exact-object lifecycle for acquisitions consumed directly from the world.
--- Native UseConsumableItem owns every effect; this adapter only recognizes an
--- accepted interaction and closes the published owner after native settlement.
+-- Exact-object steering contact for acquisitions consumed directly from the
+-- world. Native UseConsumableItem owns every effect; this adapter only claims
+-- an accepted interaction and releases dependencies after its last steering
+-- contact.
 local pickups = {}
 
 local function detail(payload)
@@ -68,20 +69,14 @@ function pickups.attach(module, session, getState, report, room, seaStar)
         if not ok then error(result, 0) end
 
         if scope.accepted then
-            if scope.payload ~= nil then
-                local expected = scope.payload.detail.gameName
-                local observed = nativeName(item)
-                if expected ~= observed then
-                    session.mismatch(state, "direct-pickup", expected, observed)
-                else
-                    if seaStar.requireConsumed(scope.seaStar, session.mismatch) then
-                        session.complete(state, scope.handle)
-                        scope.completed = true
-                    end
-                    if scope.completed and scope.seaStar.result and scope.seaStar.result.kind == "proc" then
-                        room.releaseCompletedBinding(state, scope.current, scope.handle, item)
-                    end
+            if scope.payload ~= nil and not scope.completed then
+                if seaStar.requireConsumed(scope.seaStar, session.mismatch) then
+                    session.complete(state, scope.handle)
+                    scope.completed = true
                 end
+            end
+            if scope.completed and scope.seaStar.result and scope.seaStar.result.kind == "proc" then
+                room.releaseCompletedBinding(state, scope.current, scope.handle, item)
             end
             report(runtime)
         end

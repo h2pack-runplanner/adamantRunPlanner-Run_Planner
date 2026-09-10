@@ -78,9 +78,6 @@ function path.attach(module, session, getState, report, room, seaStar)
         end)
         if acceptedUses[item] == scope then
             acceptedUses[item] = nil
-            if scope.accepted and not scope.screenOpened then
-                session.mismatch(scope.state, "path-talent-screen", "OpenTalentScreen", "missing")
-            end
         end
         if not ok then error(result, 0) end
         report(runtime)
@@ -119,9 +116,6 @@ function path.attach(module, session, getState, report, room, seaStar)
         local ok, result = pcall(base, spellItem, args, user)
         if routedSpellDrops[spellItem] == scope then
             routedSpellDrops[spellItem] = nil
-            if not scope.screenOpened then
-                session.mismatch(scope.state, "aspect-path-screen", "OpenTalentScreen", "missing")
-            end
         end
         if not ok then error(result, 0) end
         report(runtime)

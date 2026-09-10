@@ -133,27 +133,28 @@ function TestLevelAcquisitions.testNativeRerollIsNotReSteeredAfterInitialVisible
     lu.assertEquals(loot.UpgradeOptions[1].ItemName, "NativeReroll")
 end
 
-function TestLevelAcquisitions.testVisibleSelectionUsesNativeSortedIdentityAndNormalizesUnsetStack()
+function TestLevelAcquisitions.testVisibleOfferCompletionDoesNotCompareTheLaterPlayerSelection()
     local target = { Name = "Target", StackNum = nil }
     local other = { Name = "Other", StackNum = 4 }
     local row = levelRow("StackUpgradeBig", 2, "Target")
     row.detail.levelResolution.offeredTargets = { "Target", "Other" }
     local loot = { Name = "StackUpgradeBig", UpgradeOptions = {} }
-    local callbacks, _, _, _, _, completions = harness(row, loot)
+    local callbacks, _, _, _, _, completions, mismatches = harness(row, loot)
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = { target, other } } }
     callbacks.HandleLootPickup(nil, {}, function() end, {}, loot, {})
     callbacks.CreateBoonLootButtons(nil, {}, function() end, {}, loot, false, {})
-    -- Native row sorting can change physical order; the terminal uses the
-    -- button's trait identity rather than the authored row index.
+    -- The adapter has already completed after installing the target surface.
+    -- Native selection remains authoritative and conformance checks its result.
     loot.UpgradeOptions[1], loot.UpgradeOptions[2] = loot.UpgradeOptions[2], loot.UpgradeOptions[1]
     callbacks.HandleUpgradeChoiceSelection(nil, {}, function(_, button)
         local trait = button.Data.Name == target.Name and target or other
         trait.StackNum = (trait.StackNum or 1) + button.LootData.StackNum
-    end, {}, { LootData = loot, Data = { Name = target.Name } }, {})
-    lu.assertEquals(target.StackNum, 3)
-    lu.assertEquals(other.StackNum, 4)
+    end, {}, { LootData = loot, Data = { Name = other.Name } }, {})
+    lu.assertNil(target.StackNum)
+    lu.assertEquals(other.StackNum, 6)
     lu.assertEquals(#completions, 1)
+    lu.assertEquals(mismatches, {})
     _G.CurrentRun = priorRun
 end
 
@@ -325,33 +326,30 @@ function TestLevelAcquisitions.testNullNectarIsNoOpOnlyWhenNativeHasNoEligibleTa
     _G.GetAllUpgradeableGodTraits = prior
 end
 
-function TestLevelAcquisitions.testNullNectarDoesNotSuppressNativeEligibleTarget()
+function TestLevelAcquisitions.testNullNectarDoesNotRepeatNativeEligibilityPolicy()
     local item, _, callbacks, _, _, _, _, completions = directFixture(nil)
     local prior = _G.GetAllUpgradeableGodTraits
     _G.GetAllUpgradeableGodTraits = function() return { Target = true } end
     local nativeCalled = false
     useDirect(callbacks, item, function(_, args)
         nativeCalled = true
-        lu.assertEquals(args.NumTraits, 1)
+        lu.assertEquals(args.NumTraits, 0)
     end)
     lu.assertTrue(nativeCalled)
-    lu.assertEquals(#completions, 0)
+    lu.assertEquals(#completions, 1)
     _G.GetAllUpgradeableGodTraits = prior
 end
 
-function TestLevelAcquisitions.testIneligibleNectarRestoresNativeArgumentsBeforePassThrough()
+function TestLevelAcquisitions.testNectarSteersPublishedTargetWithoutReadingNativeEligibility()
     local item, _, callbacks, _, _, _, _, completions = directFixture("Target")
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = {} } }
     useDirect(callbacks, item, function(_, args)
-        lu.assertNil(args.__runPlannerTimelineHandle)
-        -- Preserve the native value after UseStoreRewardRandomStack has
-        -- applied FatedPomLevelBonus; a mismatch stops steering, not gameplay.
-        lu.assertEquals(args.NumStacks, 11)
+        lu.assertEquals(args.NumStacks, 1)
         lu.assertEquals(args.NumTraits, 1)
-        lu.assertNil(args.TraitName)
+        lu.assertEquals(args.TraitName, "Target")
     end, 2)
-    lu.assertEquals(#completions, 0)
+    lu.assertEquals(#completions, 1)
     _G.CurrentRun = priorRun
 end
 

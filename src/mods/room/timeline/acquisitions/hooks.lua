@@ -1,6 +1,6 @@
 -- Acquisition-family composition.  Producer correlation is shared by the
--- concrete carriers; each carrier owns its accepted contact and terminal
--- proof below this boundary.
+-- concrete carriers; each carrier releases dependencies after its last
+-- executor-owned steering contact. Named room conformance owns durable proof.
 local seaStarDefinition = type(import) == "function"
         and import("mods/room/timeline/acquisitions/sea_star.lua")
     or require("mods.room.timeline.acquisitions.sea_star")

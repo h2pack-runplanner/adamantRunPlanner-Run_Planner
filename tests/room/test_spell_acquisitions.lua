@@ -62,7 +62,7 @@ local function capture(state, payload, treeAdapter, spellAdapter, isBound)
     return callbacks, completed, mismatches, function() return claims end
 end
 
-function TestSpellAcquisitions.testUnboundSpellClaimsItsPublishedRole()
+function TestSpellAcquisitions.testUnboundSpellSteersTheTreeWithoutComparingTheLaterPlayerSelection()
     local prior = _G.SpellData
     _G.SpellData = {
         SpellOne = { TraitName = "SpellOneTrait" }, SpellTwo = { TraitName = "SpellTwoTrait" },
@@ -96,7 +96,7 @@ function TestSpellAcquisitions.testUnboundSpellClaimsItsPublishedRole()
             return callbacks.CreateTalentTree(nil, nil, function()
                 return { Name = "Lung", {} }
             end, {})
-        end, screen, screen.Components[1])
+        end, screen, screen.Components[2])
     end, item, {}, nil)
     lu.assertEquals(claims(), 1)
     lu.assertEquals(#completed, 1)
@@ -164,7 +164,7 @@ function TestSpellAcquisitions.testFreshImportedSpellAdapterUsesTheProvidedHexTr
     _G.SpellData = prior
 end
 
-function TestSpellAcquisitions.testOpenReturnWithoutSelectionReportsAndClearsTheScope()
+function TestSpellAcquisitions.testOpenReturnWithoutSelectionSilentlyClearsTheNonObligatedScope()
     local prior = _G.SpellData
     _G.SpellData = { SpellOne = { TraitName = "SpellOneTrait" } }
     local payload = { detail = { traitOffer = {
@@ -176,7 +176,7 @@ function TestSpellAcquisitions.testOpenReturnWithoutSelectionReportsAndClearsThe
     local item = { Name = "SpellDrop" }
     callbacks.OpenSpellScreen(nil, nil, function() return "native-return" end, item, {}, nil)
     lu.assertEquals(completed, {})
-    lu.assertEquals(mismatches, { { "spell-selection-terminal", "AcceptAndCloseSpellScreen", "missing" } })
+    lu.assertEquals(mismatches, {})
     local delegated = false
     callbacks.OpenSpellScreen(nil, nil, function() delegated = true end, item, {}, nil)
     lu.assertTrue(delegated)

@@ -538,9 +538,7 @@ function TestNpcAcquisitions.testEchoBoonReplayKeepsNaturalSelectionScopedUntilI
                                 { "Special", "Attack", "Cast" })
                             applied = {}
                             for _, key in ipairs({ "Attack", "Special" }) do
-                                callbacks.IncreaseTraitLevel(nil, {}, function(trait)
-                                    applied[#applied + 1] = trait.Name
-                                end, { Name = key })
+                                applied[#applied + 1] = key
                             end
                         end, { Slots = {} }, { Name = "GoodStuffBoon" })
                     end
