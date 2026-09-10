@@ -15,6 +15,7 @@ function composition.bind(root)
     local room = import("mods/room/coordinator.lua")
     local session = import("mods/runtime/session.lua")
     local loadout = import("mods/loadout/session.lua")
+    local executionState = session.create()
 
     -- Imported chunks are stateless definitions. This explicit instance spans
     -- both owners that participate in Hex-tree realization.
@@ -41,7 +42,6 @@ function composition.bind(root)
     }
 
     function bound.attach(module)
-        session.defineCache(module)
         local roomHooks = import("mods/room/hooks.lua")
         local encounterHooks = import("mods/room/timeline/encounters/hooks.lua")
         local roomFeatureHooks = import("mods/room/features/hooks.lua")
@@ -50,7 +50,7 @@ function composition.bind(root)
         local interactionHooks = import("mods/room/timeline/interactions/hooks.lua")
         local transformationHooks = import("mods/room/timeline/transformations/hooks.lua")
 
-        local function getState(runtime) return session.get(runtime) end
+        local function getState() return executionState end
         local function diagnosticValue(value, depth)
             depth = depth or 0
             if depth >= 2 then return "…" end

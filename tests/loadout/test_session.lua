@@ -29,6 +29,10 @@ local function captureLoadoutHooks(state, treeAdapter, loadoutAdapter)
     local callbacks = {}
     local module = { hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } }
     local sessionAdapter = {
+        beginNewRun = function(target)
+            target.initialized = false
+            target.state, target.reason = "inactive", "not-started"
+        end,
         start = function(target, _, phase)
             target.initialized = true
             target.state, target.reason = phase == "starting" and "starting" or "synchronized", "ready"
@@ -50,7 +54,7 @@ local function captureLoadoutHooks(state, treeAdapter, loadoutAdapter)
     return callbacks, scope
 end
 
-function TestLoadoutSession.testStartHookNeverReadsCacheBeforeCurrentRunExists()
+function TestLoadoutSession.testStartHookResetsProcessLocalStateBeforeCurrentRunExists()
     local priorGame, priorRun, priorWeapon, priorRarity, priorCards = _G.GameState, _G.CurrentRun, _G.GetEquippedWeapon, _G.TraitRarityData, _G.MetaUpgradeCardData
     _G.GameState = { LastWeaponUpgradeName = { WeaponStaffSwing = "WrongAspect" }, LastAwardTrait = "ManaOverTimeRefundKeepsake", ShrineUpgrades = { BossDifficultyShrineUpgrade = 1 }, MetaUpgradeState = {} }
     _G.GetEquippedWeapon = function() return "WeaponStaffSwing" end
@@ -59,7 +63,7 @@ function TestLoadoutSession.testStartHookNeverReadsCacheBeforeCurrentRunExists()
     state.plan.startingLoadout.arcana = { { key = "CardDraw", origin = "manual", rarity = "Rare" } }
     state.plan.startingLoadout.fear = { configuredRanks = { BossDifficultyShrineUpgrade = 1 }, effectiveRanks = { BossDifficultyShrineUpgrade = 1 } }
     _G.CurrentRun = nil
-    local callbacks, called = captureLoadoutHooks(function() return _G.CurrentRun and state or nil end), false
+    local callbacks, called = captureLoadoutHooks(state), false
     local result = callbacks.StartNewRun(nil, {}, function()
         called = true
         _G.CurrentRun = { Hero = { TraitDictionary = { BaseStaffAspect = true } } }
@@ -73,7 +77,7 @@ function TestLoadoutSession.testStartHookNeverReadsCacheBeforeCurrentRunExists()
     lu.assertEquals(state.firstMismatch.checkpoint, "starting-aspect")
 end
 
-function TestLoadoutSession.testCreateNewHeroInitializesCurrentRunSession()
+function TestLoadoutSession.testCreateNewHeroInitializesProcessLocalSession()
     local priorGame, priorRun, priorWeapon, priorRarity, priorCards = _G.GameState, _G.CurrentRun,
         _G.GetEquippedWeapon, _G.TraitRarityData, _G.MetaUpgradeCardData
     _G.GameState = {

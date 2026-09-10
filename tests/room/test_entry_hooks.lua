@@ -20,7 +20,7 @@ local unusedLoadoutScope = {
 
 TestRoomEntryHooks = {}
 
-function TestRoomEntryHooks.testFreshPostbossStartRoomAdmissionUsesOrdinaryRoomProducts()
+function TestRoomEntryHooks.testFreshPostbossStartRoomAdmissionAdoptsTheRestoredNativeRoom()
     local priorVerify, priorGame, priorCurrentRun = admissionProjection.verify, _G.game, _G.CurrentRun
     admissionProjection.verify = function() return true end
 
@@ -32,10 +32,7 @@ function TestRoomEntryHooks.testFreshPostbossStartRoomAdmissionUsesOrdinaryRoomP
     }
     local postboss = {
         id = "postboss", gameName = "F_PostBoss01", resumeBoundary = "postbossEntry",
-        overview = {
-            encounterPhases = {}, requiredObjects = {}, additional = {},
-            incomingReward = { rewardType = "Boon", source = "ApolloUpgrade" },
-        },
+        overview = { encounterPhases = {}, requiredObjects = {}, additional = {} },
         transactionsByOwner = {}, timeline = { transactions = {}, dependencies = {}, obligations = {} },
         doors = { kind = "terminal" }, roomExitConformance = { facts = {} },
     }
@@ -45,22 +42,14 @@ function TestRoomEntryHooks.testFreshPostbossStartRoomAdmissionUsesOrdinaryRoomP
         occurrences = { opening, postboss }, occurrencesById = { opening = opening, postboss = postboss },
         selectedOccurrenceIds = { "opening", "postboss" },
     }
-    -- The cache is a CurrentRun-owned serialized value.  A fresh process must
-    -- still attempt recovery when that value carries a stale live session.
-    local state = {
-        initialized = true, state = "synchronized", plan = { stale = true },
-        route = { stale = true }, room = {}, diagnostics = { stale = true },
-    }
+    local state = runtimeSessionModule.create()
     local currentRun = { CurrentRoom = { Name = "F_PostBoss01" } }
     _G.CurrentRun = currentRun
     _G.game = { RoomData = { F_PostBoss01 = { Name = "F_PostBoss01" } } }
     local module, _, callbacks = capture()
     local session = runtimeSessionModule
     local navigationEntry = {
-        realizeIncomingReward = function(_, nativeRoom)
-            nativeRoom.rewardRealized = true
-            return require("mods.navigation.rewards").realize(postboss, nativeRoom)
-        end,
+        realizeIncomingReward = function() error("restored room must not be realized again") end,
         proveIncomingReward = function() return true end,
         proveOutgoingDoors = function() return true end,
     }
@@ -87,9 +76,9 @@ function TestRoomEntryHooks.testFreshPostbossStartRoomAdmissionUsesOrdinaryRoomP
     admissionProjection.verify, _G.game, _G.CurrentRun = priorVerify, priorGame, priorCurrentRun
     lu.assertEquals(result, "native-started")
     lu.assertFalse(startingSyncCalled)
-    lu.assertNotNil(synchronizedRoom)
-    lu.assertTrue(synchronizedRoom.rewardRealized)
-    lu.assertEquals(synchronizedRoom.RewardType, "Boon")
+    lu.assertTrue(rawequal(synchronizedRoom, currentRun.CurrentRoom))
+    lu.assertEquals(synchronizedRoom.Name, "F_PostBoss01")
+    lu.assertNil(synchronizedRoom.RewardType)
     lu.assertEquals(state.state, "synchronized")
     lu.assertEquals(routeSessionModule.current(state.route).id, "postboss")
     lu.assertEquals(state.route.index, 2)

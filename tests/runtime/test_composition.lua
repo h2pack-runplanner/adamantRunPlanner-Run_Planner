@@ -92,7 +92,9 @@ end
 function TestRuntimeComposition.testRuntimeCompositionSharesOneHexTreeAcrossLoadoutAndSpellAcquisition()
     local priorImport = _G.import
     local module, _, callbacks = capture()
-    module.cache = { define = function() end }
+    module.cache = { define = function()
+        error("executor runtime state must not register a save-backed cache")
+    end }
     local loadoutTree, acquisitionTree
     local function freshImport(path)
         if path == "mods/protocol/json.lua" or path == "mods/protocol/decoder.lua" then
@@ -114,8 +116,7 @@ function TestRuntimeComposition.testRuntimeCompositionSharesOneHexTreeAcrossLoad
         end
         if path == "mods/runtime/session.lua" then
             return {
-                defineCache = function() end,
-                get = function() end,
+                create = function() return {} end,
                 status = function() return { state = "inactive", reason = "test" } end,
             }
         end
@@ -183,8 +184,7 @@ function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHo
         if path == "mods/room/conformance/readers.lua" then return conformance end
         if path == "mods/runtime/session.lua" then
             return {
-                defineCache = function() end,
-                get = function() end,
+                create = function() return {} end,
                 status = function() return { state = "inactive", reason = "test" } end,
             }
         end

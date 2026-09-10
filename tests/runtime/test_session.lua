@@ -12,6 +12,32 @@ local admission = require("mods.room.conformance.admission")
 
 TestRuntimeSession = {}
 
+function TestRuntimeSession.testNewRunResetClearsEveryProcessLocalExecutionReference()
+    local value = runtime.create()
+    value.initialized = true
+    value.state = "desynchronized"
+    value.reason = "first-mismatch"
+    value.plan = { stale = true }
+    value.route = { stale = true }
+    value.room = { current = { stale = true } }
+    value.firstMismatch = { checkpoint = "stale" }
+    value.loggedMismatch = value.firstMismatch
+    value.diagnostics = { { stale = true } }
+
+    runtime.beginNewRun(value)
+
+    lu.assertFalse(value.initialized)
+    lu.assertEquals(value.state, "inactive")
+    lu.assertEquals(value.reason, "not-started")
+    lu.assertNil(value.plan)
+    lu.assertNil(value.route)
+    lu.assertNil(value.room)
+    lu.assertNil(value.firstMismatch)
+    lu.assertNil(value.loggedMismatch)
+    lu.assertEquals(value.diagnostics, {})
+    lu.assertTrue(value.admissionAttempted)
+end
+
 local function fingerprintBody(plan)
     return {
         format = plan.format,
@@ -154,28 +180,24 @@ function TestRuntimeSession.testPostbossAdmissionBuildsFreshRouteAtTheSelectedIn
         initialized = true, state = "synchronized", plan = { stale = true },
         route = { stale = true }, room = {}, diagnostics = { stale = true },
     }
-    local loadedSlot, realized = nil, false
+    local loadedSlot = nil
     local nativeRoom = { Name = "F_PostBoss01" }
     local recovered = runtime.attemptPostbossAdmission(state, {
         load = function(slot)
             loadedSlot = slot
             return true, plan
         end,
-    }, 4, nativeRoom, function(selected, loaded)
-        lu.assertEquals(selected, postboss)
-        lu.assertEquals(loaded, nativeRoom)
-        realized = true
-        return { Name = "F_PostBoss01", realized = true }
-    end)
+    }, 4, nativeRoom)
     admission.verify = priorVerify
 
     lu.assertNotNil(recovered)
     lu.assertEquals(loadedSlot, 4)
-    lu.assertTrue(realized)
     lu.assertTrue(state.initialized)
     lu.assertEquals(state.state, "synchronized")
     lu.assertEquals(route.expected(state.route), postboss)
     lu.assertEquals(state.route.index, 3)
+    lu.assertNil(state.room.prepared)
+    lu.assertNil(room.current(state))
     local entered = assert(route.enter(state.route, "postboss", "F_PostBoss01"))
     local active = assert(room.enter(state, entered))
     lu.assertEquals(active.occurrence, postboss)
@@ -202,10 +224,10 @@ function TestRuntimeSession.testPostbossAdmissionUsesOnlyTheSelectedSlotAndDoesN
             lu.assertEquals(slot, 6)
             return true, plan
         end,
-    }, 6, { Name = "G_NotPostBoss" }, function() return {} end)
+    }, 6, { Name = "G_NotPostBoss" })
     local second = runtime.attemptPostbossAdmission(state, {
         load = function() calls = calls + 1; return true, plan end,
-    }, 6, { Name = "G_PostBoss01" }, function() return {} end)
+    }, 6, { Name = "G_PostBoss01" })
     admission.verify = priorVerify
 
     lu.assertNil(first)
@@ -234,7 +256,7 @@ function TestRuntimeSession.testPostbossAdmissionStateMismatchIsPassiveAndFinal(
     local state = { initialized = false, state = "inactive", diagnostics = {} }
     local result = runtime.attemptPostbossAdmission(state, {
         load = function() return true, plan end,
-    }, 1, { Name = "H_PostBoss01" }, function() error("must not realize after mismatch") end)
+    }, 1, { Name = "H_PostBoss01" })
     admission.verify = priorVerify
 
     lu.assertNil(result)
@@ -257,7 +279,7 @@ function TestRuntimeSession.testNewRunAdmissionClosesTheProcessLocalRecoveryBoun
             loads = loads + 1
             return true, plan
         end,
-    }, 1, { Name = "F_Test" }, function() return {} end))
+    }, 1, { Name = "F_Test" }))
     lu.assertEquals(loads, 0)
 end
 

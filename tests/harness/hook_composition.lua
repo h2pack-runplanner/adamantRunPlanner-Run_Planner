@@ -41,6 +41,7 @@ end
 
 function M.stub()
     return {
+        beginNewRun = function() end,
         current = function() end,
         expectedOccurrence = function() end,
         proveOverview = function() end,

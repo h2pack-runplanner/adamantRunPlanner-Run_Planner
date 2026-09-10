@@ -10,6 +10,13 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
     assert(type(loadoutScope) == "table"
         and type(loadoutScope.synchronizeStartingRoom) == "function",
         "starting-room loadout scope is required")
+    if admissionRuntime ~= nil then
+        assert(type(admissionRuntime.inbox) == "table"
+            and type(admissionRuntime.activePlanSlot) == "function"
+            and type(session.canAttemptPostbossAdmission) == "function"
+            and type(session.attemptPostbossAdmission) == "function",
+            "Postboss admission dependencies are required")
+    end
     module.hooks.wrap("ChooseStartingRoom", "run-planner-starting-room", function(_, runtime, base, currentRun,
         args)
         local state = getState(runtime)
@@ -77,32 +84,15 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
         if state == nil then return base(currentRun, nativeRoom) end
         local liveRun = type(currentRun) == "table" and currentRun or _G.CurrentRun
         if currentRun == nil then currentRun = liveRun end
-        local processFresh = type(session.canAttemptPostbossAdmission) ~= "function"
-            or session.canAttemptPostbossAdmission(state)
-        if processFresh and type(liveRun) == "table"
-            and type(admissionRuntime) == "table"
-            and type(admissionRuntime.inbox) == "table"
-            and type(admissionRuntime.activePlanSlot) == "function" then
-            local originalRoom = nativeRoom or liveRun.CurrentRoom
-            local recovered = session.attemptPostbossAdmission(
+        if nativeRoom == nil and type(liveRun) == "table" then nativeRoom = liveRun.CurrentRoom end
+        if admissionRuntime ~= nil and type(liveRun) == "table"
+            and session.canAttemptPostbossAdmission(state) then
+            session.attemptPostbossAdmission(
                 state,
                 admissionRuntime.inbox,
                 admissionRuntime.activePlanSlot(runtime),
-                originalRoom,
-                function(occurrence, loadedRoom)
-                    local data = room.realize(state, occurrence, _G.game or game, loadedRoom)
-                    if data ~= nil and navigation.realizeIncomingReward ~= nil then
-                        data = navigation.realizeIncomingReward(occurrence, data)
-                    end
-                    return data
-                end
+                nativeRoom
             )
-            if recovered ~= nil then
-                nativeRoom = recovered.nativeRoom
-                if liveRun.CurrentRoom == originalRoom or liveRun.CurrentRoom == nil then
-                    liveRun.CurrentRoom = nativeRoom
-                end
-            end
         end
         if state.state ~= "synchronized" then report(runtime); return base(currentRun, nativeRoom) end
         local expected = route.expected(state.route)

@@ -10,11 +10,17 @@ local conformance = type(import) == "function" and import("mods/room/conformance
 local admission = type(import) == "function" and import("mods/room/conformance/admission.lua")
     or require("mods.room.conformance.admission")
 
-local runtime = { CACHE_NAME = "ExecutionRoomSession" }
--- Cache values live on CurrentRun and can be restored from a save.  This
--- process-local identity set is therefore the admission guard; it is never
--- serialized with the execution session.
-local processAdmissions = setmetatable({}, { __mode = "k" })
+local runtime = {}
+
+function runtime.create()
+    return {
+        initialized = false,
+        state = "inactive",
+        reason = "not-started",
+        diagnostics = {},
+        admissionAttempted = false,
+    }
+end
 
 local function fail(state, errorValue, expected, observed)
     if state.firstMismatch == nil then
@@ -27,22 +33,6 @@ local function fail(state, errorValue, expected, observed)
     if routeState and routeState.firstMismatch == nil then routeState.firstMismatch = state.firstMismatch end
     return nil, state.firstMismatch
 end
-
-function runtime.defineCache(module)
-    module.cache.define({
-        [runtime.CACHE_NAME] = {
-            domain = "currentRun", key = "execution-room-session",
-            factory = function()
-                return {
-                    initialized = false, state = "inactive", reason = "not-started",
-                    diagnostics = {},
-                }
-            end,
-        },
-    })
-end
-
-function runtime.get(host) return host.data.cache.currentRun.get(runtime.CACHE_NAME) end
 
 function runtime.status(state)
     return {
@@ -57,11 +47,13 @@ function runtime.mismatch(state, checkpoint, expected, observed)
 end
 
 function runtime.canAttemptPostbossAdmission(state)
-    return type(state) == "table" and processAdmissions[state] ~= true
+    return type(state) == "table" and state.admissionAttempted ~= true
 end
 
-local function discardTransient(state)
+local function reset(state, admissionAttempted)
     if state.room ~= nil then room.dispose(state) end
+    state.initialized = false
+    state.state = "inactive"
     state.plan = nil
     state.route = nil
     state.room = nil
@@ -69,6 +61,12 @@ local function discardTransient(state)
     state.loggedMismatch = nil
     state.diagnostics = {}
     state.reason = "not-started"
+    state.admissionAttempted = admissionAttempted == true
+    return state
+end
+
+function runtime.beginNewRun(state)
+    return reset(state, true)
 end
 
 local function roomName(value)
@@ -92,14 +90,12 @@ local function selectedPostboss(plan, gameName)
     return nil, matches or 0
 end
 
--- One fresh-process admission.  The caller supplies the native-room
--- realization bridge so incoming reward realization remains navigation-owned.
--- A state is marked initialized before any read so every result, including a
--- rejected plan or room, is final for this loaded process.
-function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom, realizeRoom)
+-- One fresh-process admission. Hades II already restored the native Postboss
+-- room, so success constructs only fresh route and room coordinators. The
+-- ordinary StartRoom path adopts and enters the existing native room.
+function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom)
     if not runtime.canAttemptPostbossAdmission(state) then return nil end
-    processAdmissions[state] = true
-    discardTransient(state)
+    reset(state, true)
     state.initialized = true
 
     local loaded, plan = inbox.load(activeSlot)
@@ -140,24 +136,11 @@ function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom, 
         end,
     })
     state.state, state.reason = "synchronized", "ready"
-
-    if room.prepare(state, occurrence) == nil then return nil end
-    local realized = type(realizeRoom) == "function"
-        and realizeRoom(occurrence, current)
-        or room.realize(state, occurrence, _G.game or game, current)
-    if realized == nil then
-        if state.state == "synchronized" then
-            return runtime.mismatch(state, "postboss-admission:room-realization",
-                "realized Postboss room", nil)
-        end
-        return nil
-    end
-    return { occurrence = occurrence, index = indexOrCount, nativeRoom = realized }
+    return { occurrence = occurrence, index = indexOrCount }
 end
 
 function runtime.start(state, inbox, phase, activeSlot)
-    processAdmissions[state] = true
-    if state.room ~= nil then room.dispose(state) end
+    reset(state, true)
     state.initialized = true
     local loaded, plan = inbox.load(activeSlot)
     if not loaded or type(plan) ~= "table" or plan.kind ~= "ready" then

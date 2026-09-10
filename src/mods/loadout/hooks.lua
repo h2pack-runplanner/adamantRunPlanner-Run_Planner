@@ -3,6 +3,7 @@ local hooks = {}
 
 function hooks.attach(module, loadoutRuntime, getState, report, room, hexTree)
     assert(type(loadoutRuntime) == "table" and loadoutRuntime.inbox and loadoutRuntime.session
+        and type(loadoutRuntime.session.beginNewRun) == "function"
         and loadoutRuntime.loadout and type(loadoutRuntime.activePlanSlot) == "function",
         "loadout runtime dependencies are required")
     assert(type(hexTree) == "table", "loadout Hex Tree instance is required")
@@ -45,6 +46,9 @@ function hooks.attach(module, loadoutRuntime, getState, report, room, hexTree)
         return payload and payload.transaction.equipResults, handle, payload, replay
     end
     module.hooks.wrap("StartNewRun", "run-planner-start", function(_, runtime, base, previousRun, args)
+        if startDepth == 0 then
+            loadoutRuntime.session.beginNewRun(getState(runtime))
+        end
         startDepth = startDepth + 1
         local ok, result = pcall(base, previousRun, args)
         startDepth = startDepth - 1

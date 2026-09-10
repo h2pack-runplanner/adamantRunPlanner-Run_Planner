@@ -24,6 +24,7 @@ local function capture(result)
         complete = function(target) if target.state ~= "mismatch" then completed = true end end,
     }
     local sessionAdapter = {
+        beginNewRun = function() end,
         start = function() end,
         current = coordinator.current,
         resolve = coordinator.resolve,

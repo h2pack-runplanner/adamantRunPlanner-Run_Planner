@@ -194,8 +194,6 @@ function TestFeatureInteractionHooks.testSuccessfulNativeKeepsakeEquipCompletesT
     state.room = roomCoordinatorModule.new(plan, function() end, {})
     assert(roomCoordinatorModule.enter(state, occurrence))
     local session = stub()
-    session.defineCache = function() end
-    session.get = function() return state end
     session.complete = function(_, handle)
         completed = { handle = handle }
         return true
@@ -205,7 +203,7 @@ function TestFeatureInteractionHooks.testSuccessfulNativeKeepsakeEquipCompletesT
         return assert(loadfile("src/" .. path))()
     end
     loadoutHooks.attach(module, { inbox = {}, session = session, loadout = {}, activePlanSlot = function() return 1 end },
-        session.get, function() end, roomCoordinatorModule, loadoutHexTree)
+        function() return state end, function() end, roomCoordinatorModule, loadoutHexTree)
     callbacks.EquipKeepsake(nil, {}, function() return true end, {}, "GoldifyKeepsake", {})
     _G.import = priorImport
 
