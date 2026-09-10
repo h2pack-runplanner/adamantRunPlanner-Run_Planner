@@ -408,12 +408,12 @@ end
 function TestFeatureInteractionHooks.testWorldShopInventoryUsesThePublishedOfferSetAcrossQGroups()
     local module, _, callbacks = capture()
     local expected = {
-        { offerKey = "Boon", optionKey = "BoostedRandomLoot" },
-        { offerKey = "Minor", optionKey = "MaxManaDrop" },
-        { offerKey = "Major", optionKey = "ArmorBoost" },
-        { offerKey = "Hammer", optionKey = "WeaponUpgradeDrop" },
-        { offerKey = "Talent", optionKey = "TalentDrop" },
-        { offerKey = "Spell", optionKey = "SpellDrop" },
+        { offerKey = "Boon", transactionOwner = "shop:boosted", optionKey = "BoostedRandomLoot" },
+        { offerKey = "Minor", transactionOwner = "shop:minor", optionKey = "MaxManaDrop" },
+        { offerKey = "Major", transactionOwner = "shop:major", optionKey = "ArmorBoost" },
+        { offerKey = "Hammer", transactionOwner = "shop:hammer", optionKey = "WeaponUpgradeDrop" },
+        { offerKey = "Talent", transactionOwner = "shop:talent", optionKey = "TalentDrop" },
+        { offerKey = "Spell", transactionOwner = "shop:spell", optionKey = "SpellDrop" },
     }
     local active = opaque({ occurrence = { overview = { shop = { offers = expected } } } }, function()
         return nil
@@ -459,7 +459,179 @@ function TestFeatureInteractionHooks.testWorldShopInventoryUsesThePublishedOffer
             lu.assertTrue(generated.StoreOptions[index].Args.AddBoostedAnimation)
         end
         lu.assertEquals(generated.StoreOptions[index].__runPlannerOfferKey, offer.offerKey)
+        lu.assertTrue(generated.StoreOptions[index].__runPlannerWorldShop)
+        lu.assertEquals(generated.StoreOptions[index].__runPlannerTransactionOwner, offer.transactionOwner)
     end
+end
+
+function TestFeatureInteractionHooks.testWorldShopWorldItemsBindOnlyTheirStampedTransactionOwners()
+    local module, _, callbacks = capture()
+    local normal = {
+        owner = "normal", sourceOwner = "shop:normal", kind = "acquisition",
+        roles = { {
+            role = "self", gameName = "RandomLoot",
+            traitOffer = { options = { { key = "ApolloWeaponBoon", rarity = "Common" } } },
+        } },
+    }
+    local boosted = {
+        owner = "boosted", sourceOwner = "shop:boosted", kind = "acquisition",
+        roles = { {
+            role = "self", gameName = "RandomLoot",
+            traitOffer = { options = { { key = "ApolloWeaponBoon", rarity = "Heroic" } } },
+        } },
+    }
+    local genericLookups, nativeCalls = 0, 0
+    local active = opaque({ occurrence = { overview = { shop = { offers = {
+        { offerKey = "normal", transactionOwner = normal.owner, optionKey = "RandomLoot" },
+        { offerKey = "boosted", transactionOwner = boosted.owner, optionKey = "BoostedRandomLoot" },
+    } } } } }, function(contact)
+        if contact.kind == "owner" and contact.owner == normal.owner then
+            return { transaction = normal }
+        end
+        if contact.kind == "owner" and contact.owner == boosted.owner then
+            return { transaction = boosted }
+        end
+        if contact.kind == "materialized" and contact.source and contact.source.transaction == normal then
+            return { transaction = normal, detail = normal.roles[1] }
+        end
+        if contact.kind == "materialized" and contact.source and contact.source.transaction == boosted then
+            return { transaction = boosted, detail = boosted.roles[1] }
+        end
+        if contact.kind == "offer" then genericLookups = genericLookups + 1 end
+    end)
+    local session = stub()
+    session.current = function() return active end
+    attachFeatureHooks(module, session, function() return {} end, function() end, session)
+
+    local generated = callbacks.FillInShopOptions(nil, {}, function(args)
+        return { StoreOptions = {
+            args.StoreData.GroupsOf[1].OptionsData[1],
+            {
+                Name = "RandomLoot",
+                Args = args.StoreData.GroupsOf[1].OptionsData[2].Args,
+            },
+        } }
+    end, { StoreData = { GroupsOf = { { OptionsData = {
+        { Name = "RandomLoot" },
+        { Name = "BoostedRandomLoot", Args = { AddBoostedAnimation = true, BoonRaritiesOverride = { Rare = 1 } } },
+    } } } } })
+    lu.assertTrue(generated.StoreOptions[1].__runPlannerWorldShop)
+    lu.assertEquals(generated.StoreOptions[1].__runPlannerTransactionOwner, normal.owner)
+    lu.assertTrue(generated.StoreOptions[2].__runPlannerWorldShop)
+    lu.assertEquals(generated.StoreOptions[2].__runPlannerTransactionOwner, boosted.owner)
+
+    local priorRun = _G.CurrentRun
+    _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = generated.StoreOptions } } }
+    local screen = { Components = {} }
+    callbacks.CreateStoreButtons(nil, {}, function(value)
+        for index, option in ipairs(generated.StoreOptions) do
+            value.Components["PurchaseButton" .. index] = { Data = { Name = option.Name } }
+        end
+    end, screen)
+    _G.CurrentRun = priorRun
+    lu.assertTrue(screen.Components.PurchaseButton1.Data.__runPlannerWorldShop)
+    lu.assertEquals(screen.Components.PurchaseButton1.Data.__runPlannerTransactionOwner, normal.owner)
+    lu.assertTrue(screen.Components.PurchaseButton2.Data.__runPlannerWorldShop)
+    lu.assertEquals(screen.Components.PurchaseButton2.Data.__runPlannerTransactionOwner, boosted.owner)
+
+    local boostedNative = callbacks.SpawnStoreItemInWorld(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return { Name = "RandomLoot" }
+    end, screen.Components.PurchaseButton2.Data, nil)
+    local normalNative = callbacks.SpawnStoreItemInWorld(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return { Name = "RandomLoot" }
+    end, screen.Components.PurchaseButton1.Data, nil)
+    lu.assertNotNil(active.bindingFor(boostedNative))
+    lu.assertEquals(fakePayload(active.bindingFor(boostedNative)).transaction, boosted)
+    lu.assertEquals(fakePayload(active.bindingFor(normalNative)).transaction, normal)
+    lu.assertEquals(fakePayload(active.bindingFor(boostedNative)).detail.traitOffer.options[1].rarity, "Heroic")
+    lu.assertEquals(fakePayload(active.bindingFor(normalNative)).detail.traitOffer.options[1].rarity, "Common")
+
+    local unplannedNative = callbacks.SpawnStoreItemInWorld(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return { Name = "RandomLoot" }
+    end, {
+        Name = "RandomLoot", __runPlannerOfferKey = "normal", __runPlannerWorldShop = true,
+    }, nil)
+    lu.assertNil(active.bindingFor(unplannedNative))
+    lu.assertEquals(genericLookups, 0)
+    lu.assertEquals(nativeCalls, 3)
+end
+
+function TestFeatureInteractionHooks.testBlockedStampedWorldShopOwnerReachesNativeTraitHookWithoutPeerRebinding()
+    local module, _, callbacks = capture()
+    local normal = {
+        owner = "normal", sourceOwner = "shop:normal", kind = "acquisition",
+        window = { kind = "standard", phase = "beforeCombat" },
+        roles = { {
+            role = "self", disposition = "normal", lifecyclePoint = "pickup", gameName = "RandomLoot",
+            traitOffer = { kind = "traits", giver = "Apollo", selected = "option1", options = {
+                { key = "ApolloAttack" }, { key = "ApolloSpecial" }, { key = "ApolloCast" },
+            } },
+        } },
+    }
+    local boosted = {
+        owner = "boosted", sourceOwner = "shop:boosted", kind = "acquisition",
+        window = { kind = "standard", phase = "beforeCombat" }, roles = normal.roles,
+    }
+    local occurrence = {
+        id = "shop", overview = { shop = { offers = {
+            { offerKey = "normal", optionKey = "RandomLoot" },
+            { offerKey = "boosted", optionKey = "BoostedRandomLoot", transactionOwner = boosted.owner },
+        } } },
+        transactionsByOwner = { normal = normal, boosted = boosted },
+        timeline = {
+            transactions = { normal, boosted },
+            dependencies = { { owner = "boosted", afterOwner = "normal" } }, obligations = {},
+        },
+    }
+    local plan = { occurrencesById = { shop = occurrence } }
+    local mismatches = {}
+    local room = roomCoordinatorModule.new(plan, function(errorValue)
+        mismatches[#mismatches + 1] = errorValue
+    end)
+    local state = { state = "synchronized", plan = plan, room = room }
+    local active = assert(roomCoordinatorModule.enter(state, occurrence))
+    local session = {
+        current = roomCoordinatorModule.current, peek = roomCoordinatorModule.peek,
+        bind = roomCoordinatorModule.bind, bound = roomCoordinatorModule.bound,
+        begin = roomCoordinatorModule.begin, resolve = roomCoordinatorModule.resolve,
+        claimReady = roomCoordinatorModule.claimReady, mismatch = function() end,
+    }
+    attachFeatureHooks(module, session, function() return state end, function() end, roomCoordinatorModule)
+    traitAcquisitions.attach(module, session, function() return state end,
+        function() end, roomCoordinatorModule, traitSeaStar)
+
+    local generated = callbacks.FillInShopOptions(nil, {}, function(args)
+        return { StoreOptions = {
+            args.StoreData.GroupsOf[1].OptionsData[1],
+            { Name = "RandomLoot", Args = args.StoreData.GroupsOf[1].OptionsData[2].Args },
+        } }
+    end, { StoreData = { GroupsOf = { { OptionsData = {
+        { Name = "RandomLoot" },
+        { Name = "BoostedRandomLoot", Args = { AddBoostedAnimation = true, BoonRaritiesOverride = { Rare = 1 } } },
+    } } } } })
+    lu.assertTrue(generated.StoreOptions[2].__runPlannerWorldShop)
+    lu.assertEquals(generated.StoreOptions[2].__runPlannerTransactionOwner, "boosted")
+
+    local nativeCalls = 0
+    local native = callbacks.SpawnStoreItemInWorld(nil, {}, function()
+        return { Name = "RandomLoot", GodLoot = true }
+    end, generated.StoreOptions[2], nil)
+    local handle = active._timeline.nativeHandles[native]
+    lu.assertNotNil(handle)
+    lu.assertEquals(active._timeline.handles[handle].transaction.owner, "boosted")
+
+    callbacks.HandleLootPickup(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+    end, {}, native, {})
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertEquals(#mismatches, 1)
+    lu.assertEquals(mismatches[1].checkpoint, "transaction-prerequisite")
+    lu.assertEquals(mismatches[1].observed, "boosted")
+    lu.assertNil(active._timeline.completedOwners.normal)
+    lu.assertNil(active._timeline.completedOwners.boosted)
 end
 
 

@@ -197,7 +197,7 @@ local function minimalPlan(transactions)
     end
     local plan = tagged({
         format = "run-planner-execution",
-        protocolVersion = 35,
+        protocolVersion = 36,
         catalogVersion = "0.55.0-anvil-of-fates",
         projectId = "test-project",
         planFingerprint = "00000000",
@@ -780,6 +780,58 @@ function TestProtocol.testFGHIFixtureCarriesClockworkGoalsThroughTheOrdinaryRewa
     lu.assertEquals(goal, { rewardType = "ClockworkGoal", producerLifecycleKey = "ClockworkGoalRoom" })
     lu.assertNotNil(nonGoal)
     lu.assertNotEquals(nonGoal.rewardType, "ClockworkGoal")
+end
+
+function TestProtocol.testWorldShopOffersAllowUnownedRowsAndRequireUniquePublishedTransactionOwners()
+    local transaction = {
+        kind = "acquisition", owner = "normal", sourceOwner = "shop:normal",
+        reward = reward(), producerLifecycleKey = "pickup", roles = { role() }, window = window(),
+    }
+    local plan = minimalPlan({ transaction })
+    plan.occurrences[1].overview.shop = tagged({
+        profileKey = "WorldShop",
+        offers = {
+            { offerKey = "normal", optionKey = "RandomLoot", rewardType = "RandomLoot", transactionOwner = "normal" },
+            { offerKey = "unselected", optionKey = "MaxHealthDrop", rewardType = "MaxHealthDrop" },
+        },
+    })
+    refreshFingerprint(plan)
+    lu.assertNotNil(protocol.decode(plan))
+
+    plan.occurrences[1].overview.shop.offers[1].transactionOwner = "missing"
+    refreshFingerprint(plan)
+    lu.assertNil(protocol.decode(plan))
+
+    plan.occurrences[1].overview.shop.offers[1].transactionOwner = "normal"
+    plan.occurrences[1].overview.shop.offers[2].transactionOwner = "normal"
+    refreshFingerprint(plan)
+    lu.assertNil(protocol.decode(plan))
+end
+
+function TestProtocol.testSelectedNormalAndBoostedWorldShopFixtureDecodesExactTransactionOwners()
+    local plan, errorMessage = protocol.decode(decode("surface-q-shop-correlation"))
+    lu.assertNotNil(plan, errorMessage)
+    local rows
+    for _, occurrence in ipairs(plan.occurrences) do
+        if occurrence.id == "surface-q-preboss" then
+            rows = occurrence.overview.shop.offers
+            break
+        end
+    end
+    lu.assertNotNil(rows)
+    local owners, options = {}, {}
+    for _, row in ipairs(rows) do
+        if row.offerKey == "MixedProgress1" or row.offerKey == "MixedProgress2" then
+            owners[#owners + 1] = row.transactionOwner
+            options[#options + 1] = row.optionKey
+        end
+    end
+    table.sort(options)
+    lu.assertEquals(options, { "BoostedRandomLoot", "RandomLoot" })
+    lu.assertEquals(#owners, 2)
+    lu.assertNotNil(owners[1])
+    lu.assertNotNil(owners[2])
+    lu.assertNotEquals(owners[1], owners[2])
 end
 
 function TestProtocol.testPostbossBoundariesExposeExpandedRoomEntryDiagnostics()

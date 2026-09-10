@@ -25,11 +25,12 @@ local function shop(value, label)
     end
     local offers, offersError = p.arr(record.offers, label .. ".offers")
     if not offers then return nil, offersError end
+    local seenTransactionOwners = {}
     for index, valueRow in ipairs(offers) do
         local row, rowError = p.exact(
             valueRow,
             { "offerKey", "optionKey", "rewardType" },
-            { "source", "spurnedSource" },
+            { "transactionOwner", "source", "spurnedSource" },
             label .. ".offers[" .. index .. "]"
         )
         if not row then return nil, rowError end
@@ -38,6 +39,12 @@ local function shop(value, label)
                 return p.fail(label .. " has invalid shop offer")
             end
         end
+        if row.transactionOwner ~= nil and (
+            not p.str(row.transactionOwner, label .. ".offers.transactionOwner", p.MAX_OWNER_STRING)
+            or seenTransactionOwners[row.transactionOwner]) then
+            return p.fail(label .. " has invalid shop offer transaction owner")
+        end
+        if row.transactionOwner ~= nil then seenTransactionOwners[row.transactionOwner] = true end
         for _, key in ipairs({ "source", "spurnedSource" }) do
             if row[key] ~= nil and not p.str(row[key], label .. ".offers." .. key) then
                 return p.fail(label .. " has invalid shop offer")

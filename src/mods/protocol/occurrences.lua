@@ -315,6 +315,11 @@ function occurrences.decode(value, selected, label)
         )
         if type(byOwnerOrError) == "string" then return nil, byOwnerOrError end
         row.transactionsByOwner = byOwnerOrError
+        for _, offer in ipairs((row.overview.shop and row.overview.shop.offers) or {}) do
+            if offer.transactionOwner ~= nil and row.transactionsByOwner[offer.transactionOwner] == nil then
+                return p.fail(label .. ".overview.shop transaction owner must name one occurrence transaction")
+            end
+        end
         local wheelsOk, wheelsError = validateRewardWheelProduct(row, label .. "[" .. index .. "]")
         if not wheelsOk then return nil, wheelsError end
         local hadDiagnostics = row.diagnostics ~= nil

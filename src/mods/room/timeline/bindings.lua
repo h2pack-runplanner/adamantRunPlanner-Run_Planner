@@ -85,7 +85,8 @@ function bindings.resolve(index, contact, source)
     if type(contact) ~= "table" then
         return nil, { checkpoint = "timeline-contact", expected = "published contact descriptor", observed = contact }
     end
-    if contact.kind == "offer" then return indexed(index, "offer", contact.offerKey)
+    if contact.kind == "owner" then return indexed(index, "owner", contact.owner)
+    elseif contact.kind == "offer" then return indexed(index, "offer", contact.offerKey)
     elseif contact.kind == "generation" then return indexed(index, "generation", contact.generationKey)
     elseif contact.kind == "hermesShrineDelivery" then
         return indexed(index, "hermesShrineSource", contact.sourceKey)

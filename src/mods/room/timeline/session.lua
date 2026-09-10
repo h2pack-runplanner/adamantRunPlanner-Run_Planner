@@ -147,6 +147,7 @@ end
 -- detail that the claimed native carrier will consume.
 function timeline.claimReady(session, contact, native, compatible)
     if session.closed or session.firstMismatch ~= nil then return nil end
+    if type(native) == "table" and native.__runPlannerWorldShop == true then return nil end
     if type(compatible) ~= "function" then
         return mismatch(session, "timeline-claim", "compatibility predicate", compatible)
     end

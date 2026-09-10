@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 35,
+  "protocolVersion": 36,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "surface-2",
   "routeKey": "Surface",
@@ -2185,5 +2185,5 @@
       }
     }
   ],
-  "planFingerprint": "7e53ebd2"
+  "planFingerprint": "a7e1b263"
 }

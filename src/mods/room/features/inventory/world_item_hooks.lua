@@ -60,19 +60,34 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         local result = base(itemData, kitId)
         if active and type(itemData) == "table" and result ~= nil then
             local generationKey = itemData.__runPlannerGenerationKey
+            local transactionOwner = itemData.__runPlannerTransactionOwner
             local bindingKey = itemData.__runPlannerOfferKey or itemData.Name or itemData.ItemName
             local itemKey = itemData.Name or itemData.ItemName or bindingKey
             local shrineDelivery = itemData.__runPlannerShrine == true
                 and itemData.__runPlannerShrineSourceKey ~= nil
             local sourceKey = itemData.__runPlannerShrineSourceKey
-            local handle = shrineDelivery and room.resolve(state, active,
-                { kind = "hermesShrineDelivery", sourceKey = sourceKey })
-                or itemData.__runPlannerContractSourceOwner and room.resolve(state, active,
-                { kind = "source", sourceOwner = itemData.__runPlannerContractSourceOwner })
-                or generationKey and room.resolve(state, active,
-                { kind = "generation", generationKey = generationKey })
-                or bindingKey and room.resolve(state, active, { kind = "offer", offerKey = bindingKey }) or nil
+            local handle
+            if shrineDelivery then
+                handle = room.resolve(state, active, { kind = "hermesShrineDelivery", sourceKey = sourceKey })
+            elseif itemData.__runPlannerContractSourceOwner then
+                handle = room.resolve(state, active,
+                    { kind = "source", sourceOwner = itemData.__runPlannerContractSourceOwner })
+            elseif itemData.__runPlannerWorldShop then
+                -- A marked World Shop row binds only its published Timeline
+                -- owner.  An unowned row remains native and cannot fall through.
+                if transactionOwner ~= nil then
+                    handle = room.resolve(state, active, { kind = "owner", owner = transactionOwner })
+                end
+            elseif generationKey then
+                handle = room.resolve(state, active, { kind = "generation", generationKey = generationKey })
+            elseif bindingKey then
+                handle = room.resolve(state, active, { kind = "offer", offerKey = bindingKey })
+            end
             handle = materializedHandle(state, active, room, handle, itemKey)
+            if itemData.__runPlannerWorldShop and type(result) == "table" then
+                result.__runPlannerWorldShop = true
+                result.__runPlannerTransactionOwner = transactionOwner
+            end
             room.bind(state, active, handle, result)
         end
         report(runtime)

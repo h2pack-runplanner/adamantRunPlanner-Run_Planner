@@ -163,6 +163,8 @@ function primitives.verify(prepared, store)
             return nil, { checkpoint = "inventory-generation", expected = expectedKey, observed = observedKey }
         end
         option.__runPlannerOfferKey = offer.offerKey or offer.sourceOfferKey or expectedKey
+        option.__runPlannerWorldShop = prepared.kind == "shop" or nil
+        option.__runPlannerTransactionOwner = offer.transactionOwner
         option.__runPlannerGenerationKey = offer.generationKey
             or (prepared.kind == "travelDealWorldShop" and "travelDealRefill" or nil)
         option.__runPlannerShrine = (prepared.kind == "shrine" or prepared.kind == "travelDealHermesShrine")

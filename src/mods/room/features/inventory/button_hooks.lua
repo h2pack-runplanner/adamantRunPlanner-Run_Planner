@@ -8,6 +8,7 @@ local delayScope
 
 local bindingFields = {
     "__runPlannerOfferKey", "__runPlannerGenerationKey", "__runPlannerTwistResultKey",
+    "__runPlannerWorldShop", "__runPlannerTransactionOwner",
     "__runPlannerContractSourceOwner",
     "__runPlannerShrine", "__runPlannerShrineSourceKey",
 }

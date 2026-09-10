@@ -32,6 +32,53 @@ function TestTimelineBindings.testIndexesRejectAmbiguousPublishedKeys()
     lu.assertEquals(errorValue.checkpoint, "timeline-binding")
 end
 
+function TestTimelineBindings.testExactShopOwnerKeepsItsBlockedOwnerInsteadOfClaimingAReadyPeer()
+    local normal = {
+        owner = "normal", sourceOwner = "shop:normal", kind = "acquisition",
+        window = { kind = "standard", phase = "beforeCombat" },
+        roles = { { role = "self", gameName = "RandomLoot" } },
+    }
+    local boosted = {
+        owner = "boosted", sourceOwner = "shop:boosted", kind = "acquisition",
+        window = { kind = "standard", phase = "beforeCombat" },
+        roles = { { role = "self", gameName = "RandomLoot" } },
+    }
+    local item = {
+        transactionsByOwner = { normal = normal, boosted = boosted },
+        timeline = {
+            transactions = { normal, boosted },
+            dependencies = { { owner = "boosted", afterOwner = "normal" } }, obligations = {},
+        },
+    }
+    local session = timelineSession.new(item, assert(bindings.index(item)))
+    lu.assertTrue(timelineSession.open(session, "roomEntered"))
+    local handle = assert(timelineSession.resolve(session, bindings.resolve,
+        { kind = "owner", owner = "boosted" }))
+    lu.assertNil(timelineSession.begin(session, handle))
+    lu.assertEquals(session.firstMismatch.checkpoint, "transaction-prerequisite")
+    lu.assertEquals(session.firstMismatch.observed, "boosted")
+    lu.assertNil(timelineSession.resolve(session, bindings.resolve,
+        { kind = "owner", owner = "unplanned" }))
+
+    local unownedSession = timelineSession.new(item, assert(bindings.index(item)))
+    lu.assertTrue(timelineSession.open(unownedSession, "roomEntered"))
+    local unownedNative = { Name = "RandomLoot", __runPlannerWorldShop = true }
+    local claimed = timelineSession.claimReady(unownedSession,
+        { kind = "directPickup", gameName = "RandomLoot" },
+        unownedNative, function(transaction)
+            return transaction.roles[1]
+        end)
+    lu.assertNil(claimed)
+    lu.assertNil(unownedSession.firstMismatch)
+    lu.assertNil(timelineSession.bound(unownedSession, unownedNative))
+    local peerHandle, peerPayload = timelineSession.claimReady(unownedSession,
+        { kind = "directPickup", gameName = "RandomLoot" }, { Name = "RandomLoot" }, function(transaction)
+            return transaction.roles[1]
+        end)
+    lu.assertNotNil(peerHandle)
+    lu.assertEquals(peerPayload.transaction.owner, "normal")
+end
+
 
 function TestTimelineBindings.testShrineDeliveriesUseExactSourceKeysWhenGenerationsRepeat()
     local item = occurrence()
