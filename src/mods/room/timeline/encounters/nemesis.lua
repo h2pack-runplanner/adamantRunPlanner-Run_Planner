@@ -63,7 +63,7 @@ function nemesis.attach(module, session, getState, report, room)
             if type(key) == "string" and key:sub(1, #prefix) == prefix then filtered[key] = value end
         end
         if next(filtered) == nil then
-            session.mismatch(state, "nemesis-event-family", outcome.kind, nil)
+            session.diagnostic(state, "nemesis-event-family", "unavailable")
             report(runtime)
             return base(source, args)
         end
@@ -86,15 +86,16 @@ function nemesis.attach(module, session, getState, report, room)
                     retained[#retained + 1] = option
                 end
             end
-            if #retained ~= 1 then session.mismatch(state, "nemesis-trait-trade", outcome.traitKey, nil)
+            if #retained ~= 1 then session.diagnostic(state, "nemesis-trait-trade", "unavailable")
             else args.GiveOptions = retained end
         end
         local result = base(source, args, screen)
         if handle and outcome then
             local accepted = source and source.Accepted == true
             if (outcome.response == "accept") ~= accepted then
-                session.mismatch(state, "nemesis-trade-response", outcome.response, accepted)
-            elseif outcome.kind == "traitTrade" and accepted then
+                session.diagnostic(state, "nemesis-trade-response", accepted)
+            end
+            if outcome.kind == "traitTrade" and accepted then
                 pendingNemesis = { handle = handle, payload = payload, traitKey = outcome.traitKey }
             else
                 session.complete(state, handle)
@@ -111,10 +112,9 @@ function nemesis.attach(module, session, getState, report, room)
             local state, pending = getState(runtime), pendingNemesis
             pendingNemesis = nil
             if traitName ~= pending.traitKey then
-                session.mismatch(state, "nemesis-trait-removal", pending.traitKey, traitName)
-            else
-                session.complete(state, pending.handle)
+                session.diagnostic(state, "nemesis-trait-removal", traitName)
             end
+            session.complete(state, pending.handle)
             report(runtime)
         end
         return result
@@ -135,10 +135,9 @@ function nemesis.attach(module, session, getState, report, room)
                 and type(details.DamageGoal) == "number"
                 and source.DamageContestAmount >= details.DamageGoal
             if (outcome.result == "success") ~= success then
-                session.mismatch(state, "nemesis-damage-contest", outcome.result, success)
-            else
-                session.complete(state, handle)
+                session.diagnostic(state, "nemesis-damage-contest", success)
             end
+            session.complete(state, handle)
         end
         report(runtime)
         return result
@@ -169,11 +168,11 @@ function nemesis.attach(module, session, getState, report, room)
                 end
             end
             if #matches == 0 then
-                session.mismatch(state, "nemesis-free-item", outcome.itemGameName, nil)
+                session.diagnostic(state, "nemesis-free-item", "unavailable")
             else
                 args.Consumables = constrainConsumables(consumables, matches)
-                pendingNemesis = { handle = handle, payload = payload, reward = true }
             end
+            pendingNemesis = { handle = handle, payload = payload, reward = true }
         end
         local result = base(args, choice, line)
         report(runtime)

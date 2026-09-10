@@ -154,21 +154,20 @@ function TestConcaveStone.testResidualBridalGlowUsesItsOwnPublishedTarget()
     lu.assertEquals(mismatches(), {})
 end
 
-function TestConcaveStone.testMissingOrUnavailableResidualLeavesOuterIncompleteAndCleansScope()
-    local callbacks, _, completed, mismatches = support.attached(concaveOffer({ kind = "proc", optionKey = "option2" }))
+function TestConcaveStone.testUnavailableResidualCompletesTheOuterNativeTerminal()
+    local callbacks, _, completed = support.attached(concaveOffer({ kind = "proc", optionKey = "option2" }))
     local loot = { GodLoot = true, Name = "ApolloUpgrade" }
     callbacks.SpawnRoomReward(nil, {}, function()
         return callbacks.CreateLoot(nil, {}, function() return loot end, {})
     end, {}, {})
     callbacks.HandleLootPickup(nil, {}, function() return true end, {}, loot, {})
     selectConcave(callbacks, loot, { { LootData = loot, Data = { Name = "Other" } } })
-    lu.assertEquals(completed(), 0)
-    lu.assertEquals(mismatches()[1].checkpoint, "concave-stone-residual")
+    lu.assertEquals(completed(), 1)
     lu.assertFalse(callbacks.RandomChance(nil, {}, function() return false end, 1, {}))
 end
 
-function TestConcaveStone.testMissingNativeRollLeavesOuterIncompleteAndCleansScope()
-    local callbacks, _, completed, mismatches = support.attached(concaveOffer({ kind = "noProc" }))
+function TestConcaveStone.testMissingNativeRollCompletesTheOuterNativeTerminal()
+    local callbacks, _, completed = support.attached(concaveOffer({ kind = "noProc" }))
     local loot = { GodLoot = true, Name = "ApolloUpgrade" }
     callbacks.SpawnRoomReward(nil, {}, function()
         return callbacks.CreateLoot(nil, {}, function() return loot end, {})
@@ -176,8 +175,7 @@ function TestConcaveStone.testMissingNativeRollLeavesOuterIncompleteAndCleansSco
     callbacks.HandleLootPickup(nil, {}, function() return true end, {}, loot, {})
     callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
         {}, { LootData = loot, Data = { Name = "Primary" } }, {})
-    lu.assertEquals(completed(), 0)
-    lu.assertEquals(mismatches()[1].checkpoint, "concave-stone-roll")
+    lu.assertEquals(completed(), 1)
     lu.assertFalse(callbacks.RandomChance(nil, {}, function() return false end, 1, {}))
 end
 

@@ -22,12 +22,11 @@ local function harness(itemGameName)
             },
         },
     }
-    local mismatches, completions = {}, {}
+    local diagnostics, completions = {}, {}
     local session = {
-        mismatch = function(_, checkpoint, expected, observed)
-            mismatches[#mismatches + 1] = {
+        diagnostic = function(_, checkpoint, observed)
+            diagnostics[#diagnostics + 1] = {
                 checkpoint = checkpoint,
-                expected = expected,
                 observed = observed,
             }
         end,
@@ -42,7 +41,7 @@ local function harness(itemGameName)
         end,
     }
     nemesis.attach(module, session, function() return state end, function() end, room)
-    return callbacks, state, handle, mismatches, completions
+    return callbacks, state, handle, diagnostics, completions
 end
 
 function TestNemesisEncounters.testFreeItemConstrainsNativePoolAndCompletesAfterDrop()
@@ -73,8 +72,8 @@ function TestNemesisEncounters.testFreeItemConstrainsNativePoolAndCompletesAfter
     lu.assertEquals(completions, { handle })
 end
 
-function TestNemesisEncounters.testUnavailableFreeItemReportsMismatchAndPreservesNativePool()
-    local callbacks, _, _, mismatches, completions = harness("LastStandDrop")
+function TestNemesisEncounters.testUnavailableFreeItemPreservesTheNativePoolAndCompletesAtDrop()
+    local callbacks, _, handle, diagnostics, completions = harness("LastStandDrop")
     local available = { Name = "HealDrop" }
     local blocked = { Name = "LastStandDrop", GameStateRequirements = { "MissingLastStand" } }
     local consumables = { available, blocked, RandomSelection = true }
@@ -98,11 +97,13 @@ function TestNemesisEncounters.testUnavailableFreeItemReportsMismatchAndPreserve
     lu.assertEquals(called, 1)
     lu.assertEquals(observed, consumables)
     lu.assertTrue(observed.RandomSelection)
-    lu.assertEquals(mismatches, {
-        { checkpoint = "nemesis-free-item", expected = "LastStandDrop", observed = nil },
+    lu.assertEquals(diagnostics, {
+        { checkpoint = "nemesis-free-item", observed = "unavailable" },
     })
     lu.assertEquals(completions, {})
+    callbacks.NPCRewardDrop(nil, {}, function() return "dropped" end, {}, {})
+    lu.assertEquals(completions, { handle })
 
     callbacks.NPCRewardDrop(nil, {}, function() return true end, {}, {})
-    lu.assertEquals(completions, {})
+    lu.assertEquals(completions, { handle })
 end

@@ -47,7 +47,7 @@ function anvil.attach(module, session, report)
         end
         local selected = expected ~= nil and matching(values, expected) or nil
         if selected ~= nil then return selected end
-        session.mismatch(scope.state, "anvil-result", expected, name(values[1]))
+        session.diagnostic(scope.state, "anvil-result", name(values[1]))
         return base(values, args)
     end)
 
@@ -58,8 +58,7 @@ function anvil.attach(module, session, report)
         local ok, result = pcall(base, args)
         if not ok then error(result, 0) end
         if scope.stage ~= 4 then
-            local expected = scope.result.addedTraitKeys[scope.stage == 1 and 1 or 2]
-            session.mismatch(scope.state, "anvil-result", expected, "native result omitted")
+            session.diagnostic(scope.state, "anvil-result", "native result omitted")
         end
         report(runtime)
         return result
@@ -80,7 +79,7 @@ function anvil.attach(module, session, report)
         finishUse = function(scope)
             if activeUse == scope then activeUse = nil end
             if scope ~= nil and not scope.called then
-                session.mismatch(scope.state, "anvil-result", "ChaosHammerUpgrade", "native use rejected")
+                session.diagnostic(scope.state, "anvil-result", "native use rejected")
             end
             return scope and scope.called or false
         end,

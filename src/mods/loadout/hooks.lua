@@ -27,7 +27,7 @@ function hooks.attach(module, loadoutRuntime, getState, report, room, hexTree)
                 or (startDepth > 0 and state.state == "starting"))
         end,
         state = getState,
-        mismatch = loadoutRuntime.session.mismatch,
+        diagnostic = loadoutRuntime.session.diagnostic,
     })
 
     local function expectedEquip(state, keepsakeKey, args)
@@ -72,8 +72,8 @@ function hooks.attach(module, loadoutRuntime, getState, report, room, hexTree)
         local expected = state.state == "starting" and state.plan and state.plan.startingLoadout
         local startingHex = expected and expected.startingHex or nil
         if startingHex ~= nil then
-            startingHexScope = hexTree.prepare(startingHex, function(checkpoint, expectedValue, observed)
-                loadoutRuntime.session.mismatch(state, checkpoint, expectedValue, observed)
+            startingHexScope = hexTree.prepare(startingHex, function(checkpoint, _, observed)
+                loadoutRuntime.session.diagnostic(state, checkpoint, observed)
             end)
         end
         local ok, result = pcall(base, previousRun, args)

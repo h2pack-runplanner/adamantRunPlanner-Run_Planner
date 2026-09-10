@@ -41,13 +41,12 @@ function boss.attach(module, session, getState, report, room)
         if not ok then error(result, 0) end
         local expectedCount = #(payload.transaction.arcanaKeys or {})
         if count ~= expectedCount then
-            session.mismatch(bossScope.state, "boss-arcana-cardinality", expectedCount, count)
-        elseif not arcana.complete(consumed) then
-            session.mismatch(bossScope.state, "boss-arcana-selection",
-                payload.transaction.arcanaKeys, consumed.index)
-        else
-            session.complete(bossScope.state, handle)
+            session.diagnostic(bossScope.state, "boss-arcana-cardinality", count)
         end
+        if not arcana.complete(consumed) then
+            session.diagnostic(bossScope.state, "boss-arcana-selection", consumed.index)
+        end
+        session.complete(bossScope.state, handle)
         report(runtime)
         return result
     end)

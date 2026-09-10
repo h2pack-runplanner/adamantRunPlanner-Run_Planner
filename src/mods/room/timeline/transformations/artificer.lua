@@ -108,9 +108,7 @@ function artificer.attach(module, session, getState, report, room)
     local function failSpawn(action, observed)
         if action == nil or action.spawnFailure then return end
         action.spawnFailure = true
-        local expected = action.childPayload and action.childPayload.detail
-        expected = expected and expected.gameName or "published Artificer replacement"
-        session.mismatch(action.state, "artificer-replacement", expected, observed)
+        session.diagnostic(action.state, "artificer-replacement", observed)
     end
 
     local function observeReplacement(action, result)

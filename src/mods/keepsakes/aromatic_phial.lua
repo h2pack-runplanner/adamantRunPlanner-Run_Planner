@@ -34,9 +34,11 @@ function phial.attach(module, options)
         active = nil
         local target = findTrait(_G.CurrentRun, scope.target)
         if target == nil then
-            options.session.mismatch(state, "aromatic-phial-target", scope.target, "missing trait")
+            options.session.diagnostic(state, "aromatic-phial-target", "missing trait")
+            local result = base(source, args)
+            options.session.complete(state, scope.handle)
             options.report(runtime)
-            return base(source, args)
+            return result
         end
         local forced = {}
         for key, value in pairs(args or {}) do forced[key] = value end
@@ -44,10 +46,9 @@ function phial.attach(module, options)
         local ok, result = pcall(base, source, forced)
         if not ok then error(result, 0) end
         if traitKey(result) ~= scope.target then
-            options.session.mismatch(state, "aromatic-phial-target", scope.target, traitKey(result))
-        else
-            options.session.complete(state, scope.handle)
+            options.session.diagnostic(state, "aromatic-phial-target", traitKey(result))
         end
+        options.session.complete(state, scope.handle)
         options.report(runtime)
         return result
     end)

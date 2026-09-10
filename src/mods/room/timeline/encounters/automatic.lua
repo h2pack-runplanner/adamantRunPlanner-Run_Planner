@@ -44,10 +44,9 @@ function automatic.attach(module, session, getState, report, room)
         if payload then
             local observed = type(result) == "table" and (result.Name or result.TraitName) or nil
             if observed ~= payload.transaction.target then
-                session.mismatch(state, "steady-growth-target", payload.transaction.target, observed)
-            else
-                session.complete(state, handle)
+                session.diagnostic(state, "steady-growth-target", observed)
             end
+            session.complete(state, handle)
         end
         report(runtime)
         return result

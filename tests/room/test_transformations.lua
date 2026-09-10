@@ -223,12 +223,12 @@ function TestTransformations.testArtificerRetainsSourceSteeringWhenTimePieceCons
     lu.assertEquals(#completed, 1)
 end
 
-function TestTransformations.testArtificerWrongSpawnReportsMismatchAndPassesThroughNativeResult()
+function TestTransformations.testArtificerWrongSpawnStaysIncompleteAtSourceDestruction()
     local module, callbacks = capture()
     local source, child = {}, childRow()
     local target = { ObjectId = 19, Name = "MetaCurrencyDrop" }
     local room, _, completed = roomHarness(source, child, target)
-    transformations.attach(module, { mismatch = function() end }, function() return {} end, function() end, room)
+    transformations.attach(module, { diagnostic = function() end }, function() return {} end, function() end, room)
 
     lu.assertEquals(callbacks.ConvertMetaRewardPresentation(nil, {}, function(value) return value end, target), target)
     local result = callbacks.SpawnRoomReward(nil, {}, function()
@@ -346,9 +346,9 @@ local function outcomeHarness(transaction)
     }
     local session = {
         complete = function(_, value) if value == handle then completions = completions + 1 end end,
-        mismatch = function(_, checkpoint, expected, observed)
+        diagnostic = function(_, checkpoint, observed)
             mismatches[#mismatches + 1] = {
-                checkpoint = checkpoint, expected = expected, observed = observed,
+                checkpoint = checkpoint, observed = observed,
             }
         end,
     }

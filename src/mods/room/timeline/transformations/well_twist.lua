@@ -33,7 +33,7 @@ function twist.attachSelectionHooks(module, session, report, currentScope)
             end
             if not scope.unavailable then
                 scope.unavailable = true
-                session.mismatch(scope.state, "well-twist-result", scope.target, "unavailable")
+                session.diagnostic(scope.state, "well-twist-result", "unavailable")
             end
         end
         report(runtime)

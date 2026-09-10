@@ -124,6 +124,22 @@ function TestResidualNativeContacts.testSuccessfulResourcePointKeepsNativeGrantA
     lu.assertTrue(fixture.close())
 end
 
+function TestResidualNativeContacts.testUnownedAutomaticContactPassesThroughWithoutSettlement()
+    local fixture = harness({})
+    automatic.attach(fixture.module, runtimeSession, function() return fixture.state end,
+        fixture.report, coordinator)
+    local nativeCalls = 0
+    local result = fixture.callbacks.AddRarityToTraits(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return { Name = "NativeEligibleBoon" }
+    end, { Name = "BoonGrowthBoon" }, { NumTraits = 1 })
+
+    lu.assertEquals(result, { Name = "NativeEligibleBoon" })
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertNil(fixture.state.diagnostics)
+    lu.assertTrue(fixture.close())
+end
+
 function TestResidualNativeContacts.testSteadyGrowthSteersOnceAndCompletedOwnerCannotReplay()
     local growth = transaction("steadyGrowth", "encounterEnd", {
         source = "BoonGrowthBoon", target = "ApolloWeaponBoon",
@@ -300,14 +316,14 @@ function TestResidualNativeContacts.testBossContactSteersOrderedJudgmentAndCryst
     lu.assertTrue(fixture.close())
 end
 
-function TestResidualNativeContacts.testBossArcanaExcessCountReturnsNativelyAndMismatchesCardinality()
+function TestResidualNativeContacts.testBossArcanaExcessCountCompletesItsNativeTerminal()
     local judgment = transaction("judgment", "bossDefeated", {
         arcanaKeys = { "TheChampions", "TheFates" }, rarity = "Rare",
     })
     local fixture = harness({ judgment })
     local completions = 0
     local observedSession = {
-        mismatch = runtimeSession.mismatch,
+        diagnostic = runtimeSession.diagnostic,
         complete = function(state, handle)
             completions = completions + 1
             return runtimeSession.complete(state, handle)
@@ -334,14 +350,14 @@ function TestResidualNativeContacts.testBossArcanaExcessCountReturnsNativelyAndM
     end)
 
     lu.assertEquals(selected, { "TheChampions", "TheFates", "NativeCard" })
-    lu.assertEquals(completions, 0)
-    lu.assertEquals(fixture.state.state, "desynchronized")
-    lu.assertEquals(fixture.state.firstMismatch, {
-        checkpoint = "boss-arcana-cardinality", expected = 2, observed = 3,
+    lu.assertEquals(completions, 1)
+    lu.assertEquals(fixture.state.state, "synchronized")
+    lu.assertEquals(fixture.state.diagnostics, {
+        { occurrenceId = "room", checkpoint = "boss-arcana-cardinality", observed = 3 },
     })
 end
 
-function TestResidualNativeContacts.testUnavailableAutomaticTargetRecordsFirstMismatchAfterNativeReturn()
+function TestResidualNativeContacts.testUnavailableAutomaticTargetCompletesAfterOneNativeCall()
     local growth = transaction("steadyGrowth", "encounterEnd", {
         source = "BoonGrowthBoon", target = "UnavailableBoon",
     })
@@ -360,20 +376,12 @@ function TestResidualNativeContacts.testUnavailableAutomaticTargetRecordsFirstMi
             return nativeResult
         end, { Name = "BoonGrowthBoon" }, args)
         lu.assertEquals(result, nativeResult)
-        local passThrough = fixture.callbacks.AddRarityToTraits(nil, {}, function()
-            nativeCalls = nativeCalls + 1
-            return "desynchronized-native-return"
-        end, { Name = "BoonGrowthBoon" }, args)
-        lu.assertEquals(passThrough, "desynchronized-native-return")
     end)
 
-    lu.assertEquals(nativeCalls, 2)
-    lu.assertEquals(fixture.state.state, "desynchronized")
-    lu.assertEquals(fixture.state.firstMismatch, {
-        checkpoint = "steady-growth-target",
-        expected = "UnavailableBoon",
-        observed = "NativeEligibleBoon",
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertEquals(fixture.state.state, "synchronized")
+    lu.assertEquals(fixture.state.diagnostics, {
+        { occurrenceId = "room", checkpoint = "steady-growth-target", observed = "NativeEligibleBoon" },
     })
-    runtimeSession.mismatch(fixture.state, "later-mismatch", "later", "ignored")
-    lu.assertEquals(fixture.state.firstMismatch.checkpoint, "steady-growth-target")
+    lu.assertTrue(fixture.close())
 end

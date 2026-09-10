@@ -6,7 +6,6 @@ local stoneModule = {}
 
 function stoneModule.create(options)
     local pendingByHandle = {}
-    local failedHandles = {}
     local active
 
     local function scopeIsCurrent(state, pending)
@@ -17,17 +16,13 @@ function stoneModule.create(options)
     local function discard(pending)
         if pending == nil then return end
         pendingByHandle[pending.handle] = nil
-        if pending.failed then failedHandles[pending.handle] = true end
         if active == pending then active = nil end
     end
 
     local function completeOuter(state, handle)
-        if failedHandles[handle] then return end
         local pending = pendingByHandle[handle]
         if pending ~= nil then
-            if pending.failed or not pending.outerReturned or not pending.rollConsumed then return end
-            if pending.result.kind == "proc" and not pending.residualReturned then return end
-            failedHandles[handle] = nil
+            if not pending.outerReturned then return end
             discard(pending)
         end
         options.session.complete(state, handle)
@@ -41,7 +36,6 @@ function stoneModule.create(options)
         end
         local state = options.getState(runtime)
         if not scopeIsCurrent(state, pending) then
-            pending.failed = true
             discard(pending)
             return base(candidates, rng)
         end
@@ -56,9 +50,8 @@ function stoneModule.create(options)
         end
         if not sawButton then return base(candidates, rng) end
         if selected == nil then
-            pending.failed = true
             discard(pending)
-            options.session.mismatch(state, "concave-stone-residual", expectedKey, "native-ineligible")
+            options.session.diagnostic(state, "concave-stone-residual", "native-ineligible")
             return base(candidates, rng)
         end
         pending.residualButton = selected
@@ -73,7 +66,6 @@ function stoneModule.create(options)
             if pending == nil or traitName ~= "DoubleBoonChance" then return result end
             local state = options.getState(runtime)
             if not scopeIsCurrent(state, pending) then
-                pending.failed = true
                 discard(pending)
             else
                 pending.rollTraitObserved = true
@@ -89,7 +81,6 @@ function stoneModule.create(options)
             end
             local state = options.getState(runtime)
             if not scopeIsCurrent(state, pending) then
-                pending.failed = true
                 discard(pending)
                 return base(chance, args)
             end
@@ -114,7 +105,6 @@ function stoneModule.create(options)
                 residualReturned = result.kind == "noProc",
             }
             pendingByHandle[handle] = pending
-            failedHandles[handle] = nil
             active = pending
             return pending
         end,
@@ -125,15 +115,12 @@ function stoneModule.create(options)
             local pending = active
             if pending == nil then return nil, nil end
             if not scopeIsCurrent(state, pending) then
-                pending.failed = true
                 discard(pending)
                 return false, pending
             end
-            if pending.failed or not pending.rollConsumed or pending.result.kind ~= "proc"
-                or pending.residualButton == nil then
-                pending.failed = true
+            if not pending.rollConsumed or pending.result.kind ~= "proc" or pending.residualButton == nil then
                 discard(pending)
-                options.session.mismatch(state, "concave-stone-residual", "steered residual", "missing")
+                options.session.diagnostic(state, "concave-stone-residual", "missing")
                 return false, pending
             end
             return true, pending
@@ -146,14 +133,11 @@ function stoneModule.create(options)
             if active == pending then active = nil end
             pending.outerReturned = true
             if not pending.rollConsumed then
-                pending.failed = true
                 discard(pending)
-                options.session.mismatch(state, "concave-stone-roll", pending.result.kind, "missing")
+                options.session.diagnostic(state, "concave-stone-roll", "missing")
             elseif pending.result.kind == "proc" and not pending.residualReturned then
-                pending.failed = true
                 discard(pending)
-                local expected = options.ordinary.optionForOptionKey(pending.payload, pending.result.optionKey)
-                options.session.mismatch(state, "concave-stone-residual", expected and expected.key or nil, "missing")
+                options.session.diagnostic(state, "concave-stone-residual", "missing")
             end
         end,
     }

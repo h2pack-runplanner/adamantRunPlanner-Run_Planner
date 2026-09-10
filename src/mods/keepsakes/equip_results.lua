@@ -24,10 +24,9 @@ function equipResults.attach(module, options)
         scope = active.prior
         for expectedKind in pairs(active.expected) do
             if not active.contacts[expectedKind] then
-                options.mismatch(
+                options.diagnostic(
                     options.state(runtime),
                     "availability:keepsakeEquipResult",
-                    expectedKind,
                     "missing native contact"
                 )
             end
@@ -90,7 +89,7 @@ function equipResults.attach(module, options)
             for _, value in ipairs(values) do
                 if traitKey(value) == key then return value end
             end
-            options.mismatch(options.state(runtime), "availability:traitEligibility", key, "missing candidate")
+            options.diagnostic(options.state(runtime), "availability:traitEligibility", "missing candidate")
             return base(values, rng)
         end
         return base(values, rng)

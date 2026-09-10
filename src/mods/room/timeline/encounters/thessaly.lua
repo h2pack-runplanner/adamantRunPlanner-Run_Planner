@@ -108,8 +108,9 @@ function thessaly.create()
                 local expected = payload and payload.transaction.pickedOfferKey
                 local observed = type(wheel) == "table" and wheel.__runPlannerOfferKey or nil
                 if expected ~= observed then
-                    session.mismatch(state, "ship-wheel-selection", expected, observed)
-                elseif handle ~= nil then
+                    session.diagnostic(state, "ship-wheel-selection", observed)
+                end
+                if handle ~= nil and payload ~= nil then
                     session.complete(state, handle)
                     -- Native now owns the selected reward and starts combat.
                     -- The later SpawnRoomReward contact cannot occur before

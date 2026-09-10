@@ -96,7 +96,7 @@ local function runWheel(offerCount, pickedOfferKey, selectedIndex)
     local active, phase, wheel = fixture(offerCount, pickedOfferKey)
     local state = { state = "synchronized" }
     local nativeEncounter = {}
-    local windows, completed, mismatches = {}, {}, {}
+    local windows, completed, diagnostics = {}, {}, {}
     local handle = {}
     local room = {
         current = function() return active end,
@@ -120,9 +120,8 @@ local function runWheel(offerCount, pickedOfferKey, selectedIndex)
     }
     local session = {
         complete = function(_, value) completed[#completed + 1] = value end,
-        mismatch = function(_, checkpoint, expected, observed)
-            mismatches[#mismatches + 1] = { checkpoint, expected, observed }
-            state.state = "desynchronized"
+        diagnostic = function(_, checkpoint, observed)
+            diagnostics[#diagnostics + 1] = { checkpoint, observed }
         end,
     }
     local shipCombat = thessaly.create()
@@ -156,7 +155,7 @@ local function runWheel(offerCount, pickedOfferKey, selectedIndex)
     end, nativeEncounter, {})
     return {
         result = result, chosenRewards = chosenRewards, obstacles = obstacles,
-        selected = selected, windows = windows, completed = completed, mismatches = mismatches,
+        selected = selected, windows = windows, completed = completed, diagnostics = diagnostics,
     }
 end
 
@@ -167,20 +166,20 @@ function TestThessaly.testForcesOneAndTwoOfferWheelCohortsAndCompletesExactChoic
     lu.assertEquals(one.obstacles[1].__runPlannerOfferKey, "offer1")
     lu.assertEquals(one.windows, { "shipPreCombat:wheel1", "shipPostCombat:wheel1" })
     lu.assertEquals(#one.completed, 1)
-    lu.assertEquals(one.mismatches, {})
+    lu.assertEquals(one.diagnostics, {})
 
     local two = runWheel(2, "offer2", 2)
     lu.assertEquals(two.chosenRewards, { "ZeusUpgrade", "MaxHealthDrop" })
     lu.assertEquals(two.obstacles[2].__runPlannerOfferKey, "offer2")
     lu.assertEquals(#two.completed, 1)
-    lu.assertEquals(two.mismatches, {})
+    lu.assertEquals(two.diagnostics, {})
 end
 
 function TestThessaly.testDivergentWheelChoiceDoesNotBlockNativeUse()
     local result = runWheel(2, "offer2", 1)
     lu.assertEquals(result.selected, result.obstacles[1])
-    lu.assertEquals(result.completed, {})
-    lu.assertEquals(result.mismatches, { { "ship-wheel-selection", "offer2", "offer1" } })
+    lu.assertEquals(#result.completed, 1)
+    lu.assertEquals(result.diagnostics, { { "ship-wheel-selection", "offer1" } })
 end
 
 function TestThessaly.testSelectedWheelRewardBindsAndCompletesThroughStandardPickupLifecycle()
@@ -236,7 +235,7 @@ function TestThessaly.testSelectedWheelRewardBindsAndCompletesThroughStandardPic
     }
     local session = {
         complete = function(_, handle) completed[#completed + 1] = handle; return true end,
-        mismatch = function() error("unexpected mismatch") end,
+        diagnostic = function() error("unexpected diagnostic") end,
     }
     local shipCombat = thessaly.create()
     navigation.attach(module, session, function() return state end, function() end, {}, room, nil,

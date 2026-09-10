@@ -2,8 +2,8 @@
 -- resolved tree; this module scopes only the native random construction.
 local hexTree = {}
 
-local function mismatch(scope, checkpoint, expected, observed)
-    if scope and scope.mismatch then scope.mismatch(checkpoint, expected, observed) end
+local function diagnostic(scope, checkpoint, expected, observed)
+    if scope and scope.diagnostic then scope.diagnostic(checkpoint, expected, observed) end
 end
 local function keys(values)
     local result = {}
@@ -20,9 +20,9 @@ function hexTree.create()
     local tree = {}
     local pending, active
 
-    function tree.prepare(expected, mismatchCallback)
+    function tree.prepare(expected, diagnosticCallback)
         local scope = {
-            prior = pending, expected = expected, mismatch = mismatchCallback,
+            prior = pending, expected = expected, diagnostic = diagnosticCallback,
             rare = keys(expected.rareTalentKeys), epic = keys(expected.epicTalentKeys),
             godSent = expected.godSent and expected.godSent.olympianTalentKey,
         }
@@ -32,10 +32,10 @@ function hexTree.create()
     function tree.clear(scope)
         if pending ~= scope then return end
         pending = scope.prior
-        if not scope.created then mismatch(scope, "hex-tree-contact", "CreateTalentTree", "missing") end
+        if not scope.created then diagnostic(scope, "hex-tree-contact", "CreateTalentTree", "missing") end
     end
-    function tree.realize(expected, mismatchCallback, action)
-        local scope = tree.prepare(expected, mismatchCallback)
+    function tree.realize(expected, diagnosticCallback, action)
+        local scope = tree.prepare(expected, diagnosticCallback)
         local ok, result = pcall(action)
         tree.clear(scope)
         if not ok then error(result, 0) end
@@ -51,9 +51,9 @@ function hexTree.create()
             local ok, result = pcall(base, spellData)
             active = prior
             if not ok then error(result, 0) end
-            for key in pairs(scope.rare) do mismatch(scope, "hex-tree-rare", key, "missing") end
-            for key in pairs(scope.epic) do mismatch(scope, "hex-tree-epic", key, "missing") end
-            if scope.godSent then mismatch(scope, "hex-tree-god-sent", scope.godSent, "missing") end
+            for key in pairs(scope.rare) do diagnostic(scope, "hex-tree-rare", key, "missing") end
+            for key in pairs(scope.epic) do diagnostic(scope, "hex-tree-epic", key, "missing") end
+            if scope.godSent then diagnostic(scope, "hex-tree-god-sent", scope.godSent, "missing") end
             return result
         end)
         module.hooks.wrap("GetRandomValue", "run-planner-hex-layout", function(_, _, base, values, ...)
@@ -61,7 +61,7 @@ function hexTree.create()
                 for _, value in ipairs(values) do
                     if type(value) == "table" and value.Name == active.expected.layoutKey then return value end
                 end
-                mismatch(active, "hex-tree-layout", active.expected.layoutKey, "native-ineligible")
+                diagnostic(active, "hex-tree-layout", active.expected.layoutKey, "native-ineligible")
             end
             return base(values, ...)
         end)

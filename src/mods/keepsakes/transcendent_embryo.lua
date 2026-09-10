@@ -25,10 +25,9 @@ function embryo.attach(module, session, getState, report, room)
         if payload then
             local observed = type(result) == "table" and (result.Name or result.TraitName) or result
             if observed ~= payload.transaction.target then
-                session.mismatch(state, "transcendent-embryo-target", payload.transaction.target, observed)
-            else
-                session.complete(state, handle)
+                session.diagnostic(state, "transcendent-embryo-target", observed)
             end
+            session.complete(state, handle)
         end
         report(runtime)
         return result

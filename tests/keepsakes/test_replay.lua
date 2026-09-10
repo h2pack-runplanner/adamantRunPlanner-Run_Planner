@@ -30,9 +30,9 @@ local function capture(result)
         resolve = coordinator.resolve,
         begin = coordinator.begin,
         complete = coordinator.complete,
-        mismatch = function(target, checkpoint, expected, actual)
-            target.state = "mismatch"
-            target.firstMismatch = { checkpoint = checkpoint, expected = expected, observed = actual }
+        diagnostic = function(target, checkpoint, observed)
+            target.diagnostics = target.diagnostics or {}
+            target.diagnostics[#target.diagnostics + 1] = { checkpoint = checkpoint, observed = observed }
         end,
     }
     local module = { hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } }
@@ -114,7 +114,7 @@ function TestKeepsakeReplay.testExhaustedHammerAndEmbryoReplayRemainNativeContac
     lu.assertEquals(state.state, "synchronized")
 end
 
-function TestKeepsakeReplay.testRackCarrierCannotClaimReplayAndSelectorMismatchKeepsNativeReturn()
+function TestKeepsakeReplay.testRackCarrierCannotClaimReplayAndSelectorDiagnosticKeepsNativeReturn()
     local callbacks, state, observed, completed = capture({
         experimentalHammer = { kind = "selected", traitKey = "HammerTrait" },
     })
@@ -133,9 +133,11 @@ function TestKeepsakeReplay.testRackCarrierCannotClaimReplayAndSelectorMismatchK
             { { Name = "Wrong" } })
     end)
     lu.assertEquals(selectorReturn.Name, "Wrong")
-    lu.assertEquals(state.state, "mismatch")
-    lu.assertEquals(state.firstMismatch.checkpoint, "availability:traitEligibility")
-    lu.assertNil(completed())
+    lu.assertEquals(state.state, "synchronized")
+    lu.assertEquals(state.diagnostics, {
+        { checkpoint = "availability:traitEligibility", observed = "missing candidate" },
+    })
+    lu.assertTrue(completed())
 end
 
 function TestKeepsakeReplay.testStartingCarrierCannotClaimReplay()

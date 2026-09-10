@@ -10,7 +10,7 @@ local function attach(transaction)
     local handle = {}
     local active = {}
     local state = { state = "synchronized" }
-    local completed, mismatches, reports = 0, {}, 0
+    local completed, diagnostics, reports = 0, {}, 0
     local room = {
         current = function() return active end,
         resolve = function(_, _, contact)
@@ -28,14 +28,14 @@ local function attach(transaction)
             lu.assertEquals(value, handle)
             completed = completed + 1
         end,
-        mismatch = function(_, checkpoint, expected, observed)
-            mismatches[#mismatches + 1] = {
-                checkpoint = checkpoint, expected = expected, observed = observed,
+        diagnostic = function(_, checkpoint, observed)
+            diagnostics[#diagnostics + 1] = {
+                checkpoint = checkpoint, observed = observed,
             }
         end,
     }
     fountain.attach(module, session, function() return state end, function() reports = reports + 1 end, room)
-    return callbacks, function() return completed end, function() return mismatches end,
+    return callbacks, function() return completed end, function() return diagnostics end,
         function() return reports end
 end
 
@@ -78,29 +78,32 @@ function TestAromaticPhial.testThreadedPhialContactForcesOnlyThePublishedTrait()
     _G.CurrentRun = priorRun
 end
 
-function TestAromaticPhial.testThreadedMissingTargetPublishesMismatchAndLeavesNativeSelectionAlone()
-    local callbacks, completed, mismatches, reports = attach({
+function TestAromaticPhial.testMissingTargetCompletesItsTerminalAfterOneNativeCall()
+    local callbacks, completed, diagnostics, reports = attach({
         kind = "fountainUse", interactionKey = "fountain", aromaticPhialTarget = "MissingTrait",
     })
     local native = { Name = "NativeTrait" }
     local phial = { Name = "FountainRarityKeepsake", Uses = 1, FountainRarity = {} }
     local priorRun = _G.CurrentRun
+    local nativeCalls = 0
     _G.CurrentRun = { Hero = { Traits = { phial, native } } }
     local delayed
     callbacks.UseHealthFountain(nil, {}, function()
         delayed = function()
             return callbacks.AddRarityToTraits(nil, {}, function(_, args)
-            lu.assertNil(args.ForceUpgrade)
-            return native
+                nativeCalls = nativeCalls + 1
+                lu.assertNil(args.ForceUpgrade)
+                return native
             end, phial, { NumTraits = 1 })
         end
     end, {}, {})
     lu.assertEquals(reports(), 1)
     lu.assertEquals(delayed(), native)
     _G.CurrentRun = priorRun
-    lu.assertEquals(completed(), 0)
-    lu.assertEquals(mismatches()[1], {
-        checkpoint = "aromatic-phial-target", expected = "MissingTrait", observed = "missing trait",
+    lu.assertEquals(completed(), 1)
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertEquals(diagnostics(), {
+        { checkpoint = "aromatic-phial-target", observed = "missing trait" },
     })
     lu.assertEquals(reports(), 2)
 end
