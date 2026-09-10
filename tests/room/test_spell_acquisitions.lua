@@ -20,7 +20,7 @@ function TestSpellAcquisitions.testCreatedHexTreesDoNotSharePendingScopes()
     lu.assertNotNil(firstCallbacks.CreateTalentTree)
 end
 
-local function capture(state, payload, treeAdapter, spellAdapter)
+local function capture(state, payload, treeAdapter, spellAdapter, isBound)
     local callbacks = {}
     local module = { hooks = { wrap = function(name, _, callback)
         local prior = callbacks[name]
@@ -31,14 +31,23 @@ local function capture(state, payload, treeAdapter, spellAdapter)
             end, ...)
         end
     end } }
-    local completed, mismatches = {}, {}
+    local completed, mismatches, claims = {}, {}, 0
     local handle = {}
+    local claimed = {}
     local room = {
         current = function() return { id = "room" } end,
-        bound = function(_, _, item) return item and handle or nil end,
+        bound = function(_, _, item)
+            if isBound == false then return claimed[item] end
+            return item and handle or nil
+        end,
         peek = function() return payload end,
         begin = function() return true end,
-        claimReady = function() return nil end,
+        claimReady = function(_, _, contact, item, compatible)
+            if isBound ~= false or compatible(payload.transaction, contact) == nil then return nil end
+            claims = claims + 1
+            claimed[item] = handle
+            return handle, payload
+        end,
     }
     local session = {
         complete = function(_, value) completed[#completed + 1] = value end,
@@ -50,7 +59,49 @@ local function capture(state, payload, treeAdapter, spellAdapter)
     spellAdapter = spellAdapter or spell
     treeAdapter.attach(module)
     spellAdapter.attach(module, session, function() return state end, function() end, room, treeAdapter)
-    return callbacks, completed, mismatches
+    return callbacks, completed, mismatches, function() return claims end
+end
+
+function TestSpellAcquisitions.testUnboundPurchasedSpellClaimsItsPublishedRole()
+    local prior = _G.SpellData
+    _G.SpellData = {
+        SpellOne = { TraitName = "SpellOneTrait" }, SpellTwo = { TraitName = "SpellTwoTrait" },
+        SpellThree = { TraitName = "SpellThreeTrait" },
+    }
+    local offer = {
+        kind = "traits", giver = "SpellDrop", selected = "option-1",
+        options = {
+            { key = "SpellOneTrait" }, { key = "SpellTwoTrait" }, { key = "SpellThreeTrait" },
+        },
+        hexTree = { layoutKey = "Lung", rareTalentKeys = {}, epicTalentKeys = {} },
+    }
+    local detail = {
+        disposition = "normal", lifecyclePoint = "purchase", gameName = "SpellDrop", traitOffer = offer,
+    }
+    local payload = { transaction = { kind = "shopPurchase", roles = { detail } }, detail = detail }
+    local callbacks, completed, mismatches, claims = capture(
+        { state = "synchronized" }, payload, nil, nil, false)
+    local item = { Name = "SpellDrop" }
+    callbacks.OpenSpellScreen(nil, nil, function(source)
+        local screen = { Source = source, Components = {} }
+        callbacks.CreateSpellButtons(nil, nil, function(value)
+            local values = { "SpellOne", "SpellTwo", "SpellThree" }
+            for index = 1, 3 do
+                local name = callbacks.RemoveRandomValue(nil, nil,
+                    function(pool) return table.remove(pool, 1) end, values)
+                value.Components[index] = { TraitName = _G.SpellData[name].TraitName }
+            end
+        end, screen)
+        callbacks.AcceptAndCloseSpellScreen(nil, nil, function()
+            return callbacks.CreateTalentTree(nil, nil, function()
+                return { Name = "Lung", {} }
+            end, {})
+        end, screen, screen.Components[1])
+    end, item, {}, nil)
+    lu.assertEquals(claims(), 1)
+    lu.assertEquals(#completed, 1)
+    lu.assertEquals(mismatches, {})
+    _G.SpellData = prior
 end
 
 function TestSpellAcquisitions.testFreshImportedSpellAdapterUsesTheProvidedHexTree()

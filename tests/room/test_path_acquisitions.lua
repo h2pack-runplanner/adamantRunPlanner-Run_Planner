@@ -76,8 +76,11 @@ function TestPathAcquisitions.testOneThreeAndFivePointPickupsCompleteOnlyAfterTh
     end
 end
 
-function TestPathAcquisitions.testUnboundPathPickupClaimsOnlyAfterNativeAcceptance()
-    local callbacks, item, began, completed = capture(payload("TalentDrop"), false)
+function TestPathAcquisitions.testUnboundPurchasedPathCarrierClaimsOnlyAfterNativeAcceptance()
+    local row = payload("TalentDrop")
+    row.transaction.kind = "shopPurchase"
+    row.detail.lifecyclePoint = "purchase"
+    local callbacks, item, began, completed = capture(row, false)
     local result = use(callbacks, item, function() return "native-screen-return" end)
     lu.assertEquals(result, "native-screen-return")
     lu.assertEquals(began(), 1)

@@ -432,13 +432,9 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
     end)
     local state = { state = "synchronized", plan = plan, room = room }
     local active = assert(roomCoordinatorModule.enter(state, occurrence))
-    local root = assert(roomCoordinatorModule.resolve(state, active, { kind = "offer", offerKey = "Boon" }))
     local box = { Name = "BlindBoxLoot" }
     local loot = { Name = "HeraUpgrade", GodLoot = true }
-    local boxHandle = assert(roomCoordinatorModule.resolve(state, active,
-        { kind = "materialized", gameName = box.Name, source = root }))
-    lu.assertTrue(roomCoordinatorModule.bind(state, active, boxHandle, box) ~= nil)
-    lu.assertNotNil(roomCoordinatorModule.peek(state, boxHandle))
+    lu.assertNil(roomCoordinatorModule.bound(state, active, box))
     local session = {
         current = roomCoordinatorModule.current,
         peek = roomCoordinatorModule.peek,
@@ -468,7 +464,7 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
     callbacks.UseConsumableItem(nil, {}, function(nativeItem)
         lu.assertTrue(callbacks.ConsumableUsedPresentation(nil, {}, function() return true end,
             _G.CurrentRun, nativeItem, {}))
-        lu.assertNotNil(roomCoordinatorModule.peek(state, boxHandle))
+        lu.assertNotNil(roomCoordinatorModule.bound(state, active, nativeItem))
         callbacks.UnwrapRandomLoot(nil, {}, function()
             callbacks.GiveLoot(nil, {}, function(args)
                 lu.assertEquals(args.ForceLootName, "HeraUpgrade")
@@ -477,6 +473,8 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
         end, nativeItem)
     end, box, {}, {})
     lu.assertEquals(#completions, 0)
+    local boxHandle = roomCoordinatorModule.bound(state, active, box)
+    lu.assertNotNil(boxHandle)
     lu.assertTrue(rawequal(roomCoordinatorModule.bound(state, active, loot), boxHandle))
     lu.assertEquals(roomCoordinatorModule.peek(state, boxHandle).detail, node.roles[2])
     callbacks.HandleLootPickup(nil, {}, function() end, _G.CurrentRun, loot, {})

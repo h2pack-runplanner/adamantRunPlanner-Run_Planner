@@ -64,6 +64,21 @@ function TestOrdinaryTraits.testHammerAndHermesAreOrdinaryNativeCarriers()
     lu.assertFalse(ordinary.isCarrier({ Name = "Chaos" }, { kind = "traits", options = {} }))
 end
 
+function TestOrdinaryTraits.testPublishedNormalRoleDoesNotDependOnPurchaseOrPickupCarrier()
+    for _, carrier in ipairs({
+        { kind = "acquisition", lifecyclePoint = "roomRewardPickup" },
+        { kind = "shopPurchase", lifecyclePoint = "purchase" },
+    }) do
+        local role = {
+            role = "self", disposition = "normal", lifecyclePoint = carrier.lifecyclePoint,
+            kind = "loot", gameName = "ApolloUpgrade", traitOffer = { kind = "traits" },
+        }
+        lu.assertTrue(rawequal(ordinary.normalRole({ kind = carrier.kind, roles = { role } }, {
+            gameName = "ApolloUpgrade",
+        }), role))
+    end
+end
+
 function TestOrdinaryTraits.testEncounterLootCarriersMatchOnlyTheirPublishedGiver()
     for _, witness in ipairs({
         { name = "NPC_Artemis_Field_01", giver = "Artemis" },

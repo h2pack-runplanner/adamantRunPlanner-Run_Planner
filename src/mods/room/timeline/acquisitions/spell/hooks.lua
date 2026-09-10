@@ -7,7 +7,7 @@ local function offerFor(payload)
         and type(offer.hexTree) == "table" and offer or nil
 end
 local function spellRole(transaction, contact)
-    if type(transaction) ~= "table" or transaction.kind ~= "acquisition" then return nil end
+    if type(transaction) ~= "table" then return nil end
     for _, role in ipairs(transaction.roles or {}) do
         local offer = role.traitOffer
         if role.gameName == contact.gameName and role.disposition == "normal" and type(offer) == "table"

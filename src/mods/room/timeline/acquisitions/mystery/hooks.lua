@@ -58,8 +58,8 @@ function mystery.attach(module, session, getState, report, room)
         }
     end
 
-    local function acquisitionRole(transaction, contact)
-        if type(transaction) ~= "table" or transaction.kind ~= "acquisition" then return nil end
+    local function boxRole(transaction, contact)
+        if type(transaction) ~= "table" then return nil end
         for _, role in ipairs(transaction.roles or {}) do
             if role.role == "box" and role.gameName == contact.gameName then
                 return role
@@ -96,7 +96,7 @@ function mystery.attach(module, session, getState, report, room)
             if scope.handle == nil and type(room.claimReady) == "function" then
                 scope.handle, scope.payload = room.claimReady(scope.state, scope.current, {
                     kind = "mysteryBox", gameName = nativeName(item),
-                }, item, acquisitionRole)
+                }, item, boxRole)
             end
             if scope.handle == nil then return result end
             scope.payload = room.begin(scope.state, scope.handle)

@@ -75,6 +75,19 @@ local function levelRow(name, count, target)
     return { transaction = transaction, detail = detail }
 end
 
+function TestLevelAcquisitions.testPublishedVisibleLevelRoleDoesNotDependOnPurchaseOrPickupCarrier()
+    for _, carrier in ipairs({
+        { kind = "acquisition", lifecyclePoint = "roomRewardPickup" },
+        { kind = "shopPurchase", lifecyclePoint = "purchase" },
+    }) do
+        local row = levelRow("StackUpgrade", 1, "Target")
+        row.transaction.kind = carrier.kind
+        row.detail.lifecyclePoint = carrier.lifecyclePoint
+        lu.assertTrue(rawequal(
+            levels.visibleRole(row.transaction, { gameName = "StackUpgrade" }), row.detail))
+    end
+end
+
 function TestLevelAcquisitions.testVisibleCountsOneTwoThreeAndNativeFatedBonusIsAppliedOnce()
     local priorFate, priorValue = _G.IsFateValid, _G.GetTotalHeroTraitValue
     _G.IsFateValid = function() return true end
@@ -342,8 +355,10 @@ function TestLevelAcquisitions.testIneligibleNectarRestoresNativeArgumentsBefore
     _G.CurrentRun = priorRun
 end
 
-function TestLevelAcquisitions.testUnboundDirectNativeCallClaimsAtAcceptedPresentation()
-    local item, _, callbacks, _, _, _, begins, completions = directFixture("Target", 1, false)
+function TestLevelAcquisitions.testUnboundPurchasedDirectLevelClaimsAtAcceptedPresentation()
+    local item, row, callbacks, _, _, _, begins, completions = directFixture("Target", 1, false)
+    row.transaction.kind = "shopPurchase"
+    row.detail.lifecyclePoint = "purchase"
     local target = { Name = "Target", StackNum = 2 }
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = { target } } }

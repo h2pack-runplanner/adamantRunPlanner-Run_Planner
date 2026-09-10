@@ -14,7 +14,7 @@ local function nativeName(item)
 end
 
 local function pathRole(transaction, contact)
-    if type(transaction) ~= "table" or transaction.kind ~= "acquisition" then return nil end
+    if type(transaction) ~= "table" then return nil end
     for _, role in ipairs(transaction.roles or {}) do
         if role.disposition == "normal" and role.gameName == contact.gameName
             and pathNames[role.gameName] and role.traitOffer == nil and role.levelResolution == nil then

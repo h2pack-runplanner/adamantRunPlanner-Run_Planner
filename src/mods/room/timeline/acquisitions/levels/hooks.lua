@@ -85,7 +85,7 @@ local function carrier(state, room, native)
 end
 
 local function directLevelRole(transaction, contact)
-    if type(transaction) ~= "table" or transaction.kind ~= "acquisition" then return nil end
+    if type(transaction) ~= "table" then return nil end
     for _, role in ipairs(transaction.roles or {}) do
         if role.gameName == contact.gameName
             and role.disposition == "normal"
@@ -97,7 +97,7 @@ local function directLevelRole(transaction, contact)
 end
 
 function levels.visibleRole(transaction, contact)
-    if type(transaction) ~= "table" or transaction.kind ~= "acquisition" then return nil end
+    if type(transaction) ~= "table" then return nil end
     for _, role in ipairs(transaction.roles or {}) do
         if role.gameName == contact.gameName and role.disposition == "normal"
             and role.levelResolution ~= nil then
