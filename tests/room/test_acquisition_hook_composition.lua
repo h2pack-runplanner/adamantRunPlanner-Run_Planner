@@ -151,8 +151,6 @@ function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTr
     mysteryAcquisitions.attach(module, session, function() return state end, function() end, roomCoordinatorModule)
     local mysteryCallbacks = {
         CreateLoot = callbacks.CreateLoot,
-        UseConsumableItem = callbacks.UseConsumableItem,
-        ConsumableUsedPresentation = callbacks.ConsumableUsedPresentation,
         UnwrapRandomLoot = callbacks.UnwrapRandomLoot,
         GiveLoot = callbacks.GiveLoot,
     }
@@ -160,16 +158,12 @@ function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTr
     traitAcquisitions.attach(module, session, function() return state end,
         function() end, roomCoordinatorModule, seaStar)
 
-    callbacks.UseConsumableItem(nil, {}, function(nativeItem)
-        lu.assertTrue(callbacks.ConsumableUsedPresentation(nil, {}, function() return true end,
-            _G.CurrentRun, nativeItem, {}))
-        callbacks.UnwrapRandomLoot(nil, {}, function()
-            callbacks.GiveLoot(nil, {}, function(args)
-                lu.assertEquals(args.ForceLootName, "HeraUpgrade")
-                return callbacks.CreateLoot(nil, {}, function() return loot end, { Name = args.ForceLootName })
-            end, {})
-        end, nativeItem)
-    end, box, {}, {})
+    callbacks.UnwrapRandomLoot(nil, {}, function()
+        callbacks.GiveLoot(nil, {}, function(args)
+            lu.assertEquals(args.ForceLootName, "HeraUpgrade")
+            return callbacks.CreateLoot(nil, {}, function() return loot end, { Name = args.ForceLootName })
+        end, {})
+    end, box)
     lu.assertEquals(#completions, 0)
     local boxHandle = roomCoordinatorModule.bound(state, active, box)
     lu.assertNotNil(boxHandle)

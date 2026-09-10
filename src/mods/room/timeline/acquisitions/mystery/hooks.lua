@@ -1,6 +1,6 @@
 -- Producer-agnostic execution boundary for Mystery Box acquisitions. Native
--- use and trait effects remain authoritative; this adapter only claims an
--- accepted box, forces the published provider, and retains one owner handle.
+-- unwrap and trait effects remain authoritative; this adapter claims at the
+-- native unwrap, forces the published provider, and retains one owner handle.
 local mystery = {}
 
 local function copy(value)
@@ -21,7 +21,6 @@ local function lifecycleRole(payload, point)
 end
 
 function mystery.attach(module, session, getState, report, room)
-    local boxUses = setmetatable({}, { __mode = "k" })
     local unwrapScope
 
     module.hooks.wrap("CreateLoot", "run-planner-mystery-provider-bind", function(_, _, base, args)
@@ -54,7 +53,7 @@ function mystery.attach(module, session, getState, report, room)
         end
         return {
             state = state, current = current, handle = handle, item = item,
-            payload = payload, accepted = false,
+            payload = payload,
         }
     end
 
@@ -68,46 +67,24 @@ function mystery.attach(module, session, getState, report, room)
         return nil
     end
 
-    module.hooks.wrap("UseConsumableItem", "run-planner-mystery-use", function(_, runtime, base,
-        item, args, user)
-        local state = getState(runtime)
-        local scope = boundScope(state, item)
-        if scope == nil and nativeName(item) == "BlindBoxLoot" then
-            scope = { state = state, current = room.current(state), handle = nil,
-                item = item, payload = nil, accepted = false }
-        end
-        if scope == nil then return base(item, args, user) end
-        boxUses[item] = scope
-        local ok, result = pcall(base, item, args, user)
-        if not ok then
-            boxUses[item] = nil
-            error(result, 0)
-        end
-        if not scope.accepted then boxUses[item] = nil end
-        if scope.accepted then report(runtime) end
-        return result
-    end)
-
-    module.hooks.wrap("ConsumableUsedPresentation", "run-planner-mystery-accepted", function(_, _, base,
-        currentRun, item, args)
-        local result = base(currentRun, item, args)
-        local scope = boxUses[item]
-        if scope ~= nil and not scope.accepted and result ~= false then
-            if scope.handle == nil and type(room.claimReady) == "function" then
-                scope.handle, scope.payload = room.claimReady(scope.state, scope.current, {
-                    kind = "mysteryBox", gameName = nativeName(item),
-                }, item, boxRole)
-            end
-            if scope.handle == nil then return result end
-            scope.payload = room.begin(scope.state, scope.handle)
-            if scope.payload ~= nil then scope.accepted = true end
-        end
-        return result
-    end)
-
     module.hooks.wrap("UnwrapRandomLoot", "run-planner-mystery-unwrap", function(_, runtime, base, source)
-        local scope = boxUses[source]
-        if scope == nil or scope.payload == nil then return base(source) end
+        local state = getState(runtime)
+        local scope = boundScope(state, source)
+        if scope == nil and nativeName(source) == "BlindBoxLoot" then
+            local current = room.current(state)
+            local handle, payload = room.claimReady(state, current, {
+                kind = "mysteryBox", gameName = nativeName(source),
+            }, source, boxRole)
+            if handle ~= nil then
+                scope = {
+                    state = state, current = current, handle = handle,
+                    item = source, payload = payload,
+                }
+            end
+        end
+        if scope == nil then return base(source) end
+        scope.payload = room.begin(scope.state, scope.handle)
+        if scope.payload == nil then return base(source) end
         local hidden = lifecycleRole(scope.payload, "afterUnwrap")
         if hidden == nil then return base(source) end
         local prior = unwrapScope

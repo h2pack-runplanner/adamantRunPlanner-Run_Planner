@@ -159,6 +159,8 @@ function TestTravelDealRefills.testShrineRefillUsesPublishedSourceDelayAndEventu
         __runPlannerGenerationKey = refill.source.generationKey,
     }
     local generated, screen
+    local priorSurfaceShopData = _G.SurfaceShopData
+    _G.SurfaceShopData = { DelayMin = 2, DelayMax = 8 }
     callbacks.HandleSurfaceShopAction(nil, {}, function()
         generated = fill(callbacks, { GroupsOf = { {
             OptionsData = { { Name = "Other" }, { Name = refill.replacement.optionKey } },
@@ -166,11 +168,14 @@ function TestTravelDealRefills.testShrineRefillUsesPublishedSourceDelayAndEventu
         _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = generated.StoreOptions } } }
         screen = { Components = {} }
         callbacks.CreateSurfaceShopButtons(nil, {}, function(value)
-            value.Components.PurchaseButton2 = { Data = {} }
+            local option = generated.StoreOptions[2]
+            option.RoomDelay = callbacks.RandomInt(nil, {}, function() return 8 end, 2, 8)
+            value.Components.PurchaseButton2 = { Data = option }
         end, screen)
         return true
     end, {}, { Data = source }, {})
     _G.CurrentRun = nil
+    _G.SurfaceShopData = priorSurfaceShopData
     lu.assertEquals(generated.StoreOptions[2].Name, "TalentDrop")
     lu.assertEquals(generated.StoreOptions[2].RoomDelay, 4)
     lu.assertEquals(screen.Components.PurchaseButton2.Data.RoomDelay, 4)

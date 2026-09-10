@@ -23,11 +23,12 @@ function TestFeatureInteractionHooks.testShrinePublishesAllThreeOffersAndKeepsUn
                 {
                     generationKey = "initial:first", optionKey = "BoonA",
                     rewardType = "BoonA", slotIndex = 1,
-                    purchase = { roomDelay = 6, rushed = true },
+                    purchase = { roomDelay = 2, rushed = true },
                 },
                 {
                     generationKey = "initial:secondLeft", optionKey = "BoonB",
                     rewardType = "BoonB", slotIndex = 2,
+                    purchase = { roomDelay = 8, rushed = false },
                 },
                 {
                     generationKey = "initial:secondRight", optionKey = "BoonC",
@@ -60,15 +61,29 @@ function TestFeatureInteractionHooks.testShrinePublishesAllThreeOffersAndKeepsUn
     lu.assertEquals(generated.StoreOptions[2].__runPlannerGenerationKey, "initial:secondLeft")
     lu.assertEquals(generated.StoreOptions[3].__runPlannerGenerationKey, "initial:secondRight")
     local priorRun = _G.CurrentRun
+    local priorSurfaceShopData = _G.SurfaceShopData
+    _G.SurfaceShopData = { DelayMin = 2, DelayMax = 8 }
     _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = generated.StoreOptions } } }
     local screen = { Components = {} }
+    local observedDuringBase
     callbacks.CreateSurfaceShopButtons(nil, {}, function(value)
-        for index = 1, 3 do value.Components["PurchaseButton" .. index] = { Data = {} } end
+        for index = 1, 3 do
+            local option = generated.StoreOptions[index]
+            option.RoomDelay = callbacks.RandomInt(nil, {}, function()
+                return index == 1 and 8 or 2
+            end, 2, 8)
+            value.Components["PurchaseButton" .. index] = { Data = option }
+        end
+        observedDuringBase = generated.StoreOptions[1].RoomDelay
     end, screen)
     _G.CurrentRun = priorRun
-    lu.assertEquals(generated.StoreOptions[1].RoomDelay, 6)
-    lu.assertEquals(screen.Components.PurchaseButton1.Data.RoomDelay, 6)
-    lu.assertNil(generated.StoreOptions[2].RoomDelay)
+    _G.SurfaceShopData = priorSurfaceShopData
+    lu.assertEquals(observedDuringBase, 2)
+    lu.assertEquals(generated.StoreOptions[1].RoomDelay, 2)
+    lu.assertEquals(screen.Components.PurchaseButton1.Data.RoomDelay, 2)
+    lu.assertEquals(generated.StoreOptions[2].RoomDelay, 8)
+    lu.assertEquals(screen.Components.PurchaseButton2.Data.RoomDelay, 8)
+    lu.assertEquals(generated.StoreOptions[3].RoomDelay, 2)
     lu.assertEquals(mismatches, {})
 end
 
@@ -203,10 +218,11 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
     _G.CurrentRun = { Hero = { Traits = {} } }
     local completions = {}
     local node = {
-        owner = "mystery", kind = "acquisition", sourceOwner = "mystery", producerLifecycleKey = "shop", reward = { rewardType = "Boon" },
-        window = { kind = "standard", phase = "beforeCombat" },
+        owner = "mystery", kind = "acquisition", sourceOwner = "mystery",
+        producerLifecycleKey = "WorldShop", reward = { rewardType = "BlindBoxLoot" },
+        window = { kind = "postOutgoing" },
         roles = {
-            { role = "box", lifecyclePoint = "roomRewardPickup", gameName = "BlindBoxLoot" },
+            { role = "box", lifecyclePoint = "purchase", gameName = "BlindBoxLoot" },
             {
                 role = "hiddenSource", lifecyclePoint = "afterUnwrap", kind = "trait",
                 disposition = "normal", gameName = "HeraUpgrade",
@@ -234,6 +250,7 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
     end)
     local state = { state = "synchronized", plan = plan, room = room }
     local active = assert(roomCoordinatorModule.enter(state, occurrence))
+    assert(roomCoordinatorModule.window(state, "postOutgoing"))
     local box = { Name = "BlindBoxLoot" }
     local loot = { Name = "HeraUpgrade", GodLoot = true }
     lu.assertNil(roomCoordinatorModule.bound(state, active, box))
@@ -254,8 +271,6 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
     mysteryAcquisitions.attach(module, session, function() return state end, function() end, roomCoordinatorModule)
     local mysteryCallbacks = {
         CreateLoot = callbacks.CreateLoot,
-        UseConsumableItem = callbacks.UseConsumableItem,
-        ConsumableUsedPresentation = callbacks.ConsumableUsedPresentation,
         UnwrapRandomLoot = callbacks.UnwrapRandomLoot,
         GiveLoot = callbacks.GiveLoot,
     }
@@ -263,17 +278,13 @@ function TestFeatureInteractionHooks.testMysteryBoonPurchaseWaitsForItsTraitReso
     traitAcquisitions.attach(module, session, function() return state end,
         function() end, roomCoordinatorModule, traitSeaStar)
 
-    callbacks.UseConsumableItem(nil, {}, function(nativeItem)
-        lu.assertTrue(callbacks.ConsumableUsedPresentation(nil, {}, function() return true end,
-            _G.CurrentRun, nativeItem, {}))
-        lu.assertNotNil(roomCoordinatorModule.bound(state, active, nativeItem))
-        callbacks.UnwrapRandomLoot(nil, {}, function()
-            callbacks.GiveLoot(nil, {}, function(args)
-                lu.assertEquals(args.ForceLootName, "HeraUpgrade")
-                return callbacks.CreateLoot(nil, {}, function() return loot end, { Name = args.ForceLootName })
-            end, {})
-        end, nativeItem)
-    end, box, {}, {})
+    callbacks.UnwrapRandomLoot(nil, {}, function()
+        callbacks.GiveLoot(nil, {}, function(args)
+            lu.assertEquals(args.ForceLootName, "HeraUpgrade")
+            return callbacks.CreateLoot(nil, {}, function() return loot end, { Name = args.ForceLootName })
+        end, {})
+    end, box)
+    lu.assertNotNil(roomCoordinatorModule.bound(state, active, box))
     lu.assertEquals(#completions, 0)
     local boxHandle = roomCoordinatorModule.bound(state, active, box)
     lu.assertNotNil(boxHandle)

@@ -10,7 +10,7 @@ local function capture()
     return module, callbacks
 end
 
-function TestMysteryAcquisitions.testMysteryBoxForcesProviderOnlyAfterAcceptedUse()
+function TestMysteryAcquisitions.testMysteryBoxClaimsAndForcesProviderAtNativeUnwrap()
     local module, callbacks = capture()
     local state, item, provider = {}, { Name = "BlindBoxLoot" }, { Name = "HeraUpgrade" }
     local boxHandle = {}
@@ -39,17 +39,15 @@ function TestMysteryAcquisitions.testMysteryBoxForcesProviderOnlyAfterAcceptedUs
         end,
         bind = function(_, _, handle, native) bound[native] = handle; return handle end,
     }
-    local session = { complete = function() error("Mystery box must not complete at use") end }
+    local session = { complete = function() error("Mystery box must not complete at unwrap") end }
     mystery.attach(module, session, function() return state end, function() end, room)
-    callbacks.UseConsumableItem(nil, {}, function(nativeItem)
-        callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, nativeItem, {})
-        callbacks.UnwrapRandomLoot(nil, {}, function()
-            callbacks.GiveLoot(nil, {}, function(args)
-                lu.assertEquals(args.ForceLootName, provider.Name)
-                return callbacks.CreateLoot(nil, {}, function() return provider end, args)
-            end, {})
-        end, nativeItem)
-    end, item, {}, {})
+    lu.assertNil(bound[item])
+    callbacks.UnwrapRandomLoot(nil, {}, function()
+        callbacks.GiveLoot(nil, {}, function(args)
+            lu.assertEquals(args.ForceLootName, provider.Name)
+            return callbacks.CreateLoot(nil, {}, function() return provider end, args)
+        end, {})
+    end, item)
     lu.assertEquals(bound[item], boxHandle)
     lu.assertEquals(bound[provider], boxHandle)
 end
