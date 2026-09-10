@@ -41,6 +41,9 @@ end
 function pickups.attach(module, session, getState, report, room, seaStar)
     assert(type(seaStar) == "table", "direct pickup Sea Star instance is required")
     local activeUses = setmetatable({}, { __mode = "k" })
+    local function seaStarDiagnostic(state, checkpoint, expected, observed)
+        session.diagnostic(state, checkpoint, { expected = expected, observed = observed })
+    end
 
     module.hooks.wrap("UseConsumableItem", "run-planner-direct-pickup-use", function(_, runtime, base,
         item, args, user)
@@ -63,17 +66,16 @@ function pickups.attach(module, session, getState, report, room, seaStar)
         activeUses[item] = scope
         local ok, result = pcall(function()
             return seaStar.call(scope.seaStar, function() return base(item, args, user) end,
-                session.mismatch)
+                seaStarDiagnostic)
         end)
         if activeUses[item] == scope then activeUses[item] = nil end
         if not ok then error(result, 0) end
 
         if scope.accepted then
             if scope.payload ~= nil and not scope.completed then
-                if seaStar.requireConsumed(scope.seaStar, session.mismatch) then
-                    session.complete(state, scope.handle)
-                    scope.completed = true
-                end
+                seaStar.requireConsumed(scope.seaStar, seaStarDiagnostic)
+                session.complete(state, scope.handle)
+                scope.completed = true
             end
             if scope.completed and scope.seaStar.result and scope.seaStar.result.kind == "proc" then
                 room.releaseCompletedBinding(state, scope.current, scope.handle, item)

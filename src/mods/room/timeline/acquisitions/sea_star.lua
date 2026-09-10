@@ -25,7 +25,7 @@ function seaStar.create()
         return scope
     end
 
-    function instance.call(scope, invoke, mismatch)
+    function instance.call(scope, invoke, diagnostic)
         -- A generated object is unbound at call entry. Its accepted native
         -- presentation can claim the ready source and activate this scope before
         -- the game's chance contact later in the same call.
@@ -35,17 +35,17 @@ function seaStar.create()
         local ok, result = pcall(invoke)
         active = prior
         if not ok then error(result, 0) end
-        instance.requireConsumed(scope, mismatch)
+        instance.requireConsumed(scope, diagnostic)
         return result
     end
 
     -- Some native carriers settle an inner screen/function before their enclosing
     -- native call returns.  They must invoke this immediately before completion.
-    function instance.requireConsumed(scope, mismatch)
+    function instance.requireConsumed(scope, diagnostic)
         if scope == nil or scope.result == nil or scope.chanceConsumed then return true end
         if not scope.reportedMissing then
             scope.reportedMissing = true
-            mismatch(scope.state, "sea-star-chance", scope.result.kind, "missing")
+            diagnostic(scope.state, "sea-star-chance", scope.result.kind, "missing")
         end
         return false
     end

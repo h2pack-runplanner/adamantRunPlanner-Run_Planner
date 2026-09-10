@@ -80,9 +80,11 @@ function npc.attach(module, session, getState, report, room)
     end
 
     local function reportUnavailable(scope)
-        session.mismatch(scope.state, "npc-trait-offer", "published " ..
-            tostring(scope.payload and scope.payload.transaction.resolution.offer.giver) ..
-            " trait offer", nil)
+        session.diagnostic(scope.state, "npc-trait-offer", {
+            expected = "published " ..
+                tostring(scope.payload and scope.payload.transaction.resolution.offer.giver) ..
+                " trait offer", observed = nil,
+        })
     end
 
     local function attachChoice(functionName, giver)
@@ -106,10 +108,11 @@ function npc.attach(module, session, getState, report, room)
                     source = source, nativeOptions = nativeOptions,
                 }
                 if installInput(scope, invocationArgs) then
-                    choices[source] = scope
+                    scope.steered = true
                 else
                     reportUnavailable(scope)
                 end
+                choices[source] = scope
             end
             local result = base(source, invocationArgs, screen)
             report(runtime)
@@ -131,7 +134,8 @@ function npc.attach(module, session, getState, report, room)
             -- authored set at the shared menu contact after native preparation.
             if not adapter.applyNpcTraitOffer(scope.payload, source) then
                 reportUnavailable(scope)
-                choices[source] = nil
+            else
+                scope.steered = true
             end
         end
         local result = base(source, args)
@@ -150,7 +154,7 @@ function npc.attach(module, session, getState, report, room)
         local exact = expected ~= nil and expected.key == selected
         local prior = activeSelection
         local deferCompletion = false
-        if exact then
+        if exact and scope.steered then
             scope.selectedOption = expected
             activeSelection = scope
             local observer = selectionObservers[expected.key]
@@ -159,9 +163,7 @@ function npc.attach(module, session, getState, report, room)
         local ok, result = pcall(base, screen, button, args)
         activeSelection = prior
         if not ok then error(result, 0) end
-        if not exact then
-            session.mismatch(scope.state, "npc-trait-selection", expected and expected.key, selected)
-        elseif not deferCompletion then
+        if not deferCompletion then
             session.complete(scope.state, scope.handle)
         end
         choices[source] = nil

@@ -18,7 +18,9 @@ function shrine.attach(module, session, getState, report, room, refillScopes)
         local scope
         if purchased then
             if refill ~= nil and generationKey ~= refill.source.generationKey then
-                session.mismatch(state, "shrine-refill-source", refill.source.generationKey, generationKey)
+                session.diagnostic(state, "shrine-refill-source", {
+                    expected = refill.source.generationKey, observed = generationKey,
+                })
             elseif refill ~= nil then
                 scope = { kind = "shrine", refill = refill, handle = handle }
                 refillScopes.setShrine(scope)

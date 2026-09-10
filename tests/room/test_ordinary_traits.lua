@@ -138,6 +138,9 @@ function TestOrdinaryTraits.testArtemisEncounterLootUsesTheOrdinaryOfferLifecycl
         mismatch = function(_, checkpoint, expected, observed)
             mismatches[#mismatches + 1] = { checkpoint = checkpoint, expected = expected, observed = observed }
         end,
+        diagnostic = function(_, checkpoint, observed)
+            mismatches[#mismatches + 1] = { checkpoint = checkpoint, observed = observed }
+        end,
     }
     hooks.attach(module, session, function() return state end, function() end, room, seaStar)
     local loot = {
@@ -514,7 +517,7 @@ function TestOrdinaryTraits.testAllTogetherAcceptsForcedRemainingMemberAndExplic
     lu.assertEquals(mismatches(), {})
 end
 
-function TestOrdinaryTraits.testAllTogetherUnavailableExactGrantLeavesOuterIncompleteAndRunsNativeChoice()
+function TestOrdinaryTraits.testAllTogetherUnavailableGrantDiagnosesAndCompletesAtNativeTerminal()
     local offer = { kind = "traits", selected = "option1", options = {
         { key = "AllElementalBoon", allTogetherResult = {
             earth = "ElementalDamageBoon", fire = json.null, air = json.null, water = json.null,
@@ -528,8 +531,8 @@ function TestOrdinaryTraits.testAllTogetherUnavailableExactGrantLeavesOuterIncom
         { "ElementalOlympianDamageBoon" }, {}, {}, {},
     })
     lu.assertEquals(granted, { "ElementalOlympianDamageBoon" })
-    lu.assertEquals(completed(), 0)
-    lu.assertEquals(mismatches()[1].checkpoint, "all-together-grant")
+    lu.assertEquals(completed(), 1)
+    lu.assertEquals(mismatches()[1].checkpoint, "all-together-steering")
 
     setActive({ occurrence = { overview = {} } })
     local native = grant(callbacks, {
@@ -655,15 +658,15 @@ function TestOrdinaryTraits.testNaturalSelectionDoesNotUseAppliedLevelsAsSettlem
     lu.assertEquals(#mismatches(), 0)
 end
 
-function TestOrdinaryTraits.testNaturalSelectionUnavailableTargetLeavesNativeShuffleAndOuterIncomplete()
+function TestOrdinaryTraits.testNaturalSelectionUnavailableTargetDiagnosesAndCompletesAtNativeTerminal()
     local callbacks, _, completed, mismatches, setActive = attached(naturalOffer({ "Attack" }))
     local order
     selectNatural(callbacks, function()
         order = distribute(callbacks, { "Special" }, { "Special" })
     end)
     lu.assertEquals(order, { "Special" })
-    lu.assertEquals(completed(), 0)
-    lu.assertEquals(mismatches()[1].checkpoint, "natural-selection-order")
+    lu.assertEquals(completed(), 1)
+    lu.assertEquals(mismatches()[1].checkpoint, "natural-selection-steering")
 
     setActive({ occurrence = { overview = {} } })
     local native = distribute(callbacks, { "NativeOne", "NativeTwo" }, {})

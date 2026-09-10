@@ -41,6 +41,9 @@ function hooks.attach(module, session, getState, report, room, seaStar)
     local concaveStone = concaveStoneModule.create({
         module = module, session = session, getState = getState, room = room, ordinary = ordinary,
     })
+    local function diagnostic(state, checkpoint, expected, observed)
+        session.diagnostic(state, checkpoint, { expected = expected, observed = observed })
+    end
 
     local function scopeIsCurrent(state, pending)
         return pending ~= nil and pending.context == room.current(state) and state.state == "synchronized"
@@ -93,7 +96,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
     end
 
     local function completeNaturalSelection(state, pending)
-        if not pending.failed and pending.selectionReturned and pending.settled then
+        if pending.selectionReturned and pending.settled then
             naturalSelectionPending[pending.handle] = nil
             completeOuter(state, pending.handle)
         end
@@ -113,7 +116,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
     end
 
     local function completeTargetedAcquisition(state, pending)
-        if not pending.failed and pending.selectionReturned and pending.settled and pending.contacted then
+        if pending.selectionReturned and pending.settled then
             targetedAcquisitionPending[pending.handle] = nil
             completeOuter(state, pending.handle)
         end
@@ -208,8 +211,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         naturalSelectionForSelection, targetedAcquisitionForSelection, residual)
         if not ordinary.isCarrier(loot, offer) then return end
         if not residual and ordinary.selectedKey(payload) ~= selected then
-            if isAcquisition(payload) then completeOuter(state, handle)
-            else session.mismatch(state, "trait-selection", ordinary.selectedKey(payload), selected) end
+            completeOuter(state, handle)
             return
         end
         if allTogetherForSelection == nil and naturalSelectionForSelection == nil
@@ -241,8 +243,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         local expected = active.result[setKey]
         if ordinary.isNull(expected) then
             active.failed = true
-            discardPending(active)
-            session.mismatch(state, "all-together-grant", "exhausted " .. setKey, candidates)
+            diagnostic(state, "all-together-steering", "available " .. setKey, candidates)
             return base(candidates, rng)
         end
         local found = false
@@ -251,8 +252,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         end
         if not found then
             active.failed = true
-            discardPending(active)
-            session.mismatch(state, "all-together-grant", expected, "native-ineligible")
+            diagnostic(state, "all-together-steering", expected, "native-ineligible")
             return base(candidates, rng)
         end
         active.consumed[setKey] = true
@@ -280,13 +280,11 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         for _, setKey in ipairs({ "earth", "fire", "air", "water" }) do
             if not pending.failed and not ordinary.isNull(pending.result[setKey]) and not pending.consumed[setKey] then
                 pending.failed = true
-                discardPending(pending)
-                session.mismatch(state, "all-together-grant", pending.result[setKey], "missing")
+                diagnostic(state, "all-together-steering", pending.result[setKey], "missing")
             end
         end
         pending.settled = true
-        if not pending.failed and pending.selectionReturned and pending.consumed.earth and pending.consumed.fire
-            and pending.consumed.air and pending.consumed.water then
+        if pending.selectionReturned then
             allTogetherPending[handle] = nil
             completeOuter(state, handle)
         end
@@ -311,8 +309,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
             if not seen[target] then
                 if not available[target] then
                     pending.failed = true
-                    discardNaturalSelection(pending)
-                    session.mismatch(state, "natural-selection-order", target, "native-ineligible")
+                    diagnostic(state, "natural-selection-steering", target, "native-ineligible")
                     return base(candidates)
                 end
                 seen[target] = true
@@ -336,7 +333,6 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         local ok, result = pcall(base, args, originalTraitData)
         activeNaturalDistribution = nil
         if not ok then
-            discardNaturalSelection(pending)
             error(result, 0)
         end
         if not pending.failed and not pending.shuffled then
@@ -364,14 +360,10 @@ function hooks.attach(module, session, getState, report, room, seaStar)
             error(result, 0)
         end
         if not pending.contacted then
-            session.mismatch(state, "targeted-acquisition-target", pending.target, "missing native selection")
-            discardTargetedAcquisition(pending)
-        elseif pending.failed then
-            discardTargetedAcquisition(pending)
-        else
-            pending.settled = true
-            completeTargetedAcquisition(state, pending)
+            diagnostic(state, "targeted-acquisition-steering", pending.target, "missing native selection")
         end
+        pending.settled = true
+        completeTargetedAcquisition(state, pending)
         report(runtime)
         return result
     end)
@@ -384,7 +376,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         local target = equippedTrait(pending.target)
         if target == nil then
             pending.failed = true
-            session.mismatch(state, "targeted-acquisition-target", pending.target, "missing trait")
+            diagnostic(state, "targeted-acquisition-steering", pending.target, "missing trait")
             return base(source, args)
         end
         local forced = {}
@@ -441,8 +433,9 @@ function hooks.attach(module, session, getState, report, room, seaStar)
         -- A native reroll intentionally abandons the frozen initial offer.
         if ordinary.isCarrier(loot, offer) and reroll ~= true then
             if ordinary.install(payload, loot) ~= true then
-                session.mismatch(state, "trait-offer-install", "published native rows", nativeName(loot))
-            elseif isAcquisition(payload) and not requiresSelectedSteering(payload) then
+                diagnostic(state, "trait-offer-install", "published native rows", nativeName(loot))
+            end
+            if isAcquisition(payload) and not requiresSelectedSteering(payload) then
                 completeAfterInstall = true
             end
         end
@@ -510,17 +503,16 @@ function hooks.attach(module, session, getState, report, room, seaStar)
             local result
             if ordinary.isCarrier(loot, offer) and isAcquisition(payload) then
                 result = seaStar.call(seaStarScope, function() return base(screen, button, args) end,
-                    session.mismatch)
+                    diagnostic)
             else
                 result = base(screen, button, args)
             end
             if ordinary.isCarrier(loot, offer) then
                 if isAcquisition(payload) then
-                    if seaStar.requireConsumed(seaStarScope, session.mismatch) then
-                        completeOuter(state, handle)
-                    end
+                    seaStar.requireConsumed(seaStarScope, diagnostic)
+                    completeOuter(state, handle)
                 else
-                    session.mismatch(state, "trait-selection", ordinary.selectedKey(payload), selected)
+                    completeOuter(state, handle)
                 end
                 report(runtime)
             end
@@ -538,7 +530,7 @@ function hooks.attach(module, session, getState, report, room, seaStar)
             return seaStar.call(seaStarScope, function()
                 return callSelectionBase(state, base, screen, button, args, naturalSelectionForSelection,
                     targetedAcquisitionForSelection)
-            end, session.mismatch)
+            end, diagnostic)
         end)
         if not ok then
             if stone ~= nil then

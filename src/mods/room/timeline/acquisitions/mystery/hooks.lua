@@ -28,9 +28,10 @@ function mystery.attach(module, session, getState, report, room)
         local scope = unwrapScope
         if scope ~= nil and type(result) == "table"
             and nativeName(result) == scope.forcedName then
-            if room.bind(scope.state, scope.current, scope.handle, result) == nil
-                and type(session.mismatch) == "function" then
-                session.mismatch(scope.state, "timeline-binding", "published Mystery provider", nativeName(result))
+            if room.bind(scope.state, scope.current, scope.handle, result) == nil then
+                session.diagnostic(scope.state, "timeline-binding", {
+                    expected = "published Mystery provider", observed = nativeName(result),
+                })
             end
         end
         return result

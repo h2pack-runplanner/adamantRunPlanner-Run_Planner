@@ -30,9 +30,11 @@ function hooks.attach(module, session, getState, report, room, tree)
     assert(type(tree) == "table", "spell acquisition Hex Tree instance is required")
     local scopesByLoot = setmetatable({}, { __mode = "k" })
     local randomScope, randomPhase
-    local function mismatchFor(state)
+    local function diagnosticFor(state)
         return function(checkpoint, expectedValue, observed)
-            session.mismatch(state, checkpoint, expectedValue, observed)
+            session.diagnostic(state, "spell-steering", {
+                contact = checkpoint, expected = expectedValue, observed = observed,
+            })
         end
     end
     local function resolveScope(runtime, spellItem)
@@ -59,7 +61,7 @@ function hooks.attach(module, session, getState, report, room, tree)
             local selected = selectSpell(randomScope, values, randomPhase)
             if selected then return selected end
             randomScope.failed = true
-            mismatchFor(randomScope.state)("spell-offer-option",
+            diagnosticFor(randomScope.state)("spell-offer-option",
                 expected(randomScope, (randomScope[randomPhase] or 0) + 1), "native-ineligible")
         end
         return base(values, ...)
@@ -73,7 +75,7 @@ function hooks.attach(module, session, getState, report, room, tree)
         randomScope, randomPhase = priorScope, priorPhase
         if not ok then error(result, 0) end
         if scope.buttons ~= #scope.offer.options then
-            scope.failed = true; mismatchFor(scope.state)("spell-offer-contact", #scope.offer.options, scope.buttons)
+            scope.failed = true; diagnosticFor(scope.state)("spell-offer-contact", #scope.offer.options, scope.buttons)
         end
         return result
     end)
@@ -87,7 +89,7 @@ function hooks.attach(module, session, getState, report, room, tree)
         if not ok then clearScope(screen, scope); error(result, 0) end
         if scope.pregeneration ~= #scope.offer.options then
             scope.failed = true
-            mismatchFor(scope.state)("spell-pregeneration-contact", #scope.offer.options, scope.pregeneration)
+            diagnosticFor(scope.state)("spell-pregeneration-contact", #scope.offer.options, scope.pregeneration)
         end
         return result
     end)
@@ -114,10 +116,12 @@ function hooks.attach(module, session, getState, report, room, tree)
             local ok, result = pcall(base, screen, button)
             clearScope(item, scope)
             if not ok then error(result, 0) end
+            session.complete(scope.state, scope.handle)
+            report(runtime)
             return result
         end
         local ok, result = pcall(function()
-            return tree.realize(scope.offer.hexTree, mismatchFor(scope.state),
+            return tree.realize(scope.offer.hexTree, diagnosticFor(scope.state),
                 function() return base(screen, button) end)
         end)
         if not ok then clearScope(item, scope); error(result, 0) end

@@ -48,10 +48,12 @@ local function carrier(room, state, current, native)
     return handle, payload, offerOf(payload) ~= nil
 end
 
-local function mismatch(session, scope, expected, observed)
+local function diagnostic(session, scope, expected, observed)
     if scope.invalid then return end
     scope.invalid = true
-    session.mismatch(scope.state, "chaos-trait-offer", expected, observed)
+    session.diagnostic(scope.state, "chaos-trait-offer", {
+        expected = expected, observed = observed,
+    })
 end
 
 local function nativeRows(scope)
@@ -59,13 +61,13 @@ local function nativeRows(scope)
     local offer = scope.offer
     if type(rows) ~= "table" or #rows ~= 3 or type(offer.curseOptions) ~= "table"
         or #offer.curseOptions ~= 3 then
-        mismatch(scope.session, scope, "three Chaos transforming rows",
+        diagnostic(scope.session, scope, "three Chaos transforming rows",
             type(rows) == "table" and #rows or type(rows))
         return false
     end
     local selected = optionIndex(offer.selected)
     if selected == nil or selected < 1 or selected > 3 then
-        mismatch(scope.session, scope, "selected Chaos option 1..3", offer.selected)
+        diagnostic(scope.session, scope, "selected Chaos option 1..3", offer.selected)
         return false
     end
 
@@ -73,7 +75,7 @@ local function nativeRows(scope)
         local row, option = rows[index], offer.curseOptions[index]
         if type(row) ~= "table" or type(option) ~= "table" or type(option.curseKey) ~= "string"
             or type(option.requirementCount) ~= "number" then
-            mismatch(scope.session, scope, "complete Chaos curse row", index)
+            diagnostic(scope.session, scope, "complete Chaos curse row", index)
             return false
         end
     end
@@ -82,7 +84,7 @@ local function nativeRows(scope)
     for index, row in ipairs(rows) do
         if row.ItemName == offer.blessingKey then
             if existingBlessing ~= nil then
-                mismatch(scope.session, scope, "one selected Chaos blessing row", offer.blessingKey)
+                diagnostic(scope.session, scope, "one selected Chaos blessing row", offer.blessingKey)
                 return false
             end
             existingBlessing = index
@@ -91,7 +93,7 @@ local function nativeRows(scope)
 
     local selectedRow = rows[selected]
     if type(selectedRow) ~= "table" then
-        mismatch(scope.session, scope, "selected Chaos row", selected)
+        diagnostic(scope.session, scope, "selected Chaos row", selected)
         return false
     end
     if existingBlessing ~= nil and existingBlessing ~= selected then
@@ -146,8 +148,9 @@ function chaosOffer.attach(module, session, getState, report, room)
         scope.inCreation = false
         if not ok then screens[loot] = nil; error(result, 0) end
         if not scope.prepared then
-            mismatch(scope.session, scope, "native Chaos row contacts", "missing")
-        elseif scope.valid then
+            diagnostic(scope.session, scope, "native Chaos row contacts", "missing")
+        end
+        if scope.valid or scope.invalid then
             session.complete(scope.state, scope.handle)
         end
         screens[loot] = nil

@@ -50,6 +50,9 @@ local function harness(loot, authoredOffer)
         mismatch = function(_, checkpoint, expected, observed)
             mismatches[#mismatches + 1] = { checkpoint = checkpoint, expected = expected, observed = observed }
         end,
+        diagnostic = function(_, checkpoint, observed)
+            mismatches[#mismatches + 1] = { checkpoint = checkpoint, observed = observed }
+        end,
         complete = function(_, value)
             completed[#completed + 1] = { handle = value }
         end,
@@ -210,7 +213,7 @@ function TestChaosOffer.testRerollLeavesNativeChaosRowsUntouched()
     lu.assertEquals(loot.UpgradeOptions[3].ItemName, "ChaosElementalBlessing")
 end
 
-function TestChaosOffer.testMissingTransformingRowsMismatchWithoutFabricatingPeers()
+function TestChaosOffer.testMissingTransformingRowsDiagnoseWithoutFabricatingPeers()
     local loot = {
         Name = "TrialUpgrade",
         UpgradeOptions = { { ItemName = "ChaosPeerA" }, { ItemName = "ChaosPeerB" } },
@@ -226,11 +229,11 @@ function TestChaosOffer.testMissingTransformingRowsMismatchWithoutFabricatingPee
             end
         end, {}, loot, false, {})
     end, {}, loot, {})
-    lu.assertEquals(mismatches[1].expected, "three Chaos transforming rows")
+    lu.assertEquals(mismatches[1].checkpoint, "chaos-trait-offer")
     lu.assertEquals({ loot.UpgradeOptions[1].ItemName, loot.UpgradeOptions[2].ItemName }, original)
 end
 
-function TestChaosOffer.testMissingTransformingRowsReportsWithoutThrowing()
+function TestChaosOffer.testMissingTransformingRowsDiagnoseWithoutThrowing()
     local loot = { Name = "TrialUpgrade" }
     local callbacks, _, _, _, mismatches = harness(loot)
     callbacks.HandleLootPickup(nil, {}, function() return true end, {}, loot, {})
@@ -238,8 +241,8 @@ function TestChaosOffer.testMissingTransformingRowsReportsWithoutThrowing()
         callbacks.CreateUpgradeChoiceButton(nil, {}, function() return true end,
             {}, loot, 1, {}, {})
     end, {}, loot, false, {})
-    lu.assertEquals(mismatches[1].expected, "three Chaos transforming rows")
-    lu.assertEquals(mismatches[1].observed, "nil")
+    lu.assertEquals(mismatches[1].checkpoint, "chaos-trait-offer")
+    lu.assertEquals(mismatches[1].observed.observed, "nil")
 end
 
 function TestChaosOffer.testNativeScreenErrorRetiresStaleChaosScopeWithoutCompletion()

@@ -99,6 +99,9 @@ function levels.attach(module, session, getState, report, room, seaStar)
     local retainedVisible = setmetatable({}, { __mode = "k" })
     local activeDirectUses = setmetatable({}, { __mode = "k" })
     local activeDirectTerminals = {}
+    local function seaStarDiagnostic(state, checkpoint, expected, observed)
+        session.diagnostic(state, checkpoint, { expected = expected, observed = observed })
+    end
 
     local function forwardDirect(scope)
         if scope.forwarded or scope.handle == nil then return end
@@ -181,7 +184,9 @@ function levels.attach(module, session, getState, report, room, seaStar)
         local initial = reroll ~= true
         local installed = not initial or levels.prepareVisible(payload, loot)
         if not installed then
-            session.mismatch(state, "level-offer-install", "published level rows", "not installed")
+            session.diagnostic(state, "level-offer-install", {
+                expected = "published level rows", observed = "not installed",
+            })
         end
         loot.__runPlannerLevelCarrier = true
         local result
@@ -192,7 +197,7 @@ function levels.attach(module, session, getState, report, room, seaStar)
         else
             result = base(screen, loot, reroll, args)
         end
-        if initial and installed then
+        if initial then
             local seaStarScope = seaStar.scope(state, payload)
             if seaStarScope.result == nil then
                 session.complete(state, handle)
@@ -222,14 +227,14 @@ function levels.attach(module, session, getState, report, room, seaStar)
         local prior = loot.__runPlannerLevelCarrier
         loot.__runPlannerLevelCarrier = true
         local ok, result = pcall(function()
-            return seaStar.call(seaStarScope, function() return base(screen, button, args) end, session.mismatch)
+            return seaStar.call(seaStarScope, function() return base(screen, button, args) end,
+                seaStarDiagnostic)
         end)
         loot.__runPlannerLevelCarrier = prior
         if not ok then error(result, 0) end
-        if seaStar.requireConsumed(seaStarScope, session.mismatch) then
-            session.complete(state, handle)
-            begunVisible[handle], retainedVisible[handle] = nil, nil
-        end
+        seaStar.requireConsumed(seaStarScope, seaStarDiagnostic)
+        session.complete(state, handle)
+        begunVisible[handle], retainedVisible[handle] = nil, nil
         report(runtime)
         return result
     end)
@@ -256,7 +261,8 @@ function levels.attach(module, session, getState, report, room, seaStar)
         item.__runPlannerLevelCarrier = true
         if resolution(payload) ~= nil then forwardDirect(scope) end
         local ok, result = pcall(function()
-            return seaStar.call(scope.seaStar, function() return base(item, args, user) end, session.mismatch)
+            return seaStar.call(scope.seaStar, function() return base(item, args, user) end,
+                seaStarDiagnostic)
         end)
         if scope.forwarded then item.UseFunctionArgs = scope.originalArgs end
         item.__runPlannerLevelCarrier = prior
@@ -343,7 +349,8 @@ function levels.attach(module, session, getState, report, room, seaStar)
         local threadedDispatch = directArgs.Thread == true
         local result = base(source, args)
         local scope = activeDirectTerminals[handle]
-        if not threadedDispatch and seaStar.requireConsumed(scope and scope.seaStar, session.mismatch) then
+        if not threadedDispatch then
+            seaStar.requireConsumed(scope and scope.seaStar, seaStarDiagnostic)
             session.complete(state, handle)
             if scope ~= nil then scope.completed = true end
             report(runtime)

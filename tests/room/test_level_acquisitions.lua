@@ -53,6 +53,9 @@ local function harness(row, native, isBound, installSeaStar, levelAdapter, seaSt
         mismatch = function(_, checkpoint, expected, observed)
             mismatches[#mismatches + 1] = { checkpoint, expected, observed }
         end,
+        diagnostic = function(_, checkpoint, observed)
+            mismatches[#mismatches + 1] = { checkpoint, observed }
+        end,
         complete = function(_, value)
             completions[#completions + 1] = { handle = value }
         end,
@@ -284,14 +287,14 @@ function TestLevelAcquisitions.testRejectedConsumableDoesNotBeginDirectNectar()
     lu.assertEquals(#completions, 0)
 end
 
-function TestLevelAcquisitions.testDirectLevelTerminalCannotCompleteBeforeItsSeaStarChanceContact()
+function TestLevelAcquisitions.testDirectLevelTerminalDiagnosesMissingSeaStarContactAndCompletes()
     local item, row, callbacks, _, _, _, _, completions, mismatches = directFixture("Target")
     row.detail.seaStarResult = { kind = "proc" }
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = { { Name = "Target", StackNum = 1 } } } }
     useDirect(callbacks, item, function() end)
-    lu.assertEquals(#completions, 0)
-    lu.assertEquals(mismatches, { { "sea-star-chance", "proc", "missing" } })
+    lu.assertEquals(#completions, 1)
+    lu.assertEquals(mismatches, { { "sea-star-chance", { expected = "proc", observed = "missing" } } })
     _G.CurrentRun = priorRun
 end
 

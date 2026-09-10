@@ -10,7 +10,9 @@ local hooks = {}
 local function steer(session, state, active, nativeRoom)
     local ok, errorValue = poolInventory.steer(active and active.occurrence, nativeRoom)
     if not ok then
-        session.mismatch(state, errorValue.checkpoint, errorValue.expected, errorValue.observed)
+        session.diagnostic(state, errorValue.checkpoint, {
+            expected = errorValue.expected, observed = errorValue.observed,
+        })
     end
 end
 

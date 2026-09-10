@@ -15,10 +15,12 @@ end
 function icarus.attach(module, session, report, npcScope)
     local upgradeScope
 
-    local function mismatch(scope, expected, observed)
+    local function diagnostic(scope, expected, observed)
         if scope.failed then return end
         scope.failed = true
-        session.mismatch(scope.shared.state, "icarus-hammer-selection", expected, observed)
+        session.diagnostic(scope.shared.state, "icarus-hammer-selection", {
+            expected = expected, observed = observed,
+        })
     end
 
     module.hooks.wrap("UpgradeHammers", "run-planner-icarus-latest-model", function(_, runtime,
@@ -34,7 +36,7 @@ function icarus.attach(module, session, report, npcScope)
         upgradeScope = prior
         if not ok then error(result, 0) end
         if not scope.contacted then
-            mismatch(scope, expected, "missing native Hammer selection")
+            diagnostic(scope, expected, "missing native Hammer selection")
         end
         report(runtime)
         return result
@@ -51,7 +53,7 @@ function icarus.attach(module, session, report, npcScope)
                 return value
             end
         end
-        mismatch(scope, scope.expected, "missing native candidate")
+        diagnostic(scope, scope.expected, "missing native candidate")
         return base(values, ...)
     end)
 end

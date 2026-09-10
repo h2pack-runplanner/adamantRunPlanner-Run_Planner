@@ -44,6 +44,9 @@ function path.attach(module, session, getState, report, room, seaStar)
     assert(type(seaStar) == "table", "Path of Stars Sea Star instance is required")
     local acceptedUses = setmetatable({}, { __mode = "k" })
     local routedSpellDrops = setmetatable({}, { __mode = "k" })
+    local function seaStarDiagnostic(state, checkpoint, expected, observed)
+        session.diagnostic(state, checkpoint, { expected = expected, observed = observed })
+    end
 
     local function completeAfterScreen(runtime, scope, base, args, item, context)
         if scope == nil then return base(args, item, context) end
@@ -51,10 +54,9 @@ function path.attach(module, session, getState, report, room, seaStar)
         if payload == nil then return base(args, item, context) end
         local ok, result = pcall(base, args, item, context)
         if not ok then error(result, 0) end
-        if seaStar.requireConsumed(scope.seaStar, session.mismatch) then
-            session.complete(scope.state, scope.handle)
-            scope.completed = true
-        end
+        seaStar.requireConsumed(scope.seaStar, seaStarDiagnostic)
+        session.complete(scope.state, scope.handle)
+        scope.completed = true
         if scope.completed and scope.seaStar and scope.seaStar.result and scope.seaStar.result.kind == "proc" then
             room.releaseCompletedBinding(scope.state, scope.current, scope.handle, item)
         end
@@ -74,7 +76,8 @@ function path.attach(module, session, getState, report, room, seaStar)
         acceptedUses[item] = scope
         scope.seaStar = seaStar.scope(scope.state, scope.handle and room.peek(scope.state, scope.handle) or nil)
         local ok, result = pcall(function()
-            return seaStar.call(scope.seaStar, function() return base(item, args, user) end, session.mismatch)
+            return seaStar.call(scope.seaStar, function() return base(item, args, user) end,
+                seaStarDiagnostic)
         end)
         if acceptedUses[item] == scope then
             acceptedUses[item] = nil

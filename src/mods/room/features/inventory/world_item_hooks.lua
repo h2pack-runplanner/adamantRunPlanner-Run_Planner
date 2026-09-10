@@ -22,13 +22,15 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         local payload = handle and room.peek(state, handle) or nil
         local refill = payload and payload.transaction and payload.transaction.refill
         if refill == nil then
-            session.mismatch(state, "shop-refill-unexpected", "no published refill", index)
             return base(index, kitId, args)
         end
         if index ~= refill.replacement.slotIndex + 1 then
-            session.mismatch(state, "shop-refill-slot", refill.replacement.slotIndex + 1, index)
+            session.diagnostic(state, "shop-refill-slot", {
+                expected = refill.replacement.slotIndex + 1, observed = index,
+            })
+            return base(index, kitId, args)
         end
-        local begun = index == refill.replacement.slotIndex + 1 and room.begin(state, handle) or nil
+        local begun = room.begin(state, handle)
         local prior = scope.worldShopRefill
         scope.worldShopRefill = active and {
             kind = "shop", index = index, kitId = kitId, groupIndex = refill.replacement.groupIndex,

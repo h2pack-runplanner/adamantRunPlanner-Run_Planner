@@ -92,7 +92,9 @@ function echo.attach(module, session, report, npcScope, traitScopes)
         local offer = nestedOffer(scope)
         if offer == nil then return base(source, args) end
         if not rowsAvailable(offer) then
-            session.mismatch(scope.state, "echo-last-run-availability", "authored native rows", nil)
+            session.diagnostic(scope.state, "echo-last-run-availability", {
+                expected = "authored native rows", observed = nil,
+            })
             return base(source, args)
         end
         source.UpgradeOptions = {}
@@ -116,7 +118,7 @@ function echo.attach(module, session, report, npcScope, traitScopes)
         if observed ~= expected.key then
             local result = base(screen, button, args)
             boonMenus[source] = nil
-            session.mismatch(scope.state, "echo-last-run-selection", expected.key, observed)
+            session.complete(scope.state, scope.handle)
             report(runtime)
             return result
         end
@@ -153,10 +155,11 @@ function echo.attach(module, session, report, npcScope, traitScopes)
         activePom = nil
         if not ok then error(result, 0) end
         if not json.isNull(target) and not completed.contacted then
-            session.mismatch(scope.state, "echo-pom-target", target, "missing native selection")
-        else
-            session.complete(scope.state, scope.handle)
+            session.diagnostic(scope.state, "echo-pom-target", {
+                expected = target, observed = "missing native selection",
+            })
         end
+        session.complete(scope.state, scope.handle)
         report(runtime)
         return result
     end)

@@ -46,9 +46,16 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         local prepared, errorValue = prepareInventory(active and active.occurrence, args, activeRefill,
             scope.contract ~= nil)
         if errorValue then
-            session.mismatch(state, errorValue.checkpoint, errorValue.expected, errorValue.observed)
+            session.diagnostic(state, errorValue.checkpoint, {
+                expected = errorValue.expected, observed = errorValue.observed,
+            })
+            local result = base(args)
+            if activeRefill and activeRefill.handle ~= nil then
+                local payload = room.begin(state, activeRefill.handle)
+                if payload ~= nil then session.complete(state, activeRefill.handle) end
+            end
             report(runtime)
-            return base(args)
+            return result
         end
         scope.inventorySources = {}
         for _, offer in ipairs(prepared and prepared.expected or {}) do
@@ -64,8 +71,11 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         result = primitives.order(prepared, result)
         local ok, verifyError = primitives.verify(prepared, result)
         if not ok then
-            session.mismatch(state, verifyError.checkpoint, verifyError.expected, verifyError.observed)
-        elseif activeRefill and activeRefill.handle ~= nil then
+            session.diagnostic(state, verifyError.checkpoint, {
+                expected = verifyError.expected, observed = verifyError.observed,
+            })
+        end
+        if activeRefill and activeRefill.handle ~= nil then
             local payload = room.begin(state, activeRefill.handle)
             if payload ~= nil then session.complete(state, activeRefill.handle) end
         end

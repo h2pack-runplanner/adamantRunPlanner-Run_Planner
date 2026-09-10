@@ -75,6 +75,9 @@ local function harness(giver, _, options)
         mismatch = function(_, checkpoint, expected, observed)
             mismatches[#mismatches + 1] = { checkpoint = checkpoint, expected = expected, observed = observed }
         end,
+        diagnostic = function(_, checkpoint, observed)
+            mismatches[#mismatches + 1] = { checkpoint = checkpoint, observed = observed }
+        end,
         complete = function(_, currentHandle)
             completions[#completions + 1] = { handle = currentHandle }
             return true
@@ -302,7 +305,7 @@ function TestNpcAcquisitions.testCirceCastCountActivationAdmitsTheNativePositive
     lu.assertEquals(#completions, 1)
 end
 
-function TestNpcAcquisitions.testUnavailableCirceTargetReportsMismatchAndLeavesNativeMutationRunning()
+function TestNpcAcquisitions.testUnavailableCirceTargetDiagnosesAndLeavesNativeMutationRunning()
     local selected = "RandomArcanaTrait"
     local callbacks, source, _, _, _, _, _, _, mismatches, _, finish = harness(
         "Circe", selected, { offer = offer("Circe", selected,
@@ -322,11 +325,8 @@ function TestNpcAcquisitions.testUnavailableCirceTargetReportsMismatchAndLeavesN
     end)
     finish()
     lu.assertEquals(nativeTarget, "CardDraw")
-    lu.assertEquals(mismatches[1], {
-        checkpoint = "circe-consequence-selection",
-        expected = "ChanneledCast",
-        observed = "missing native candidate",
-    })
+    lu.assertEquals(mismatches[1], { checkpoint = "circe-consequence-selection",
+        observed = { expected = "ChanneledCast", observed = "missing native candidate" } })
 end
 
 function TestNpcAcquisitions.testCircePromotionUsesExactPublishedArcanaThroughNativeMutation()
@@ -430,7 +430,7 @@ function TestNpcAcquisitions.testIcarusLatestModelUsesExactPublishedHammerThroug
     lu.assertEquals(#completions, 1)
 end
 
-function TestNpcAcquisitions.testUnavailableIcarusHammerReportsMismatchAndLeavesNativeMutationRunning()
+function TestNpcAcquisitions.testUnavailableIcarusHammerDiagnosesAndLeavesNativeMutationRunning()
     local selected = "UpgradeHammerBoon"
     local callbacks, source, _, _, _, _, _, _, mismatches, _, finish = harness(
         "Icarus", selected, {
@@ -449,11 +449,8 @@ function TestNpcAcquisitions.testUnavailableIcarusHammerReportsMismatchAndLeaves
     end)
     finish()
     lu.assertEquals(upgraded, "AxeSpinSpeedTrait")
-    lu.assertEquals(mismatches[1], {
-        checkpoint = "icarus-hammer-selection",
-        expected = "StaffDoubleAttackTrait",
-        observed = "missing native candidate",
-    })
+    lu.assertEquals(mismatches[1], { checkpoint = "icarus-hammer-selection",
+        observed = { expected = "StaffDoubleAttackTrait", observed = "missing native candidate" } })
 end
 
 function TestNpcAcquisitions.testOrdinaryIcarusTraitKeepsItsNativeSelectedEffect()
@@ -832,7 +829,7 @@ function TestNpcAcquisitions.testOtherEchoChoicesRemainNativeAuthoritative()
     end
 end
 
-function TestNpcAcquisitions.testUnavailablePublishedNpcRowLeavesNativeMenuIntact()
+function TestNpcAcquisitions.testUnavailablePublishedNpcRowDiagnosesAndCompletesAtSelectionTerminal()
     local selected = "NarcissusTwo"
     local callbacks, source, _, _, _, _, _, _, mismatches, completions, finish = harness(
         "Narcissus", selected, { offer = offer("Narcissus", selected) })
@@ -848,6 +845,6 @@ function TestNpcAcquisitions.testUnavailablePublishedNpcRowLeavesNativeMenuIntac
     end)
     _G.IsGameStateEligible = priorEligibility
     finish()
-    lu.assertEquals(#completions, 0)
+    lu.assertEquals(#completions, 1)
     lu.assertEquals(mismatches[1].checkpoint, "npc-trait-offer")
 end

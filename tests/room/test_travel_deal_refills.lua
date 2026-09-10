@@ -49,7 +49,7 @@ local function harness(carrier, published)
         if published ~= false and contact.kind == "travelDealRefill"
             and contact.carrier == carrier then return { transaction = node } end
     end)
-    local mismatches, begins, completions = {}, 0, 0
+    local diagnostics, begins, completions = {}, 0, 0
     local session = stub()
     session.current = function() return active end
     session.begin = function(_, handle)
@@ -57,13 +57,11 @@ local function harness(carrier, published)
         return support.fakePayload(handle)
     end
     session.complete = function() completions = completions + 1 end
-    session.mismatch = function(_, checkpoint, expected, observed)
-        mismatches[#mismatches + 1] = {
-            checkpoint = checkpoint, expected = expected, observed = observed,
-        }
+    session.diagnostic = function(_, checkpoint, observed)
+        diagnostics[#diagnostics + 1] = { checkpoint = checkpoint, observed = observed }
     end
     attachFeatureHooks(module, session, function() return {} end, function() end, session)
-    return callbacks, node.refill, mismatches,
+    return callbacks, node.refill, diagnostics,
         function() return begins end, function() return completions end
 end
 
@@ -83,7 +81,7 @@ local function fill(callbacks, storeData)
 end
 
 function TestTravelDealRefills.testWorldShopUsesPublishedSlotAndCompletesAfterNativeRestock()
-    local callbacks, refill, mismatches, begins, completions = harness("worldShop")
+    local callbacks, refill, diagnostics, begins, completions = harness("worldShop")
     local generated
     callbacks.RestockWorldItem(nil, {}, function()
         generated = fill(callbacks, { GroupsOf = { {
@@ -95,25 +93,41 @@ function TestTravelDealRefills.testWorldShopUsesPublishedSlotAndCompletesAfterNa
     lu.assertEquals(generated.StoreOptions[1].Name, "ArmorBoost")
     lu.assertEquals(begins(), 1)
     lu.assertEquals(completions(), 1)
-    lu.assertEquals(mismatches, {})
+    lu.assertEquals(diagnostics, {})
 end
 
-function TestTravelDealRefills.testWorldShopWrongAndUnexpectedRestocksReportWithoutCompleting()
-    local callbacks, _, mismatches, begins, completions = harness("worldShop")
-    callbacks.RestockWorldItem(nil, {}, function() return true end, 2, 91, {})
-    lu.assertEquals(mismatches[1].checkpoint, "shop-refill-slot")
+function TestTravelDealRefills.testWorldShopRefillConstructionMissDiagnosesAndCompletesAtNativeTerminal()
+    local callbacks, _, diagnostics, begins, completions = harness("worldShop")
+    local nativeCalls = 0
+    callbacks.RestockWorldItem(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        fill(callbacks, { GroupsOf = {} })
+        return true
+    end, 1, 91, {})
+    lu.assertEquals(diagnostics[1].checkpoint, "shop-refill-group")
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertEquals(begins(), 1)
+    lu.assertEquals(completions(), 1)
+end
+
+function TestTravelDealRefills.testWorldShopWrongRefillDiagnosesAndPassesNativeThroughUnclaimed()
+    local callbacks, _, diagnostics, begins, completions = harness("worldShop")
+    local nativeCalls = 0
+    callbacks.RestockWorldItem(nil, {}, function() nativeCalls = nativeCalls + 1; return true end, 2, 91, {})
+    lu.assertEquals(diagnostics[1].checkpoint, "shop-refill-slot")
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
+    lu.assertEquals(nativeCalls, 1)
 
-    callbacks, _, mismatches, begins, completions = harness("worldShop", false)
+    callbacks, _, diagnostics, begins, completions = harness("worldShop", false)
     callbacks.RestockWorldItem(nil, {}, function() return true end, 1, 91, {})
-    lu.assertEquals(mismatches[1].checkpoint, "shop-refill-unexpected")
+    lu.assertEquals(diagnostics, {})
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
 end
 
 function TestTravelDealRefills.testWellRefillUsesPublishedSourceAndCompletesAfterInventoryGeneration()
-    local callbacks, refill, mismatches, begins, completions = harness("stygianWell")
+    local callbacks, refill, diagnostics, begins, completions = harness("stygianWell")
     local source = {
         Name = "TemporaryDiscountTrait", Index = 2,
         __runPlannerGenerationKey = refill.source.generationKey,
@@ -130,30 +144,30 @@ function TestTravelDealRefills.testWellRefillUsesPublishedSourceAndCompletesAfte
     lu.assertEquals(generated.StoreOptions[2].Name, "RandomStoreItem")
     lu.assertEquals(begins(), 1)
     lu.assertEquals(completions(), 1)
-    lu.assertEquals(mismatches, {})
+    lu.assertEquals(diagnostics, {})
 end
 
 function TestTravelDealRefills.testWellWrongAndMissingRefillsStayDetectable()
-    local callbacks, _, mismatches, begins, completions = harness("stygianWell")
+    local callbacks, _, diagnostics, begins, completions = harness("stygianWell")
     callbacks.HandleStorePurchase(nil, {}, function() return true end, {}, {
         Index = 2, Data = { Name = "Other", __runPlannerGenerationKey = "initial:secondRight" },
     }, {})
-    lu.assertEquals(mismatches[1].checkpoint, "well-refill-source")
+    lu.assertEquals(diagnostics[1].checkpoint, "well-refill-source")
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
 
-    callbacks, _, mismatches, begins, completions = harness("stygianWell")
+    callbacks, _, diagnostics, begins, completions = harness("stygianWell")
     callbacks.HandleStorePurchase(nil, {}, function() return true end, {}, {
         Index = 2, Data = { Name = "Source", __runPlannerGenerationKey = "initial:secondLeft" },
     }, {})
-    lu.assertEquals(mismatches, {})
+    lu.assertEquals(diagnostics, {})
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
 
 end
 
 function TestTravelDealRefills.testShrineRefillUsesPublishedSourceDelayAndEventualAcquisitionOwnership()
-    local callbacks, refill, mismatches, begins, completions = harness("hermesShrine")
+    local callbacks, refill, diagnostics, begins, completions = harness("hermesShrine")
     local source = {
         Name = "Source", Purchased = true,
         __runPlannerGenerationKey = refill.source.generationKey,
@@ -181,23 +195,23 @@ function TestTravelDealRefills.testShrineRefillUsesPublishedSourceDelayAndEventu
     lu.assertEquals(screen.Components.PurchaseButton2.Data.RoomDelay, 4)
     lu.assertEquals(begins(), 1)
     lu.assertEquals(completions(), 1)
-    lu.assertEquals(mismatches, {})
+    lu.assertEquals(diagnostics, {})
 end
 
 function TestTravelDealRefills.testShrineWrongAndMissingRefillsStayDetectable()
-    local callbacks, _, mismatches, begins, completions = harness("hermesShrine")
+    local callbacks, _, diagnostics, begins, completions = harness("hermesShrine")
     callbacks.HandleSurfaceShopAction(nil, {}, function() return true end, {}, { Data = {
         Purchased = true, __runPlannerGenerationKey = "initial:secondRight",
     } }, {})
-    lu.assertEquals(mismatches[1].checkpoint, "shrine-refill-source")
+    lu.assertEquals(diagnostics[1].checkpoint, "shrine-refill-source")
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
 
-    callbacks, _, mismatches, begins, completions = harness("hermesShrine")
+    callbacks, _, diagnostics, begins, completions = harness("hermesShrine")
     callbacks.HandleSurfaceShopAction(nil, {}, function() return true end, {}, { Data = {
         Purchased = true, __runPlannerGenerationKey = "initial:secondLeft",
     } }, {})
-    lu.assertEquals(mismatches, {})
+    lu.assertEquals(diagnostics, {})
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
 

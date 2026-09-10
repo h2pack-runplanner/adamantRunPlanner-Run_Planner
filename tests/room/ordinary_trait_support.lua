@@ -60,6 +60,9 @@ function support.attached(offer, disposition, carrierName, adapters)
         mismatch = function(_, checkpoint, expected, observed)
             mismatches[#mismatches + 1] = { checkpoint = checkpoint, expected = expected, observed = observed }
         end,
+        diagnostic = function(_, checkpoint, observed)
+            mismatches[#mismatches + 1] = { checkpoint = checkpoint, observed = observed }
+        end,
     }
     binding.attach(module, session, function() return state end, function() end, room)
     local traitHooks = adapters and adapters.traits or hooks

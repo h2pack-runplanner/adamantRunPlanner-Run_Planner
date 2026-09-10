@@ -26,11 +26,15 @@ function refill.attach(module, session, getState, report, room, refillScopes)
         local scope
         if expected ~= nil then
             if generationKey ~= expected.source.generationKey then
-                session.mismatch(state, "well-refill-source", expected.source.generationKey, generationKey)
+                session.diagnostic(state, "well-refill-source", {
+                    expected = expected.source.generationKey, observed = generationKey,
+                })
             else
                 local slotIndex = buttonIndex(button, item)
                 if slotIndex == nil then
-                    session.mismatch(state, "well-refill-slot", "native store slot", nil)
+                    session.diagnostic(state, "well-refill-slot", {
+                        expected = "native store slot", observed = nil,
+                    })
                 else
                     scope = { kind = "well", refill = expected, handle = handle, slotIndex = slotIndex }
                 end

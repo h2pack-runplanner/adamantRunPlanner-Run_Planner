@@ -23,10 +23,12 @@ function circe.attach(module, session, report, npcScope)
     local pendingArcana
     local selectorScope
 
-    local function mismatch(scope, expected, observed)
+    local function diagnostic(scope, expected, observed)
         if scope.failed then return end
         scope.failed = true
-        session.mismatch(scope.shared.state, "circe-consequence-selection", expected, observed)
+        session.diagnostic(scope.shared.state, "circe-consequence-selection", {
+            expected = expected, observed = observed,
+        })
     end
 
     local function scopedSelector(scope, callback)
@@ -36,7 +38,7 @@ function circe.attach(module, session, report, npcScope)
         selectorScope = prior
         if not ok then error(result, 0) end
         if not scope.failed and scope.index <= #scope.targets then
-            mismatch(scope, scope.targets[scope.index], "missing native selection")
+            diagnostic(scope, scope.targets[scope.index], "missing native selection")
         end
         return result
     end
@@ -65,7 +67,7 @@ function circe.attach(module, session, report, npcScope)
         pendingArcana = prior
         if not ok then error(result, 0) end
         if not scope.contacted then
-            mismatch(scope, "AddRandomMetaUpgrades", "missing native contact")
+            diagnostic(scope, "AddRandomMetaUpgrades", "missing native contact")
         end
         report(runtime)
         return result
@@ -120,7 +122,7 @@ function circe.attach(module, session, report, npcScope)
         scope.selectionStarted = true
         local expected = scope.targets[scope.index]
         if expected == nil then
-            mismatch(scope, "no additional Circe target", "additional native selection")
+            diagnostic(scope, "no additional Circe target", "additional native selection")
             return base(values, ...)
         end
         for index, value in ipairs(values or {}) do
@@ -130,7 +132,7 @@ function circe.attach(module, session, report, npcScope)
                 return value
             end
         end
-        mismatch(scope, expected, "missing native candidate")
+        diagnostic(scope, expected, "missing native candidate")
         return base(values, ...)
     end)
 
@@ -140,14 +142,14 @@ function circe.attach(module, session, report, npcScope)
         if scope == nil or scope.kind ~= "disableFear" then return base(values, ...) end
         local expected = scope.targets[scope.index]
         if expected == nil then
-            mismatch(scope, "no additional Circe target", "additional native selection")
+            diagnostic(scope, "no additional Circe target", "additional native selection")
             return base(values, ...)
         end
         if type(values) == "table" and values[expected] ~= nil then
             scope.index = scope.index + 1
             return expected
         end
-        mismatch(scope, expected, "missing native candidate")
+        diagnostic(scope, expected, "missing native candidate")
         return base(values, ...)
     end)
 end
