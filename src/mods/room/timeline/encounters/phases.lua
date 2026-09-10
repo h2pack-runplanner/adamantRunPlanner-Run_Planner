@@ -37,18 +37,23 @@ function phases.create()
     function instance.bind(occurrence, nativeEncounter, slotKey)
         if type(nativeEncounter) ~= "table" then
             return nil, {
-                checkpoint = "encounter-binding", expected = "native encounter object", observed = nativeEncounter,
+                outcome = "fault", checkpoint = "encounter-binding",
+                expected = "native encounter object", observed = nativeEncounter,
             }
         end
         local phase = phaseAt(occurrence, slotKey)
         if phase == nil then
-            return nil, { checkpoint = "encounter-binding", expected = "published encounter phase", observed = slotKey }
+            return nil, {
+                outcome = "fault", checkpoint = "encounter-binding",
+                expected = "published encounter phase", observed = slotKey,
+            }
         end
         local prior = nativeBindings[nativeEncounter]
         if prior ~= nil then
             if prior.occurrenceId ~= occurrence.id or prior.phase.slotKey ~= phase.slotKey then
                 return nil, {
-                    checkpoint = "encounter-binding", expected = "one phase per native encounter object",
+                    outcome = "fault", checkpoint = "encounter-binding",
+                    expected = "one phase per native encounter object",
                     observed = slotKey,
                 }
             end

@@ -22,6 +22,10 @@ function TestRuntimeSession.testNewRunResetClearsEveryProcessLocalExecutionRefer
     value.room = { current = { stale = true } }
     value.firstMismatch = { checkpoint = "stale" }
     value.loggedMismatch = value.firstMismatch
+    value.firstFault = { checkpoint = "stale-fault" }
+    value.loggedFault = value.firstFault
+    value.admissionError = { checkpoint = "stale-admission" }
+    value.loggedAdmission = value.admissionError
     value.diagnostics = { { stale = true } }
 
     runtime.beginNewRun(value)
@@ -34,6 +38,10 @@ function TestRuntimeSession.testNewRunResetClearsEveryProcessLocalExecutionRefer
     lu.assertNil(value.room)
     lu.assertNil(value.firstMismatch)
     lu.assertNil(value.loggedMismatch)
+    lu.assertNil(value.firstFault)
+    lu.assertNil(value.loggedFault)
+    lu.assertNil(value.admissionError)
+    lu.assertNil(value.loggedAdmission)
     lu.assertEquals(value.diagnostics, {})
     lu.assertTrue(value.admissionAttempted)
 end
@@ -79,7 +87,7 @@ local function state()
     return value
 end
 
-function TestRuntimeSession.testLaterRouteConformanceContactsAreRejectedAtStart()
+function TestRuntimeSession.testUnsupportedConformancePlanIsRejectedAtAdmission()
     for _, kind in ipairs({ "echoShopDuplicate", "hermesShrineDeliveries" }) do
         local row = occurrence()
         row.roomExitConformance = { facts = { { kind = kind } } }
@@ -89,11 +97,13 @@ function TestRuntimeSession.testLaterRouteConformanceContactsAreRejectedAtStart(
         }
         local value = {}
         lu.assertNil(runtime.start(value, { load = function() return true, plan end }))
-        lu.assertEquals(value.firstMismatch.observed, kind)
+        lu.assertEquals(value.admissionError.observed, kind)
+        lu.assertNil(value.firstMismatch)
+        lu.assertEquals(value.state, "inactive")
     end
 end
 
-function TestRuntimeSession.testRunStartMismatchPreservesTheInboxDecoderReason()
+function TestRuntimeSession.testMalformedPlanAdmissionPreservesTheInboxDecoderReasonWithoutMismatch()
     local value = {}
     local fakeInbox = {
         load = function() return false, "malformed-plan" end,
@@ -102,10 +112,66 @@ function TestRuntimeSession.testRunStartMismatchPreservesTheInboxDecoderReason()
         end,
     }
     lu.assertNil(runtime.start(value, fakeInbox))
-    lu.assertEquals(value.firstMismatch.observed, {
+    lu.assertEquals(value.admissionError.observed, {
         code = "malformed-plan",
         message = "specific decoder rejection",
     })
+    lu.assertNil(value.firstMismatch)
+    lu.assertEquals(value.state, "inactive")
+end
+
+function TestRuntimeSession.testUnknownCoreHandleIsAFaultWithoutAMismatch()
+    local row = occurrence()
+    local plan = { kind = "ready", occurrences = { row }, occurrencesById = { one = row },
+        selectedOccurrenceIds = { "one" } }
+    local value = {}
+    lu.assertTrue(runtime.start(value, { load = function() return true, plan end }))
+    local entered = assert(route.enter(value.route, "one", "F_Test"))
+    lu.assertNotNil(room.enter(value, entered))
+
+    lu.assertNil(room.begin(value, {}))
+    lu.assertEquals(value.firstFault.checkpoint, "timeline-handle")
+    lu.assertNil(value.firstMismatch)
+    lu.assertEquals(value.state, "faulted")
+end
+
+function TestRuntimeSession.testMissingRoomDeclarationIsAFaultWithoutAMismatch()
+    local row = occurrence()
+    local plan = { kind = "ready", occurrences = { row }, occurrencesById = { one = row },
+        selectedOccurrenceIds = { "one" } }
+    local value = {}
+    lu.assertTrue(runtime.start(value, { load = function() return true, plan end }))
+
+    lu.assertNil(room.realize(value, row, { RoomData = {} }))
+    lu.assertEquals(value.firstFault.checkpoint, "room-declaration")
+    lu.assertNil(value.firstMismatch)
+    lu.assertEquals(value.state, "faulted")
+end
+
+function TestRuntimeSession.testFirstTerminalOutcomeCannotBeOverwrittenByTheOtherKind()
+    local mismatchFirst = runtime.create()
+    runtime.mismatch(mismatchFirst, "room-entry", "F_Test", "F_Wrong")
+    runtime.fault(mismatchFirst, "timeline-handle", "known handle", "unknown")
+    lu.assertEquals(mismatchFirst.state, "desynchronized")
+    lu.assertEquals(mismatchFirst.firstMismatch.checkpoint, "room-entry")
+    lu.assertNil(mismatchFirst.firstFault)
+
+    local faultFirst = runtime.create()
+    runtime.fault(faultFirst, "timeline-handle", "known handle", "unknown")
+    runtime.mismatch(faultFirst, "room-entry", "F_Test", "F_Wrong")
+    lu.assertEquals(faultFirst.state, "faulted")
+    lu.assertEquals(faultFirst.firstFault.checkpoint, "timeline-handle")
+    lu.assertNil(faultFirst.firstMismatch)
+end
+
+function TestRuntimeSession.testOccurrenceDiagnosticsAreBoundedBeforeAMismatch()
+    local value = state()
+    for index = 1, 20 do runtime.diagnostic(value, "run-state", { index = index }) end
+    lu.assertEquals(#value.diagnostics, 16)
+    lu.assertEquals(value.diagnostics[1].observed.index, 5)
+    runtime.mismatch(value, "room-entry", "F_Test", "F_Wrong")
+    lu.assertEquals(value.firstMismatch.checkpoint, "room-entry")
+    lu.assertEquals(#value.diagnostics, 16)
 end
 
 function TestRuntimeSession.testAdmissionLoadsTheSelectedSlotAndFreezesItsPlan()

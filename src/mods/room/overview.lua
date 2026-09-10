@@ -19,7 +19,10 @@ end
 function overview.realize(occurrence, game, nativeRoom)
     local source = game and game.RoomData and game.RoomData[occurrence.gameName]
     if type(source) ~= "table" then
-        return nil, { kind = "roomDeclaration", expected = occurrence.gameName }
+        return nil, {
+            outcome = "fault", checkpoint = "room-declaration",
+            expected = occurrence.gameName, observed = "missing",
+        }
     end
     local result = copy(source)
     for key, value in pairs(nativeRoom or {}) do

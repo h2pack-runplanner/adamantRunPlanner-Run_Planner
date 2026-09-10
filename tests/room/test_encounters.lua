@@ -63,6 +63,28 @@ function TestEncounters.testNoPublishedNativeCarrierRequiresNoNativeEncounter()
     lu.assertEquals(mismatch, { kind = "encounterCount", expected = 0, observed = 1 })
 end
 
+function TestEncounters.testEncounterPhaseSurfaceMismatchesRemainDistinctFromBindingFaults()
+    local occurrence = {
+        id = "room",
+        overview = { encounterPhases = {
+            { slotKey = "first", encounterKey = "First" },
+            { slotKey = "second", encounterKey = "Second" },
+        } },
+    }
+    local registry = require("mods.room.timeline.encounters.phases").create()
+    local countOk, countError = registry.prove(occurrence, { Encounter = { Name = "First" } })
+    lu.assertNil(countOk)
+    lu.assertEquals(countError.kind, "encounterCount")
+    lu.assertNil(countError.outcome)
+
+    local native = { Name = "First" }
+    lu.assertNotNil(registry.bind(occurrence, native, "first"))
+    local bound, bindingError = registry.bind(occurrence, native, "second")
+    lu.assertNil(bound)
+    lu.assertEquals(bindingError.outcome, "fault")
+    lu.assertEquals(bindingError.checkpoint, "encounter-binding")
+end
+
 function TestEncounters.testPublishedEmptyPhaseRemainsAnExactNativeEncounter()
     local occurrence = {
         overview = {

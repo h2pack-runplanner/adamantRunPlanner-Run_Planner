@@ -2,6 +2,15 @@
 -- the next room entry proves the next published occurrence identity.
 local routeSession = {}
 
+local function fault(route, checkpoint, expected, observed)
+    if route.firstFault == nil then
+        route.firstFault = {
+            outcome = "fault", checkpoint = checkpoint, expected = expected, observed = observed,
+        }
+    end
+    return nil, route.firstFault
+end
+
 function routeSession.new(plan)
     return {
         plan = plan, index = 1, currentOccurrence = nil,
@@ -18,7 +27,7 @@ function routeSession.newAt(plan, index)
         or type(index) ~= "number" or index ~= math.floor(index)
         or index < 1 or index > #selected then
         return nil, {
-            checkpoint = "route-index",
+            outcome = "fault", checkpoint = "route-index",
             expected = "valid selected occurrence index",
             observed = index,
         }
@@ -38,18 +47,14 @@ function routeSession.current(route)
 end
 
 function routeSession.enter(route, occurrenceId, gameName)
+    if route.firstFault then return nil, route.firstFault end
     if route.firstMismatch then return nil, route.firstMismatch end
     if route.currentOccurrence ~= nil then
-        route.firstMismatch = {
-            checkpoint = "room-entry",
-            expected = "current room must exit",
-            observed = occurrenceId,
-        }
-        return nil, route.firstMismatch
+        return fault(route, "route-entry", "current room must exit", occurrenceId)
     end
     local occurrence = routeSession.expected(route)
     if occurrence == nil then return true end -- configured prefix already completed
-    if occurrenceId ~= occurrence.id or gameName ~= occurrence.gameName then
+    if gameName ~= occurrence.gameName then
         route.firstMismatch = {
             checkpoint = "room-entry",
             expected = occurrence,
@@ -57,16 +62,16 @@ function routeSession.enter(route, occurrenceId, gameName)
         }
         return nil, route.firstMismatch
     end
+    if occurrenceId ~= occurrence.id then
+        return fault(route, "route-occurrence-stamp", occurrence.id, occurrenceId)
+    end
     route.currentOccurrence = occurrence
     return occurrence
 end
 
 function routeSession.exit(route)
     if route.currentOccurrence == nil then
-        route.firstMismatch = route.firstMismatch or {
-            checkpoint = "room-exit", expected = "active room", observed = nil,
-        }
-        return nil, route.firstMismatch
+        return fault(route, "route-exit", "active room", nil)
     end
     route.index = route.index + 1
     route.lastExitedOccurrence = route.currentOccurrence

@@ -5,6 +5,13 @@ local function roomName(value)
     return type(value) == "table" and (value.GenusName or value.Name) or nil
 end
 
+local function reportOutcome(session, state, errorValue)
+    if type(errorValue) == "table" and errorValue.outcome == "fault" then
+        return session.fault(state, errorValue)
+    end
+    return session.mismatch(state, errorValue)
+end
+
 function hooks.attach(module, session, getState, report, route, room, featureScope, navigation, loadoutScope,
     admissionRuntime)
     assert(type(loadoutScope) == "table"
@@ -36,7 +43,15 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
         local data = occurrence and room.realize(state, occurrence, gameValue) or nil
         if data ~= nil then data = navigation.realizeIncomingReward(occurrence, data) end
         if type(data) == "table" then
-            local value = (gameValue.CreateRoom or _G.CreateRoom)(data, args)
+            local createRoom = gameValue.CreateRoom or _G.CreateRoom
+            if type(createRoom) ~= "function" then
+                session.fault(state, {
+                    outcome = "fault", checkpoint = "native-api", expected = "CreateRoom", observed = "missing",
+                })
+                report(runtime)
+                return base(currentRun, args)
+            end
+            local value = createRoom(data, args)
             report(runtime)
             return value
         end
@@ -114,13 +129,13 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
             report(runtime)
             return base(currentRun, nativeRoom)
         end
-        if occurrence == nil then session.mismatch(state, errorValue) else room.enter(state, occurrence) end
+        if occurrence == nil then reportOutcome(session, state, errorValue) else room.enter(state, occurrence) end
         report(runtime)
         if state.state == "synchronized" then room.bindEntryEncounters(state, nativeRoom) end
         local result = base(currentRun, nativeRoom)
         if state.state == "synchronized" then
             local rewardOk, rewardError = navigation.proveIncomingReward(occurrence, nativeRoom)
-            if not rewardOk then session.mismatch(state, rewardError) end
+            if not rewardOk then reportOutcome(session, state, rewardError) end
         end
         if state.state == "synchronized" then
             room.proveEntry(state, nativeRoom, {
@@ -140,11 +155,11 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
             return base(currentRun, door)
         end
         local proved, errorValue = navigation.proveOutgoingDoors(state, currentRun)
-        if not proved then session.mismatch(state, errorValue) end
+        if not proved then reportOutcome(session, state, errorValue) end
         if state.state == "synchronized" then room.close(state, currentRun, _G.GameState) end
         if state.state == "synchronized" then
             local ok, routeError = route.exit(state.route)
-            if not ok then session.mismatch(state, routeError) end
+            if not ok then reportOutcome(session, state, routeError) end
         end
         if state.state == "synchronized" and route.expected(state.route) == nil then
             state.reason = "configured-prefix-complete"

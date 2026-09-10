@@ -11,6 +11,7 @@ local admission = type(import) == "function" and import("mods/room/conformance/a
     or require("mods.room.conformance.admission")
 
 local runtime = {}
+local maxDiagnostics = 16
 
 function runtime.create()
     return {
@@ -35,15 +36,49 @@ local function fail(state, errorValue, expected, observed)
 end
 
 function runtime.status(state)
+    local record = state.firstMismatch or state.firstFault or state.admissionError
     return {
         state = state.state, reason = state.reason,
-        checkpoint = state.firstMismatch and state.firstMismatch.checkpoint,
+        checkpoint = record and record.checkpoint,
     }
 end
 
 function runtime.mismatch(state, checkpoint, expected, observed)
+    if type(checkpoint) == "table" and checkpoint.outcome == "fault" then
+        return runtime.fault(state, checkpoint, expected, observed)
+    end
+    if state.firstFault ~= nil then return nil, state.firstFault end
     if state.state ~= "desynchronized" and state.room ~= nil then room.dispose(state) end
     return fail(state, checkpoint, expected, observed)
+end
+
+-- Faults are executor/host contract failures, never evidence that an admitted
+-- run diverged.  They make enforcement passive just like a mismatch so hooks
+-- can still call native code, but retain a separate reporting product.
+function runtime.fault(state, errorValue, expected, observed)
+    if state.firstMismatch ~= nil then return nil, state.firstMismatch end
+    if state.firstFault == nil then
+        state.firstFault = type(errorValue) == "table" and errorValue or {
+            outcome = "fault", checkpoint = errorValue, expected = expected, observed = observed,
+        }
+        state.firstFault.outcome = "fault"
+    end
+    if state.room ~= nil then room.dispose(state) end
+    state.state, state.reason = "faulted", "executor-fault"
+    return nil, state.firstFault
+end
+
+-- No selected execution document was admitted, so this is intentionally not
+-- the terminal run-mismatch transition.
+function runtime.rejectAdmission(state, checkpoint, expected, observed)
+    if state.admissionError == nil then
+        state.admissionError = type(checkpoint) == "table" and checkpoint or {
+            checkpoint = checkpoint, expected = expected, observed = observed,
+        }
+    end
+    state.initialized = false
+    state.state, state.reason = "inactive", "admission-rejected"
+    return nil, state.admissionError
 end
 
 function runtime.canAttemptPostbossAdmission(state)
@@ -58,7 +93,11 @@ local function reset(state, admissionAttempted)
     state.route = nil
     state.room = nil
     state.firstMismatch = nil
+    state.firstFault = nil
+    state.loggedFault = nil
+    state.admissionError = nil
     state.loggedMismatch = nil
+    state.loggedAdmission = nil
     state.diagnostics = {}
     state.reason = "not-started"
     state.admissionAttempted = admissionAttempted == true
@@ -102,7 +141,7 @@ function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom)
     if not loaded or type(plan) ~= "table" or plan.kind ~= "ready" then
         local inboxStatus = inbox.status and inbox.status() or nil
         local observed = inboxStatus and inboxStatus.error or plan
-        return runtime.mismatch(state, "postboss-admission:active-plan",
+        return runtime.rejectAdmission(state, "postboss-admission:active-plan",
             "ready execution plan", observed)
     end
 
@@ -124,13 +163,16 @@ function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom)
 
     local routeState, routeError = route.newAt(plan, indexOrCount)
     if routeState == nil then
-        return runtime.mismatch(state, routeError)
+        return runtime.fault(state, routeError)
     end
     state.plan = plan
     state.route = routeState
     state.room = room.new(plan, function(errorValue, expected, observed)
         return runtime.mismatch(state, errorValue, expected, observed)
     end, {
+        onFault = function(errorValue, expected, observed)
+            return runtime.fault(state, errorValue, expected, observed)
+        end,
         readConformance = function(kind, currentRun, gameState, expected)
             return conformance.read(kind, currentRun, gameState, expected)
         end,
@@ -146,12 +188,13 @@ function runtime.start(state, inbox, phase, activeSlot)
     if not loaded or type(plan) ~= "table" or plan.kind ~= "ready" then
         local inboxStatus = inbox.status and inbox.status() or nil
         local observed = inboxStatus and inboxStatus.error or plan
-        return fail(state, "run-start", "ready execution plan", observed)
+        return runtime.rejectAdmission(state, "run-start", "ready execution plan", observed)
     end
     for _, occurrence in ipairs(plan.occurrences) do
         for _, fact in ipairs((occurrence.roomExitConformance or {}).facts or {}) do
             if not conformance.supports(fact.kind) then
-                return fail(state, "room-exit-conformance", "reachable conformance reader", fact.kind)
+                return runtime.rejectAdmission(state, "room-exit-conformance",
+                    "reachable conformance reader", fact.kind)
             end
         end
     end
@@ -160,6 +203,9 @@ function runtime.start(state, inbox, phase, activeSlot)
     state.room = room.new(plan, function(errorValue, expected, observed)
         return runtime.mismatch(state, errorValue, expected, observed)
     end, {
+        onFault = function(errorValue, expected, observed)
+            return runtime.fault(state, errorValue, expected, observed)
+        end,
         readConformance = function(kind, currentRun, gameState, expected)
             return conformance.read(kind, currentRun, gameState, expected)
         end,
@@ -186,7 +232,10 @@ function runtime.diagnostic(state, checkpoint, observed)
     local current = room.current(state)
     if current == nil then return true end
     local expected = current.occurrence.diagnostics and current.occurrence.diagnostics[checkpoint]
-    state.diagnostics[#state.diagnostics + 1] = {
+    local diagnostics = state.diagnostics or {}
+    state.diagnostics = diagnostics
+    if #diagnostics >= maxDiagnostics then table.remove(diagnostics, 1) end
+    diagnostics[#diagnostics + 1] = {
         occurrenceId = current.occurrence.id, checkpoint = checkpoint,
         expected = expected, observed = observed,
     }

@@ -149,10 +149,11 @@ function TestRouteRoomSessions.testTerminalPrefixIgnoresLaterRoomEntry()
     lu.assertTrue(route.enter(state, "unsupported", "H_Opening"))
 end
 
-function TestRouteRoomSessions.testBoundOwnerTypoMismatchesButDeclaredIncidentalDoesNot()
+function TestRouteRoomSessions.testBoundOwnerTypoFaultsButDeclaredIncidentalDoesNot()
     local session = newSession(occurrence())
     lu.assertNil(complete(session, "requred"))
-    lu.assertEquals(session.firstMismatch.checkpoint, "timeline-handle")
+    lu.assertEquals(session.firstFault.checkpoint, "timeline-handle")
+    lu.assertNil(session.firstMismatch)
     local incidental = newSession(occurrence())
     lu.assertTrue(room.incidental(incidental))
     lu.assertNil(incidental.firstMismatch)
@@ -377,7 +378,8 @@ function TestRouteRoomSessions.testExactHandleBindingHasOneNativeCarrier()
     lu.assertTrue(rawequal(assert(timeline.bind(port, handle, second)), handle))
     local other = assert(timeline.resolve(port, bindings.resolve, { kind = "offer", offerKey = "other" }))
     lu.assertNil(timeline.bind(port, other, second))
-    lu.assertEquals(port.firstMismatch.checkpoint, "timeline-binding")
+    lu.assertEquals(port.firstFault.checkpoint, "timeline-binding")
+    lu.assertNil(port.firstMismatch)
 end
 
 function TestRouteRoomSessions.testAcceptedUnboundPickupClaimCompletesWithoutAnObligation()
@@ -443,7 +445,8 @@ function TestRouteRoomSessions.testClaimedOwnerRejectsPreclaimHandleForBeginAndC
     lu.assertTrue(timeline.complete(port, claimedHandle, true))
     lu.assertNil(timeline.begin(port, oldHandle))
     lu.assertNil(timeline.complete(port, oldHandle, true))
-    lu.assertEquals(port.firstMismatch.checkpoint, "timeline-claim")
+    lu.assertEquals(port.firstFault.checkpoint, "timeline-claim")
+    lu.assertNil(port.firstMismatch)
 end
 
 function TestRouteRoomSessions.testOneNativeCarrierCannotBindTwoDistinctHandles()
@@ -463,7 +466,8 @@ function TestRouteRoomSessions.testOneNativeCarrierCannotBindTwoDistinctHandles(
     local native = {}
     lu.assertTrue(timeline.bind(port, first, native) ~= nil)
     lu.assertNil(timeline.bind(port, second, native))
-    lu.assertEquals(port.firstMismatch.checkpoint, "timeline-binding")
+    lu.assertEquals(port.firstFault.checkpoint, "timeline-binding")
+    lu.assertNil(port.firstMismatch)
 end
 
 function TestRouteRoomSessions.testMaterializedDirectItemReusesItsPreboundHandle()
@@ -550,7 +554,8 @@ function TestRouteRoomSessions.testAmbiguousNativeRoleDoesNotAdvanceOrBind()
     local handle = assert(timeline.resolve(port, bindings.resolve, { kind = "offer", offerKey = "ambiguous" }))
     local native = { Name = "Duplicate" }
     lu.assertNil(timeline.bind(port, handle, native))
-    lu.assertEquals(port.firstMismatch.checkpoint, "timeline-binding")
+    lu.assertEquals(port.firstFault.checkpoint, "timeline-binding")
+    lu.assertNil(port.firstMismatch)
     lu.assertNil(timeline.bound(port, native))
 end
 
@@ -565,11 +570,13 @@ function TestRouteRoomSessions.testTimelinePortRejectsForeignAndFabricatedHandle
         { kind = "generation", generationKey = "test:required" }))
 
     lu.assertNil(timeline.begin(left, foreign))
-    lu.assertEquals(left.firstMismatch.checkpoint, "timeline-handle")
+    lu.assertEquals(left.firstFault.checkpoint, "timeline-handle")
+    lu.assertNil(left.firstMismatch)
 
     local fresh = timeline.new(entry, assert(bindings.index(entry)))
     lu.assertNil(timeline.begin(fresh, {}))
-    lu.assertEquals(fresh.firstMismatch.checkpoint, "timeline-handle")
+    lu.assertEquals(fresh.firstFault.checkpoint, "timeline-handle")
+    lu.assertNil(fresh.firstMismatch)
 end
 
 function TestRouteRoomSessions.testMultiContactOwnerCompletesOnlyAtItsTerminalProof()

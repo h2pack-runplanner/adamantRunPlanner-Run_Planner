@@ -74,10 +74,35 @@ function composition.bind(root)
                 state.loggedMismatch = state.firstMismatch
                 if rom and rom.log and rom.log.info then
                     local mismatch = state.firstMismatch
+                    local nearby = {}
+                    for _, diagnostic in ipairs(state.diagnostics or {}) do
+                        nearby[#nearby + 1] = diagnosticValue(diagnostic)
+                    end
                     rom.log.info("[RunPlanner] first-mismatch checkpoint="
                         .. tostring(mismatch.checkpoint or mismatch.kind) .. " expected="
                         .. diagnosticValue(mismatch.expected) .. " observed="
-                        .. diagnosticValue(mismatch.observed))
+                        .. diagnosticValue(mismatch.observed) .. " diagnostics="
+                        .. table.concat(nearby, ";"))
+                end
+            end
+            if state.firstFault and state.loggedFault ~= state.firstFault then
+                state.loggedFault = state.firstFault
+                if rom and rom.log and rom.log.info then
+                    local fault = state.firstFault
+                    rom.log.info("[RunPlanner] executor-fault checkpoint="
+                        .. tostring(fault.checkpoint) .. " expected="
+                        .. diagnosticValue(fault.expected) .. " observed="
+                        .. diagnosticValue(fault.observed))
+                end
+            end
+            if state.admissionError and state.loggedAdmission ~= state.admissionError then
+                state.loggedAdmission = state.admissionError
+                if rom and rom.log and rom.log.info then
+                    local admission = state.admissionError
+                    rom.log.info("[RunPlanner] admission-rejected checkpoint="
+                        .. tostring(admission.checkpoint) .. " expected="
+                        .. diagnosticValue(admission.expected) .. " observed="
+                        .. diagnosticValue(admission.observed))
                 end
             end
         end

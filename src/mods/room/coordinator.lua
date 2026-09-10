@@ -26,10 +26,22 @@ end
 
 local function fail(state, errorValue, expected, observed)
     local roomState = stateOf(state)
+    if type(errorValue) == "table" and errorValue.outcome == "fault" then
+        if roomState and type(roomState.onFault) == "function" then
+            return roomState.onFault(errorValue, expected, observed)
+        end
+        return nil, errorValue
+    end
     if roomState and type(roomState.onMismatch) == "function" then
         return roomState.onMismatch(errorValue, expected, observed)
     end
     return nil, errorValue
+end
+
+local function fault(state, checkpoint, expected, observed)
+    return fail(state, {
+        outcome = "fault", checkpoint = checkpoint, expected = expected, observed = observed,
+    })
 end
 
 function coordinator.new(plan, onMismatch, capabilities)
@@ -40,6 +52,7 @@ function coordinator.new(plan, onMismatch, capabilities)
         encounterPhases = encounterPhaseFactory.create(),
         readConformance = capabilities.readConformance,
         onMismatch = onMismatch,
+        onFault = capabilities.onFault,
     }
 end
 
@@ -57,10 +70,13 @@ function coordinator.prepare(state, occurrence)
         return roomState.prepared
     end
     if type(roomState.timelineIndex) ~= "function" then
-        return fail(state, "room timeline index capability is required")
+        return fault(state, "timeline-index", "timeline index capability", "missing")
     end
     local bindings, errorValue = roomState.timelineIndex(occurrence)
-    if bindings == nil then return fail(state, errorValue) end
+    if bindings == nil then
+        return fault(state, errorValue and errorValue.checkpoint or "timeline-index",
+            errorValue and errorValue.expected or "valid occurrence", errorValue and errorValue.observed)
+    end
     if roomState.prepared ~= nil then session.dispose(roomState.prepared) end
     roomState.prepared = session.new(occurrence, bindings)
     return roomState.prepared
@@ -82,7 +98,7 @@ function coordinator.enter(state, occurrence, nativeRoom)
     if state.state ~= "synchronized" then return nil end
     local roomState = stateOf(state)
     if roomState.current ~= nil then
-        return fail(state, "room-entry", "current room must exit", occurrence.id)
+        return fault(state, "room-entry", "current room must exit", occurrence.id)
     end
     local prepared = roomState.prepared
     local active
@@ -91,10 +107,13 @@ function coordinator.enter(state, occurrence, nativeRoom)
     else
         if prepared ~= nil then session.dispose(prepared) end
         if type(roomState.timelineIndex) ~= "function" then
-            return fail(state, "room timeline index capability is required")
+            return fault(state, "timeline-index", "timeline index capability", "missing")
         end
         local bindings, errorValue = roomState.timelineIndex(occurrence)
-        if bindings == nil then return fail(state, errorValue) end
+        if bindings == nil then
+            return fault(state, errorValue and errorValue.checkpoint or "timeline-index",
+                errorValue and errorValue.expected or "valid occurrence", errorValue and errorValue.observed)
+        end
         active = session.new(occurrence, bindings)
     end
     roomState.prepared = nil
@@ -163,7 +182,10 @@ function coordinator.bindEncounter(state, nativeEncounter, slotKey, nativeRoom)
     local occurrence = occurrenceForNative(state, nativeRoom)
     if occurrence == nil then return nil end
     local phase, errorValue = encounterPhases(state).bind(occurrence, nativeEncounter, slotKey)
-    if phase == nil then return fail(state, errorValue) end
+    if phase == nil then
+        return fault(state, errorValue and errorValue.checkpoint or "encounter-binding",
+            errorValue and errorValue.expected, errorValue and errorValue.observed)
+    end
     return phase
 end
 
@@ -247,7 +269,7 @@ end
 
 function coordinator.resolve(state, context, contact)
     local owner = bindingContext(state, context)
-    if owner == nil then return fail(state, "timeline-handle", "active or prepared occurrence", "unbound") end
+    if owner == nil then return fault(state, "timeline-handle", "active or prepared occurrence", "unbound") end
     local source = contact and contact.source
     local handle, errorValue = session.resolve(owner, timelineBindings.resolve, contact, source)
     if handle == nil and errorValue ~= nil then return fail(state, errorValue) end
@@ -257,7 +279,7 @@ end
 function coordinator.bind(state, context, handle, nativeObject)
     if handle == nil then return nil end
     local owner = bindingContext(state, context)
-    if owner == nil then return fail(state, "timeline-binding", "active or prepared occurrence", "unbound") end
+    if owner == nil then return fault(state, "timeline-binding", "active or prepared occurrence", "unbound") end
     local bound, errorValue = session.bind(owner, handle, nativeObject)
     if bound == nil then return fail(state, errorValue) end
     return bound
@@ -283,7 +305,7 @@ end
 
 function coordinator.claimReady(state, context, contact, native, compatible)
     local owner = bindingContext(state, context)
-    if owner == nil then return fail(state, "timeline-claim", "active or prepared occurrence", "unbound") end
+    if owner == nil then return fault(state, "timeline-claim", "active or prepared occurrence", "unbound") end
     local handle, payload, errorValue = session.claimReady(owner, contact, native, compatible)
     if handle == nil and errorValue ~= nil then return fail(state, errorValue) end
     return handle, payload
@@ -291,7 +313,7 @@ end
 
 function coordinator.begin(state, handle)
     local active = coordinator.current(state)
-    if active == nil then return fail(state, "timeline-handle", "active occurrence", "none") end
+    if active == nil then return fault(state, "timeline-handle", "active occurrence", "none") end
     local payload, errorValue = session.begin(active, handle)
     if errorValue == "completed" then return nil, "completed" end
     if payload == nil then return fail(state, errorValue) end
@@ -300,7 +322,7 @@ end
 
 function coordinator.peek(state, handle)
     local active = coordinator.current(state)
-    if active == nil then return fail(state, "timeline-handle", "active occurrence", "none") end
+    if active == nil then return fault(state, "timeline-handle", "active occurrence", "none") end
     local payload, errorValue = session.peek(active, handle)
     if payload == nil and errorValue ~= nil then return fail(state, errorValue) end
     return payload

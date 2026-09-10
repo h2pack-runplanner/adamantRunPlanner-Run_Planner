@@ -20,6 +20,72 @@ local unusedLoadoutScope = {
 
 TestRoomEntryHooks = {}
 
+local function hookedRuntimeState()
+    local occurrence = {
+        id = "opening", gameName = "F_Opening01",
+        overview = { encounterPhases = {}, requiredObjects = {}, additional = {} },
+        transactionsByOwner = {}, timeline = { transactions = {}, dependencies = {}, obligations = {} },
+        doors = { kind = "terminal" }, roomExitConformance = { facts = {} }, conformanceExpected = {},
+    }
+    local plan = {
+        occurrences = { occurrence }, occurrencesById = { opening = occurrence },
+        selectedOccurrenceIds = { "opening" },
+    }
+    local state = runtimeSessionModule.create()
+    state.initialized, state.state, state.reason = true, "synchronized", "ready"
+    state.plan, state.route = plan, routeSessionModule.new(plan)
+    state.room = roomCoordinatorModule.new(plan, function(errorValue, expected, observed)
+        return runtimeSessionModule.mismatch(state, errorValue, expected, observed)
+    end, {
+        onFault = function(errorValue, expected, observed)
+            return runtimeSessionModule.fault(state, errorValue, expected, observed)
+        end,
+    })
+    return state
+end
+
+local function attachRuntimeEntryHook(state)
+    local module, _, callbacks = capture()
+    roomHooks.attach(module, runtimeSessionModule, function() return state end, function() end,
+        routeSessionModule, roomCoordinatorModule, nil, {
+            proveIncomingReward = function() return true end,
+            proveOutgoingDoors = function() return true end,
+        }, unusedLoadoutScope)
+    return callbacks
+end
+
+function TestRoomEntryHooks.testStartRoomGameplayMismatchStillCallsNativeExactlyOnce()
+    local state = hookedRuntimeState()
+    local callbacks = attachRuntimeEntryHook(state)
+    local nativeCalls = 0
+    local result = callbacks.StartRoom(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return "native-entry"
+    end, {}, { Name = "F_Wrong" })
+
+    lu.assertEquals(result, "native-entry")
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertEquals(state.firstMismatch.checkpoint, "room-entry")
+    lu.assertNil(state.firstFault)
+    lu.assertEquals(state.state, "desynchronized")
+end
+
+function TestRoomEntryHooks.testStartRoomExecutorFaultStillCallsNativeExactlyOnce()
+    local state = hookedRuntimeState()
+    local callbacks = attachRuntimeEntryHook(state)
+    local nativeCalls = 0
+    local result = callbacks.StartRoom(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return "native-entry"
+    end, {}, { Name = "F_Opening01", __runPlannerExecutionRoomId = "wrong-stamp" })
+
+    lu.assertEquals(result, "native-entry")
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertEquals(state.firstFault.checkpoint, "route-occurrence-stamp")
+    lu.assertNil(state.firstMismatch)
+    lu.assertEquals(state.state, "faulted")
+end
+
 function TestRoomEntryHooks.testFreshPostbossStartRoomAdmissionAdoptsTheRestoredNativeRoom()
     local priorVerify, priorGame, priorCurrentRun = admissionProjection.verify, _G.game, _G.CurrentRun
     admissionProjection.verify = function() return true end
