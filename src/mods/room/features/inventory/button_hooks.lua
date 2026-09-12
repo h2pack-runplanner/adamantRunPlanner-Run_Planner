@@ -5,6 +5,11 @@ local current = type(import) == "function"
     or require("mods.room.features.inventory.current")
 local hooks = {}
 local delayScope
+local unpackValues = table.unpack
+
+local function packValues(...)
+    return { n = select("#", ...), ... }
+end
 
 local bindingFields = {
     "__runPlannerOfferKey", "__runPlannerGenerationKey", "__runPlannerTwistResultKey",
@@ -93,11 +98,12 @@ function hooks.attach(module, _, getState, report, room, route)
             minimum = _G.SurfaceShopData.DelayMin,
             maximum = _G.SurfaceShopData.DelayMax,
         }
-        local result = base(screen, ...)
+        local results = packValues(pcall(base, screen, ...))
         delayScope = priorDelayScope
+        if not results[1] then error(results[2], 0) end
         restore(bindings, screen)
         report(runtime)
-        return result
+        return unpackValues(results, 2, results.n)
     end)
 
     -- SurfaceShopLogic chooses the delay at this exact RNG contact before it derives

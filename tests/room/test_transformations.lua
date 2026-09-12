@@ -328,7 +328,7 @@ function TestTransformations.testItemEffectCompletesOnlyAfterAcceptedNativeUseRe
     lu.assertEquals(completions, 1)
 end
 
-local function outcomeHarness(transaction)
+local function outcomeHarness(transaction, beginPayload)
     local module, callbacks = capture()
     local state, current, handle = {}, {}, {}
     local payload = { transaction = transaction }
@@ -341,7 +341,11 @@ local function outcomeHarness(transaction)
             if compatible(transaction, contact) then return handle, payload end
         end,
         begin = function(_, value)
-            if value == handle then begins = begins + 1; return payload end
+            if value == handle then
+                begins = begins + 1
+                if beginPayload == false then return nil end
+                return payload
+            end
         end,
     }
     local session = {
@@ -355,6 +359,33 @@ local function outcomeHarness(transaction)
     transformations.attach(module, session, function() return state end, function() end, room)
     return callbacks, function() return completions end, mismatches,
         function() return begins end
+end
+
+function TestTransformations.testRejectedAnvilBeginLeavesNativeSelectionsUntouched()
+    local callbacks, completions, mismatches, begins = outcomeHarness({
+        kind = "transformation",
+        transformation = {
+            kind = "anvilOfFates", removedTraitKey = "OldHammer",
+            addedTraitKeys = { "NewHammerOne", "NewHammerTwo" },
+        },
+    }, false)
+    local item = { Name = "ChaosWeaponUpgrade" }
+    local selected, called
+    callbacks.UseConsumableItem(nil, {}, function(native)
+        callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, native, {})
+        callbacks.ChaosHammerUpgrade(nil, {}, function()
+            called = true
+            selected = callbacks.RemoveRandomValue(nil, {}, function(pool) return pool[1] end,
+                { "Other", "OldHammer" }, {})
+            return true
+        end, {})
+        return true
+    end, item, {}, {})
+    lu.assertTrue(called)
+    lu.assertEquals(selected, "Other")
+    lu.assertEquals(begins(), 1)
+    lu.assertEquals(completions(), 0)
+    lu.assertEquals(mismatches, {})
 end
 
 function TestTransformations.testAnvilOutcomeSteersAllThreeSelectionsAndCompletesAfterUse()
@@ -409,6 +440,52 @@ function TestTransformations.testWellTwistOutcomeSteersNativeAwardAndCompletesAf
     lu.assertEquals(begins(), 1)
     lu.assertEquals(completions(), 1)
     lu.assertEquals(mismatches, {})
+end
+
+function TestTransformations.testRejectedTwistBeginLeavesNativeSelectionUntouched()
+    local callbacks, completions, mismatches, begins = outcomeHarness({
+        kind = "transformation",
+        transformation = {
+            kind = "stygianWellTwist", sourceItemKey = "RandomStoreItem",
+            resultItemKey = "HealDropRange",
+        },
+    }, false)
+    local item = { Name = "RandomStoreItem" }
+    local selected, called
+    callbacks.UseConsumableItem(nil, {}, function(native)
+        callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, native, {})
+        callbacks.AwardRandomStoreItem(nil, {}, function(values)
+            called = true
+            selected = callbacks.GetRandomValue(nil, {}, function(pool) return pool[1] end, values, {})
+            return selected
+        end, { { Name = "Other" }, { Name = "HealDropRange" } }, {})
+        return true
+    end, item, {}, {})
+    lu.assertTrue(called)
+    lu.assertEquals(selected.Name, "Other")
+    lu.assertEquals(begins(), 1)
+    lu.assertEquals(completions(), 0)
+    lu.assertEquals(mismatches, {})
+end
+
+function TestTransformations.testTwistUseFaultRestoresTheNativeSelector()
+    local callbacks = outcomeHarness({
+        kind = "transformation",
+        transformation = {
+            kind = "stygianWellTwist", sourceItemKey = "RandomStoreItem",
+            resultItemKey = "HealDropRange",
+        },
+    })
+    local item = { Name = "RandomStoreItem" }
+    local ok, failure = pcall(callbacks.UseConsumableItem, nil, {}, function(native)
+        callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, native, {})
+        error("native twist failure")
+    end, item, {}, {})
+    local native = callbacks.GetRandomValue(nil, {}, function(values) return values[1] end,
+        { { Name = "Other" }, { Name = "HealDropRange" } }, {})
+    lu.assertFalse(ok)
+    lu.assertStrContains(failure, "native twist failure")
+    lu.assertEquals(native.Name, "Other")
 end
 
 return TestTransformations

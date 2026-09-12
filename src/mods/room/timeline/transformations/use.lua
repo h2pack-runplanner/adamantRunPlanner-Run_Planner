@@ -42,10 +42,9 @@ function use.attach(module, session, getState, report, room)
         local current = room.current(state)
         local handle = current and room.bound(state, current, item) or nil
         local payload = handle and room.peek(state, handle) or nil
-        -- Transformations must steer their native random selection during use,
-        -- before the accepted presentation fires. Claim their ready owner at
-        -- this one native contact; direct item effects still claim only after
-        -- native acceptance below.
+        -- Claim transformation readiness at use so its accepted presentation
+        -- can begin the same owner. Selector scopes still arm only after that
+        -- native acceptance contact.
         if handle == nil and current ~= nil then
             handle, payload = room.claimReady(state, current,
                 { kind = "transformation", gameName = name(item) }, item, transformation)
@@ -55,17 +54,15 @@ function use.attach(module, session, getState, report, room)
         end
         local scope = { state = state, current = current, item = item, handle = handle, payload = payload }
         active[item] = scope
-        local transformScope = anvilScope.beginUse(state, payload)
-        local twistScope = twist.scope(state, handle, payload and payload.transaction)
         local priorTwist = activeTwist
-        activeTwist = twistScope
+        activeTwist = nil
         local ok, result = pcall(base, item, args, user)
         activeTwist = priorTwist
-        local transformed = transformScope and anvilScope.finishUse(transformScope) or false
+        local transformed = scope.transformScope and anvilScope.finishUse(scope.transformScope) or false
         if active[item] == scope then active[item] = nil end
         if not ok then error(result, 0) end
         if scope.accepted and result ~= false then
-            if transformed or twistScope and twistScope.awarded
+            if transformed or scope.twistScope and scope.twistScope.awarded
                 or scope.payload and scope.payload.transaction.kind == "itemEffect" then
                 session.complete(state, scope.handle)
             end
@@ -86,6 +83,12 @@ function use.attach(module, session, getState, report, room)
             if scope.handle ~= nil then
                 scope.payload = room.begin(scope.state, scope.handle)
                 scope.accepted = scope.payload ~= nil
+                if scope.accepted then
+                    scope.transformScope = anvilScope.beginUse(scope.state, scope.payload)
+                    scope.twistScope = twist.scope(scope.state, scope.handle,
+                        scope.payload.transaction)
+                    activeTwist = scope.twistScope
+                end
             end
         end
         return result

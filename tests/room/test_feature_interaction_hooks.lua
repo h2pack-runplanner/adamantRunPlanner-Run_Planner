@@ -66,7 +66,7 @@ function TestFeatureInteractionHooks.testShrinePublishesAllThreeOffersAndKeepsUn
     _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = generated.StoreOptions } } }
     local screen = { Components = {} }
     local observedDuringBase
-    callbacks.CreateSurfaceShopButtons(nil, {}, function(value)
+    local first, second = callbacks.CreateSurfaceShopButtons(nil, {}, function(value)
         for index = 1, 3 do
             local option = generated.StoreOptions[index]
             option.RoomDelay = callbacks.RandomInt(nil, {}, function()
@@ -75,6 +75,7 @@ function TestFeatureInteractionHooks.testShrinePublishesAllThreeOffersAndKeepsUn
             value.Components["PurchaseButton" .. index] = { Data = option }
         end
         observedDuringBase = generated.StoreOptions[1].RoomDelay
+        return "native-first", "native-second"
     end, screen)
     _G.CurrentRun = priorRun
     _G.SurfaceShopData = priorSurfaceShopData
@@ -84,7 +85,44 @@ function TestFeatureInteractionHooks.testShrinePublishesAllThreeOffersAndKeepsUn
     lu.assertEquals(generated.StoreOptions[2].RoomDelay, 8)
     lu.assertEquals(screen.Components.PurchaseButton2.Data.RoomDelay, 8)
     lu.assertEquals(generated.StoreOptions[3].RoomDelay, 2)
+    lu.assertEquals(first, "native-first")
+    lu.assertEquals(second, "native-second")
     lu.assertEquals(mismatches, {})
+end
+
+function TestFeatureInteractionHooks.testShrineBuilderFaultRestoresDelayScope()
+    local module, _, callbacks = capture()
+    local active = opaque({ occurrence = { overview = { hermesShrine = {
+        offers = {
+            { slotIndex = 1, purchase = { roomDelay = 2 } },
+        },
+    } } } }, function() return nil end)
+    local session = stub()
+    session.current = function() return active end
+    attachFeatureHooks(module, session, function() return {} end, function() end, session)
+
+    local priorRun = _G.CurrentRun
+    local priorSurfaceShopData = _G.SurfaceShopData
+    _G.SurfaceShopData = { DelayMin = 2, DelayMax = 8 }
+    local option = { Name = "BoonA" }
+    _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = { option } } } }
+    local screen = { Components = {} }
+    local ok, failure = pcall(callbacks.CreateSurfaceShopButtons, nil, {}, function(value)
+        value.Components.PurchaseButton1 = { Data = option }
+        error("native shrine failure")
+    end, screen)
+    local nativeCalls = 0
+    local nativeDelay = callbacks.RandomInt(nil, {}, function(_, maximum)
+        nativeCalls = nativeCalls + 1
+        return maximum
+    end, 2, 8)
+    _G.CurrentRun = priorRun
+    _G.SurfaceShopData = priorSurfaceShopData
+
+    lu.assertFalse(ok)
+    lu.assertStrContains(failure, "native shrine failure")
+    lu.assertEquals(nativeDelay, 8)
+    lu.assertEquals(nativeCalls, 1)
 end
 
 
