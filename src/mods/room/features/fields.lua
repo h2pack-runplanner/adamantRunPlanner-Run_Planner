@@ -26,6 +26,114 @@ local function copyArgs(args)
     return result
 end
 
+local function scalar(value)
+    local kind = type(value)
+    if kind == "string" or kind == "number" or kind == "boolean" then return value end
+    return nil
+end
+
+local function point(id, getLocation)
+    local result = { id = scalar(id) }
+    if result.id ~= nil then
+        local location = getLocation({ Id = result.id })
+        if type(location) == "table" then
+            result.location = { X = scalar(location.X), Y = scalar(location.Y), Z = scalar(location.Z) }
+        end
+    end
+    return result
+end
+
+local function reward(value)
+    if type(value) ~= "table" then return { name = scalar(value) } end
+    return {
+        rewardType = scalar(value.rewardType or value.RewardType),
+        source = scalar(value.source or value.ForceLootName),
+        name = scalar(value.Name or value.LootName),
+    }
+end
+
+local function object(id, value, getLocation)
+    if type(value) ~= "table" then
+        local objectId = scalar(id)
+        return objectId ~= nil and { objectId = objectId } or nil
+    end
+    local objectId = scalar(value.ObjectId) or scalar(id)
+    local result = {
+        objectId = objectId,
+        name = scalar(value.Name),
+        spawnPointId = scalar(value.SpawnPointId),
+        rewardId = scalar(value.RewardId),
+    }
+    if objectId ~= nil then result.location = point(objectId, getLocation).location end
+    return result
+end
+
+local function sortedObjects(values, predicate, getLocation)
+    local result = {}
+    for id, value in pairs(values or {}) do
+        if type(value) == "table" and predicate(value) then
+            result[#result + 1] = object(id, value, getLocation)
+        end
+    end
+    table.sort(result, function(left, right) return tostring(left.objectId) < tostring(right.objectId) end)
+    return result
+end
+
+local function completedSnapshot(occurrence, nativeRoom, context)
+    local layout = occurrence.overview.fields
+    local getLocation = context.getLocation
+    local priorRewards = context.cageRewards or {}
+    local plannedCages, plannedOptional = {}, {}
+    for index, cage in ipairs(layout.cagePoints or {}) do
+        plannedCages[#plannedCages + 1] = {
+            slotKey = scalar(cage.slotKey), point = point(cage.pointId, getLocation), reward = reward(priorRewards[index]),
+        }
+    end
+    for _, optional in ipairs(layout.optionalRewards or {}) do
+        plannedOptional[#plannedOptional + 1] = {
+            slotKey = scalar(optional.slotKey), point = point(optional.pointId, getLocation), reward = reward(optional.reward),
+        }
+    end
+    local optional = sortedObjects(context.optionalRewards, function() return true end, getLocation)
+    local restores = type(nativeRoom.Encounter) == "table" and nativeRoom.Encounter.RewardsToRestore or {}
+    for _, observed in ipairs(optional) do
+        local restore = restores[observed.objectId]
+        if type(restore) == "table" then
+            observed.restore = {
+                rewardType = scalar(restore.RewardOverride), spawnPointId = scalar(restore.SpawnRewardOnId),
+            }
+        end
+    end
+    local cages = sortedObjects(context.activeObstacles, function(value)
+        return value.Name == "FieldsRewardCage"
+    end, getLocation)
+    for _, cage in ipairs(cages) do
+        local nativeReward = (context.lootObjects and context.lootObjects[cage.rewardId])
+            or (context.activeObstacles and context.activeObstacles[cage.rewardId])
+        cage.reward = object(cage.rewardId, nativeReward, getLocation)
+    end
+    local nemesis = context.sessionMapState and context.sessionMapState.Nemesis
+    return {
+        planned = {
+            entryPair = {
+                startPoint = point(layout.entryPair and layout.entryPair.startPointId, getLocation),
+                endPoint = point(layout.entryPair and layout.entryPair.endPointId, getLocation),
+            },
+            cages = plannedCages, optionalRewards = plannedOptional,
+            nemesisPoint = point(layout.nemesisPointId, getLocation),
+        },
+        observed = {
+            entryPair = {
+                startPoint = point(nativeRoom.HeroStartPoint, getLocation),
+                endPoint = point(nativeRoom.HeroEndPoint, getLocation),
+            },
+            cages = cages,
+            optionalRewards = optional,
+            nemesis = object(nemesis and nemesis.ObjectId, nemesis, getLocation),
+        },
+    }
+end
+
 function fields.realize(nativeRoom, layout)
     if type(nativeRoom) ~= "table" or type(layout) ~= "table" then return nativeRoom end
     nativeRoom.HeroStartPoint = layout.entryPair.startPointId
@@ -45,11 +153,26 @@ function fields.attach(module, session, getState, report, room)
 
     local function currentLayout(state, nativeRoom)
         if state == nil or state.state ~= "synchronized" then return nil end
-        local occurrence = room.current(state)
+        local current = room.current(state)
+        local occurrence = current and current.occurrence
         if occurrence == nil or type(occurrence.overview) ~= "table" then return nil end
         local id = type(nativeRoom) == "table" and nativeRoom.__runPlannerExecutionRoomId or nil
         if id ~= nil and id ~= occurrence.id then return nil end
         return occurrence.overview.fields
+    end
+
+    local function currentOccurrence(state, nativeRoom)
+        if currentLayout(state, nativeRoom) == nil then return nil end
+        local current = room.current(state)
+        return current and current.occurrence
+    end
+
+    local function cageRewards(state, occurrence)
+        local prior = state and state.route and state.route.lastExitedOccurrence
+        for _, target in ipairs(prior and prior.doors and prior.doors.targets or {}) do
+            if target.room and target.room.id == occurrence.id then return target.cageRewards end
+        end
+        return nil
     end
 
     module.hooks.wrap("RemoveRandomValue", "run-planner-fields-point-selection", function(_, runtime, base,
@@ -72,7 +195,7 @@ function fields.attach(module, session, getState, report, room)
         if expected == nil then return base(values, ...) end
         local result = removeExpected(values, expected)
         if result == nil then
-            session.mismatch(getState(runtime), "fields-point", expected, nil)
+            session.diagnostic(getState(runtime), "fields-point", { expected = expected, observed = nil })
             return base(values, ...)
         end
         return result
@@ -90,13 +213,13 @@ function fields.attach(module, session, getState, report, room)
     end)
 
     module.hooks.wrap("IsRoomRewardEligible", "run-planner-fields-optional-reward", function(_, _runtime,
-        base, run, nativeRoom, reward, previouslyChosen, args)
+        base, run, nativeRoom, candidate, previouslyChosen, args)
         local scope = active
         local expected = scope and scope.expectedReward
-        if expected ~= nil and type(reward) == "table" then
-            return (reward.Name or reward.RewardType) == expected.reward.rewardType
+        if expected ~= nil and type(candidate) == "table" then
+            return (candidate.Name or candidate.RewardType) == expected.reward.rewardType
         end
-        return base(run, nativeRoom, reward, previouslyChosen, args)
+        return base(run, nativeRoom, candidate, previouslyChosen, args)
     end)
 
     module.hooks.wrap("ChooseRoomReward", "run-planner-fields-optional-choice", function(_, runtime, base,
@@ -119,8 +242,9 @@ function fields.attach(module, session, getState, report, room)
         end
         local observed = type(result) == "table" and (result.Name or result.RewardType) or result
         if observed ~= expected.reward.rewardType then
-            session.mismatch(runtime and getState(runtime), "fields-optional-reward",
-                expected.reward.rewardType, observed)
+            session.diagnostic(runtime and getState(runtime), "fields-optional-reward", {
+                expected = expected.reward.rewardType, observed = observed,
+            })
         end
         return result
     end)
@@ -165,11 +289,12 @@ function fields.attach(module, session, getState, report, room)
         if scope.cageIndex ~= #scope.cagePoints
             or scope.optionalPointIndex ~= #scope.optionalRewards
             or scope.rewardIndex ~= #scope.optionalRewards then
-            session.mismatch(state, "fields-spawn", {
-                cages = #scope.cagePoints, optional = #scope.optionalRewards,
-            }, {
+            session.diagnostic(state, "fields-spawn", {
+                expected = { cages = #scope.cagePoints, optional = #scope.optionalRewards },
+                observed = {
                 cages = scope.cageIndex, optionalPoints = scope.optionalPointIndex,
                 optionalRewards = scope.rewardIndex,
+                },
             })
         end
         report(runtime)
@@ -188,7 +313,9 @@ function fields.attach(module, session, getState, report, room)
         activeNemesis = prior
         if not ok then error(result, 0) end
         if not used then
-            session.mismatch(state, "fields-nemesis-point", layout.nemesisPointId, nil)
+            session.diagnostic(state, "fields-nemesis-point", {
+                expected = layout.nemesisPointId, observed = nil,
+            })
         end
         report(runtime)
         return result
@@ -203,6 +330,24 @@ function fields.attach(module, session, getState, report, room)
         if scope.used then return base(currentRoom, unit, source, args, depth) end
         scope.used = true
         return scope.pointId
+    end)
+
+    module.hooks.wrap("StartRoomPresentation", "run-planner-fields-completed-product", function(_, runtime,
+        base, currentRun, nativeRoom, ...)
+        local state = getState(runtime)
+        local occurrence = currentOccurrence(state, nativeRoom)
+        if occurrence ~= nil then
+            session.diagnostic(state, "fields-completed-product", completedSnapshot(occurrence, nativeRoom, {
+                cageRewards = cageRewards(state, occurrence),
+                activeObstacles = _G.MapState and _G.MapState.ActiveObstacles,
+                optionalRewards = _G.MapState and _G.MapState.OptionalRewards,
+                lootObjects = _G.LootObjects,
+                sessionMapState = _G.SessionMapState,
+                getLocation = _G.GetLocation,
+            }))
+            report(runtime)
+        end
+        return base(currentRun, nativeRoom, ...)
     end)
 end
 

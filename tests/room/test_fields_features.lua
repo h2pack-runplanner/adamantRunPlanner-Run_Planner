@@ -3,6 +3,7 @@
 -- luacheck: globals TestFieldsFeatures
 local lu = require("luaunit")
 local fields = require("mods.room.features.fields")
+local coordinator = require("mods.room.coordinator")
 local support = require("tests.harness.hook_composition")
 
 TestFieldsFeatures = {}
@@ -10,17 +11,20 @@ TestFieldsFeatures = {}
 local function fixture(layout, occurrenceId)
     local module, _, callbacks = support.capture()
     local occurrence = { id = occurrenceId or "fields", overview = { fields = layout } }
-    local state = { state = "synchronized" }
-    local mismatches = {}
+    local state = { state = "synchronized", room = { current = { occurrence = occurrence } } }
+    local mismatches, diagnostics = {}, {}
     local reports = 0
-    local room = { current = function() return occurrence end }
     local session = {
         mismatch = function(_, kind, expected, observed)
-            mismatches[#mismatches + 1] = { kind = kind, expected = expected, observed = observed }
+            mismatches[#mismatches + 1] = type(kind) == "table" and kind
+                or { kind = kind, expected = expected, observed = observed }
+        end,
+        diagnostic = function(_, _, observed)
+            diagnostics[#diagnostics + 1] = observed
         end,
     }
-    fields.attach(module, session, function() return state end, function() reports = reports + 1 end, room)
-    return callbacks, state, mismatches, function() return reports end
+    fields.attach(module, session, function() return state end, function() reports = reports + 1 end, coordinator)
+    return callbacks, state, mismatches, diagnostics, function() return reports end, occurrence
 end
 
 function TestFieldsFeatures.testPlannedDoorPayloadSurvivesNativeCageRebuildBranch()
@@ -49,8 +53,8 @@ function TestFieldsFeatures.testPlannedDoorPayloadSurvivesNativeCageRebuildBranc
     lu.assertEquals(nativeRoom.CageRewards, expected)
 end
 
-function TestFieldsFeatures.testTwoCagesAndSourceSpecificOptionalRewardUsePublishedPlacements()
-    local callbacks, _, mismatches, reports = fixture({
+function TestFieldsFeatures.testTwoCagesAndOptionalConsumableUsePublishedPlacements()
+    local callbacks, _, mismatches, _, reports = fixture({
         entryPair = { startPointId = 101, endPointId = 102 },
         cagePoints = {
             { slotKey = "cage1", pointId = 11 },
@@ -59,7 +63,7 @@ function TestFieldsFeatures.testTwoCagesAndSourceSpecificOptionalRewardUsePublis
         optionalRewards = {
             {
                 slotKey = "optional1", pointId = 21,
-                reward = { rewardType = "Boon", source = "DemeterUpgrade" },
+                reward = { rewardType = "MaxHealthDrop", source = "MaxHealthDrop" },
             },
         },
     })
@@ -85,16 +89,16 @@ function TestFieldsFeatures.testTwoCagesAndSourceSpecificOptionalRewardUsePublis
         end, optional), 21)
         selectedReward = callbacks.ChooseRoomReward(nil, {}, function(run, rewardRoom, store)
             lu.assertEquals(store, "FieldsOptionalRewards")
-            local candidate = { Name = "Boon" }
+            local candidate = { Name = "MaxHealthDrop" }
             lu.assertTrue(callbacks.IsRoomRewardEligible(nil, {}, function() return false end,
                 run, rewardRoom, candidate, {}, {}))
             return candidate.Name
         end, {}, {}, "FieldsOptionalRewards", {}, {})
-        lu.assertEquals(selectedReward, "Boon")
+        lu.assertEquals(selectedReward, "MaxHealthDrop")
         callbacks.SpawnRoomReward(nil, {}, function(_, args)
-            lu.assertEquals(args.RewardOverride, "Boon")
-            lu.assertEquals(args.LootName, "DemeterUpgrade")
-            return { Name = "Boon" }
+            lu.assertEquals(args.RewardOverride, "MaxHealthDrop")
+            lu.assertEquals(args.LootName, "MaxHealthDrop")
+            return { Name = "MaxHealthDrop" }
         end, room, { RewardOverride = selectedReward, SpawnRewardOnId = 21, NotRequiredPickup = true })
         return true
     end, nativeRoom, {})
@@ -102,7 +106,7 @@ function TestFieldsFeatures.testTwoCagesAndSourceSpecificOptionalRewardUsePublis
     lu.assertTrue(result)
     lu.assertEquals(cages, { 13 })
     lu.assertEquals(optional, { 22 })
-    lu.assertEquals(selectedReward, "Boon")
+    lu.assertEquals(selectedReward, "MaxHealthDrop")
     lu.assertEquals(mismatches, {})
     lu.assertEquals(reports(), 1)
 end
@@ -159,7 +163,7 @@ function TestFieldsFeatures.testHCombat13UsesTheSameFieldsAdapter()
 end
 
 function TestFieldsFeatures.testNemesisUsesPublishedPointAndMustInvokeTheNativeSelector()
-    local callbacks, state, mismatches, reports = fixture({
+    local callbacks, state, mismatches, _, reports = fixture({
         entryPair = { startPointId = 301, endPointId = 302 },
         cagePoints = {
             { slotKey = "cage1", pointId = 41 },
@@ -183,8 +187,8 @@ function TestFieldsFeatures.testNemesisUsesPublishedPointAndMustInvokeTheNativeS
     lu.assertEquals(state.state, "synchronized")
 end
 
-function TestFieldsFeatures.testMissingNemesisSelectorReportsWithoutBlockingNativeCall()
-    local callbacks, _, mismatches = fixture({
+function TestFieldsFeatures.testMissingNemesisSelectorDiagnosesWithoutBlockingNativeCall()
+    local callbacks, _, _, diagnostics = fixture({
         entryPair = { startPointId = 401, endPointId = 402 },
         cagePoints = {
             { slotKey = "cage1", pointId = 61 },
@@ -195,5 +199,139 @@ function TestFieldsFeatures.testMissingNemesisSelectorReportsWithoutBlockingNati
     })
     local returned = callbacks.SpawnNemesisForRandomEvents(nil, {}, function() return "native" end, {}, {})
     lu.assertEquals(returned, "native")
-    lu.assertEquals(mismatches[1].kind, "fields-nemesis-point")
+    lu.assertEquals(diagnostics[1].expected, 71)
+end
+
+local function completedFixture()
+    local layout = {
+        entryPair = { startPointId = 101, endPointId = 102 },
+        cagePoints = {
+            { slotKey = "cage1", pointId = 11 },
+            { slotKey = "cage2", pointId = 12 },
+        },
+        optionalRewards = {
+            { slotKey = "optional1", pointId = 21,
+                reward = { rewardType = "MaxHealthDrop", source = "MaxHealthDrop" } },
+        },
+        nemesisPointId = 31,
+    }
+    local callbacks, state, mismatches, diagnostics, reports, occurrence = fixture(layout)
+    state.route = { lastExitedOccurrence = { doors = { targets = {
+        { room = { id = occurrence.id }, cageRewards = {
+            { rewardType = "Boon", source = "DemeterUpgrade" }, { rewardType = "MaxManaDrop" },
+        } },
+    } } } }
+    local nativeRoom = {
+        __runPlannerExecutionRoomId = occurrence.id,
+        HeroStartPoint = 101, HeroEndPoint = 102,
+        CageRewards = {
+            { RewardType = "Boon", ForceLootName = "DemeterUpgrade" }, { RewardType = "MaxManaDrop" },
+        },
+        Encounter = { RewardsToRestore = {
+            [201] = { RewardOverride = "MaxHealthDrop", SpawnRewardOnId = 21 },
+        } },
+    }
+    return callbacks, state, mismatches, diagnostics, reports, nativeRoom
+end
+
+local function withCompletedNativeProduct(fn)
+    local priorMap, priorLoot, priorSession, priorLocation = _G.MapState, _G.LootObjects, _G.SessionMapState, _G.GetLocation
+    local optional = { ObjectId = 201, Name = "MaxHealthDrop", SpawnPointId = 21 }
+    _G.MapState = {
+        ActiveObstacles = {
+            [101] = { ObjectId = 101, Name = "FieldsRewardCage", SpawnPointId = 11, RewardId = 401 },
+            [102] = { ObjectId = 102, Name = "FieldsRewardCage", SpawnPointId = 12, RewardId = 402 },
+            [201] = optional,
+        },
+        OptionalRewards = { [201] = optional },
+    }
+    _G.LootObjects = {
+        [401] = { ObjectId = 401, Name = "DemeterUpgrade" },
+        [402] = { ObjectId = 402, Name = "MaxManaDrop" },
+    }
+    _G.SessionMapState = { Nemesis = { ObjectId = 301 } }
+    _G.GetLocation = function(args)
+        return ({ [11] = { X = 1, Y = 1 }, [12] = { X = 2, Y = 2 }, [21] = { X = 3, Y = 3 },
+            [31] = { X = 4, Y = 4 }, [101] = { X = 1, Y = 1 }, [102] = { X = 2, Y = 2 },
+            [201] = { X = 3, Y = 3 }, [301] = { X = 4, Y = 4 }, [401] = { X = 1, Y = 1 },
+            [402] = { X = 2, Y = 2 } })[args.Id]
+    end
+    local ok, errorValue = pcall(fn)
+    _G.MapState, _G.LootObjects, _G.SessionMapState, _G.GetLocation = priorMap, priorLoot, priorSession, priorLocation
+    if not ok then error(errorValue, 0) end
+end
+
+local function present(callbacks, nativeRoom)
+    local continued = false
+    local result = callbacks.StartRoomPresentation(nil, {}, function(_, room)
+        continued = true
+        lu.assertEquals(room, nativeRoom)
+        return "native"
+    end, {}, nativeRoom)
+    lu.assertTrue(continued)
+    lu.assertEquals(result, "native")
+end
+
+function TestFieldsFeatures.testCompletedFieldsProductSnapshotsTheRealSessionBeforePresentation()
+    local callbacks, _, mismatches, diagnostics, reports, nativeRoom = completedFixture()
+    withCompletedNativeProduct(function()
+        present(callbacks, nativeRoom)
+        _G.MapState.ActiveObstacles[101].SpawnPointId = 99
+        _G.LootObjects[401].Name = "changed-after-snapshot"
+    end)
+    lu.assertEquals(mismatches, {})
+    lu.assertEquals(reports(), 1)
+    local snapshot = diagnostics[1]
+    lu.assertEquals(snapshot.planned.cages[1].reward, { rewardType = "Boon", source = "DemeterUpgrade" })
+    lu.assertEquals(snapshot.observed.cages[1].reward, {
+        objectId = 401, name = "DemeterUpgrade", spawnPointId = nil, rewardId = nil,
+        location = { X = 1, Y = 1, Z = nil },
+    })
+    lu.assertEquals(snapshot.observed.optionalRewards[1].restore,
+        { rewardType = "MaxHealthDrop", spawnPointId = 21 })
+    lu.assertEquals(snapshot.observed.nemesis.location, { X = 4, Y = 4, Z = nil })
+end
+
+function TestFieldsFeatures.testCompletedFieldsProductRecordsMissingObjectsWithoutMismatch()
+    local callbacks, state, mismatches, diagnostics, _, nativeRoom = completedFixture()
+    withCompletedNativeProduct(function()
+        _G.MapState.ActiveObstacles[102] = nil
+        _G.MapState.OptionalRewards[201] = nil
+        present(callbacks, nativeRoom)
+    end)
+    lu.assertEquals(mismatches, {})
+    lu.assertEquals(state.state, "synchronized")
+    lu.assertEquals(#diagnostics[1].observed.cages, 1)
+    lu.assertEquals(diagnostics[1].observed.optionalRewards, {})
+end
+
+function TestFieldsFeatures.testCompletedFieldsProductRecordsDisplacedObjectsWithoutMismatch()
+    local callbacks, state, mismatches, diagnostics, _, nativeRoom = completedFixture()
+    withCompletedNativeProduct(function()
+        _G.MapState.ActiveObstacles[101].SpawnPointId = 99
+        _G.GetLocation = function(args)
+            return ({ [11] = { X = 1, Y = 1 }, [12] = { X = 2, Y = 2 }, [21] = { X = 3, Y = 3 },
+                [31] = { X = 4, Y = 4 }, [101] = { X = 9, Y = 9 }, [102] = { X = 2, Y = 2 },
+                [201] = { X = 3, Y = 3 }, [301] = { X = 8, Y = 8 }, [401] = { X = 9, Y = 9 },
+                [402] = { X = 2, Y = 2 } })[args.Id]
+        end
+        present(callbacks, nativeRoom)
+    end)
+    lu.assertEquals(mismatches, {})
+    lu.assertEquals(state.state, "synchronized")
+    lu.assertEquals(diagnostics[1].observed.cages[1].spawnPointId, 99)
+    lu.assertEquals(diagnostics[1].observed.nemesis.location, { X = 8, Y = 8, Z = nil })
+end
+
+function TestFieldsFeatures.testCompletedFieldsProductRecordsOnionBesideOriginalBoonOffer()
+    local callbacks, state, mismatches, diagnostics, _, nativeRoom = completedFixture()
+    withCompletedNativeProduct(function()
+        _G.LootObjects[401].Name = "RoomRewardConsolationPrize"
+        present(callbacks, nativeRoom)
+    end)
+    lu.assertEquals(mismatches, {})
+    lu.assertEquals(state.state, "synchronized")
+    lu.assertEquals(diagnostics[1].planned.cages[1].reward,
+        { rewardType = "Boon", source = "DemeterUpgrade" })
+    lu.assertEquals(diagnostics[1].observed.cages[1].reward.name, "RoomRewardConsolationPrize")
 end

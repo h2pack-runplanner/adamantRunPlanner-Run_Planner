@@ -135,6 +135,75 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesBoundedOccurrenceDia
     _G.import, _G.rom = priorImport, priorRom
 end
 
+function TestRuntimeComposition.testFieldsDiagnosticLogsItsCompletedSnapshotWithoutMismatch()
+    local priorImport, priorRom = _G.import, _G.rom
+    local logs = {}
+    local state = {
+        state = "synchronized", reason = "ready",
+        diagnostics = { {
+            occurrenceId = "fields", checkpoint = "fields-completed-product",
+            observed = {
+                planned = {
+                    entryPair = { startPoint = { id = 1 }, endPoint = { id = 2 } },
+                    cages = { { slotKey = "cage1", point = { id = 11 },
+                        reward = { rewardType = "Boon", source = "DemeterUpgrade" } } },
+                    optionalRewards = { { slotKey = "optional1", point = { id = 21 },
+                        reward = { rewardType = "MaxHealthDrop", source = "MaxHealthDrop" } } },
+                    nemesisPoint = { id = 31 },
+                },
+                observed = {
+                    entryPair = { startPoint = { id = 1 }, endPoint = { id = 2 } },
+                    cages = { { objectId = 101, name = "FieldsRewardCage", spawnPointId = 11,
+                        reward = { objectId = 401, name = "RoomRewardConsolationPrize" } } },
+                    optionalRewards = { { objectId = 201, name = "MaxHealthDrop", spawnPointId = 21,
+                        restore = { rewardType = "MaxHealthDrop", spawnPointId = 21 } } },
+                    nemesis = { objectId = 301, name = "NPC_Nemesis_01", spawnPointId = 31 },
+                },
+            },
+        } },
+    }
+    local function freshImport(path)
+        if path == "mods/runtime/composition.lua" then return assert(loadfile("src/" .. path))() end
+        if path == "mods/protocol/json.lua" or path == "mods/protocol/decoder.lua" then
+            return { decode = function(value) return value end }
+        end
+        if path == "mods/host/inbox.lua" then
+            return { create = function()
+                return { activeSlot = function() return 1 end, select = function() end,
+                    load = function() end, status = function() return {} end }
+            end }
+        end
+        if path == "mods/runtime/session.lua" then
+            return { create = function() return state end,
+                status = function() return { state = state.state, reason = state.reason } end }
+        end
+        if path == "mods/spells/hex_tree.lua" then
+            return { create = function() return { attach = function() end } end }
+        end
+        if path == "mods/room/timeline/encounters/thessaly.lua" then
+            return { create = shipCombatStub }
+        end
+        if path == "mods/room/hooks.lua" then
+            return { attach = function(_, _, _, report)
+                report({})
+                report({})
+            end }
+        end
+        return { create = function() return {} end, attach = function() return {} end }
+    end
+    _G.import = freshImport
+    _G.rom = { path = {}, log = { info = function(message) logs[#logs + 1] = message end } }
+
+    freshImport("mods/runtime/composition.lua").bind("/tmp/run-planner-test").attach({})
+
+    lu.assertEquals(#logs, 1)
+    lu.assertStrContains(logs[1], "diagnostic occurrence=fields")
+    lu.assertStrContains(logs[1], "cage1:11:Boon/DemeterUpgrade")
+    lu.assertStrContains(logs[1], "101:FieldsRewardCage#11")
+    lu.assertStrContains(logs[1], "201:MaxHealthDrop#21=MaxHealthDrop/nil#21")
+    _G.import, _G.rom = priorImport, priorRom
+end
+
 function TestRuntimeComposition.testAcquisitionCompositionSharesOneSeaStarAcrossEveryCarrier()
     local priorImport = _G.import
     local module, _, callbacks = capture()

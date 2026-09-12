@@ -63,6 +63,60 @@ function composition.bind(root)
             end
             return "{" .. table.concat(parts, ",") .. "}"
         end
+        local function fieldsPoint(value)
+            if type(value) ~= "table" then return "missing" end
+            local location = value.location
+            local suffix = type(location) == "table" and "@(" .. tostring(location.X) .. ","
+                .. tostring(location.Y) .. ")" or ""
+            return tostring(value.id) .. suffix
+        end
+        local function fieldsReward(value)
+            if type(value) ~= "table" then return "missing" end
+            return tostring(value.rewardType or value.name) .. "/" .. tostring(value.source)
+        end
+        local function fieldsObject(value)
+            if type(value) ~= "table" then return "missing" end
+            local location = type(value.location) == "table" and "@(" .. tostring(value.location.X) .. ","
+                .. tostring(value.location.Y) .. ")" or ""
+            return tostring(value.objectId) .. ":" .. tostring(value.name) .. "#"
+                .. tostring(value.spawnPointId) .. location
+        end
+        local function fieldsCage(value)
+            return fieldsObject(value) .. "=" .. fieldsObject(value and value.reward)
+        end
+        local function fieldsOptional(value)
+            local restore = value and value.restore
+            return fieldsObject(value) .. "=" .. fieldsReward(restore) .. "#"
+                .. tostring(restore and restore.spawnPointId)
+        end
+        local function fieldsList(values, format)
+            local parts = {}
+            for _, value in ipairs(values or {}) do parts[#parts + 1] = format(value) end
+            return "[" .. table.concat(parts, ",") .. "]"
+        end
+        local function fieldsSnapshot(snapshot)
+            local planned = snapshot and snapshot.planned or {}
+            local observed = snapshot and snapshot.observed or {}
+            local plannedCages, plannedOptional = {}, {}
+            for _, cage in ipairs(planned.cages or {}) do
+                plannedCages[#plannedCages + 1] = tostring(cage.slotKey) .. ":"
+                    .. fieldsPoint(cage.point) .. ":" .. fieldsReward(cage.reward)
+            end
+            for _, optional in ipairs(planned.optionalRewards or {}) do
+                plannedOptional[#plannedOptional + 1] = tostring(optional.slotKey) .. ":"
+                    .. fieldsPoint(optional.point) .. ":" .. fieldsReward(optional.reward)
+            end
+            return "fields planned={entry=" .. fieldsPoint(planned.entryPair and planned.entryPair.startPoint)
+                .. "->" .. fieldsPoint(planned.entryPair and planned.entryPair.endPoint)
+                .. ",cages=" .. fieldsList(plannedCages, tostring)
+                .. ",optional=" .. fieldsList(plannedOptional, tostring)
+                .. ",nemesis=" .. fieldsPoint(planned.nemesisPoint) .. "} observed={entry="
+                .. fieldsPoint(observed.entryPair and observed.entryPair.startPoint) .. "->"
+                .. fieldsPoint(observed.entryPair and observed.entryPair.endPoint) .. ",cages="
+                .. fieldsList(observed.cages, fieldsCage) .. ",optional="
+                .. fieldsList(observed.optionalRewards, fieldsOptional) .. ",nemesis="
+                .. fieldsObject(observed.nemesis) .. "}"
+        end
         local function report(runtime)
             local state = getState(runtime)
             if state == nil then return end
@@ -83,6 +137,15 @@ function composition.bind(root)
                         .. diagnosticValue(mismatch.expected) .. " observed="
                         .. diagnosticValue(mismatch.observed) .. " diagnostics="
                         .. table.concat(nearby, ";"))
+                end
+            end
+            for _, diagnostic in ipairs(state.diagnostics or {}) do
+                if diagnostic.checkpoint == "fields-completed-product" and diagnostic.logged ~= true then
+                    diagnostic.logged = true
+                    if rom and rom.log and rom.log.info then
+                        rom.log.info("[RunPlanner] diagnostic occurrence=" .. tostring(diagnostic.occurrenceId)
+                            .. " " .. fieldsSnapshot(diagnostic.observed))
+                    end
                 end
             end
             if state.firstFault and state.loggedFault ~= state.firstFault then
