@@ -7,6 +7,11 @@ local poolInventory = type(import) == "function"
     or require("mods.room.features.inventory.purging_pool")
 local hooks = {}
 
+local function isNemesisTradeSellShop(nativeRoom, args)
+    return nativeRoom == (_G.CurrentRun and _G.CurrentRun.CurrentRoom)
+        and type(args) == "table" and args.SellOptionCount == 1 and args.PrioritizeCommonTraits == true
+end
+
 local function steer(session, state, active, nativeRoom)
     local ok, errorValue = poolInventory.steer(active and active.occurrence, nativeRoom)
     if not ok then
@@ -19,6 +24,7 @@ end
 function hooks.attach(module, session, getState, report, room, route)
     module.hooks.wrap("GenerateSellTraitShop", "run-planner-pool-inventory", function(_, runtime, base,
         nativeRoom, args)
+        if isNemesisTradeSellShop(nativeRoom, args) then return base(nativeRoom, args) end
         local state = getState(runtime)
         local active = current.resolve(state, room, route)
         local result = base(nativeRoom, args)

@@ -1,11 +1,26 @@
 -- Nemesis encounter realization. The planner chooses the event; native text,
 -- trade, removal, contest, and reward callbacks remain the carriers.
 local nemesis = {}
+local unpackValues = table.unpack
+
+local function packValues(...)
+    return { n = select("#", ...), ... }
+end
+
+local function currentThread()
+    return coroutine.running() or nemesis
+end
+
+local function isTradeSellShop(nativeRoom, args)
+    return nativeRoom == (_G.CurrentRun and _G.CurrentRun.CurrentRoom)
+        and type(args) == "table" and args.SellOptionCount == 1 and args.PrioritizeCommonTraits == true
+end
 
 function nemesis.attach(module, session, getState, report, room)
     local nemesisSpawnDepth = 0
     local pendingNemesis
     local npcRewardSource
+    local tradeTargets = setmetatable({}, { __mode = "k" })
 
     local function interactionHandle(state, source)
         return room.encounterHandle(state, source)
@@ -79,17 +94,16 @@ function nemesis.attach(module, session, getState, report, room)
         screen)
         local state = getState(runtime)
         local handle, payload, outcome = row(state, source)
-        if handle and outcome and outcome.kind == "traitTrade" and type(args) == "table" then
-            local retained = {}
-            for _, option in ipairs(args.GiveOptions or {}) do
-                if option.Name == outcome.traitKey or option.TraitName == outcome.traitKey then
-                    retained[#retained + 1] = option
-                end
-            end
-            if #retained ~= 1 then session.diagnostic(state, "nemesis-trait-trade", "unavailable")
-            else args.GiveOptions = retained end
+        local thread = currentThread()
+        local prior = tradeTargets[thread]
+        if handle and outcome and outcome.kind == "traitTrade" then
+            tradeTargets[thread] = { state = state, traitKey = outcome.traitKey }
+        else
+            tradeTargets[thread] = nil
         end
-        local result = base(source, args, screen)
+        local results = packValues(pcall(base, source, args, screen))
+        tradeTargets[thread] = prior
+        if not results[1] then error(results[2], 0) end
         if handle and outcome then
             local accepted = source and source.Accepted == true
             if (outcome.response == "accept") ~= accepted then
@@ -102,7 +116,31 @@ function nemesis.attach(module, session, getState, report, room)
             end
         end
         report(runtime)
-        return result
+        return unpackValues(results, 2, results.n)
+    end)
+
+    module.hooks.wrap("GenerateSellTraitShop", "run-planner-nemesis-trait-trade", function(_, runtime, base,
+        nativeRoom, args)
+        local thread = currentThread()
+        local target = tradeTargets[thread]
+        if target == nil or not isTradeSellShop(nativeRoom, args) then return base(nativeRoom, args) end
+        tradeTargets[thread] = nil
+        local results = packValues(base(nativeRoom, args))
+        local selected
+        for _, option in ipairs(nativeRoom.SellOptions or {}) do
+            if type(option) == "table" and option.Name == target.traitKey then selected = option; break end
+        end
+        if selected == nil and type(nativeRoom.SellValues) == "table" then
+            selected = nativeRoom.SellValues[target.traitKey]
+        end
+        if selected == nil then
+            session.diagnostic(target.state, "nemesis-trait-trade", "unavailable")
+        else
+            nativeRoom.SellOptions = { selected }
+            if type(nativeRoom.SellValues) == "table" then nativeRoom.SellValues[target.traitKey] = nil end
+        end
+        report(runtime)
+        return unpackValues(results, 1, results.n)
     end)
 
     module.hooks.wrap("RemoveTrait", "run-planner-nemesis-trait-removal", function(_, runtime, base, unit,
