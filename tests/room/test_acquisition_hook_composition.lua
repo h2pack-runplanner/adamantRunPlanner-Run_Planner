@@ -327,17 +327,17 @@ function TestAcquisitionHookComposition.testBossWindowUsesTheRoomCoordinator()
     lu.assertEquals(opened, "bossDefeated:Encounter")
 end
 
-function TestAcquisitionHookComposition.testDirectConsumableLevelResolutionForcesAndCompletesThePublishedTarget()
+function TestAcquisitionHookComposition.testDirectPomSliceLevelResolutionForcesAndCompletesThePublishedTarget()
     local module, _, callbacks = capture()
     local target = { Name = "ZeusWeaponBoon", StackNum = 2 }
     local other = { Name = "ApolloSpecialBoon", StackNum = 4 }
     local row = {
         transaction = {
-            owner = "room-nectar", kind = "acquisition", producerLifecycleKey = "RoomReward",
-            reward = { rewardType = "GiftDrop" }, roles = {},
+            owner = "room-pom-slice", kind = "acquisition", producerLifecycleKey = "RoomReward",
+            reward = { rewardType = "StoreRewardRandomStack" }, roles = {},
         },
         detail = {
-            gameName = "GiftDrop", disposition = "normal",
+            gameName = "StoreRewardRandomStack", disposition = "normal",
             levelResolution = {
                 offeredTargets = {}, selectedTarget = target.Name, levelCount = 1,
             },
@@ -345,7 +345,7 @@ function TestAcquisitionHookComposition.testDirectConsumableLevelResolutionForce
     }
     row.transaction.roles = { row.detail }
     local item = {
-        Name = "GiftDrop",
+        Name = "StoreRewardRandomStack",
         UseFunctionArgs = { Thread = true, NumTraits = 1, NumStacks = 9 },
     }
     local active = opaque({

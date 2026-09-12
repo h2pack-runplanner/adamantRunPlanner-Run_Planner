@@ -192,9 +192,10 @@ function TestLevelAcquisitions.testUnboundVisiblePomClaimsAtAcceptedPickup()
     lu.assertEquals(begins(), 1)
 end
 
-local function directFixture(selected, count, isBound, installSeaStar)
-    local item = { Name = "GiftDrop", UseFunctionArgs = { Thread = false, NumTraits = 1, NumStacks = 9 } }
-    local row = levelRow("GiftDrop", count or 1, selected)
+local function directFixture(selected, count, isBound, installSeaStar, name)
+    name = name or "GiftDrop"
+    local item = { Name = name, UseFunctionArgs = { Thread = false, NumTraits = 1, NumStacks = 9 } }
+    local row = levelRow(name, count or 1, selected)
     local callbacks, room, state, handle, begins, completions, mismatches, releases = harness(row, item, isBound,
         installSeaStar)
     return item, row, callbacks, room, state, handle, begins, completions, mismatches, releases
@@ -317,6 +318,58 @@ function TestLevelAcquisitions.testRoomRewardNectarSteersTargetAndCompletesThrea
     _G.CurrentRun = priorRun
 end
 
+function TestLevelAcquisitions.testGeneratedPomSliceKeepsItsPublishedTargetUntilNativeDeferredTerminal()
+    local item, _, callbacks, _, _, _, begins, completions = directFixture("Target", 2, true, false,
+        "StoreRewardRandomStack")
+    item.UseFunctionArgs.Thread = true
+    local target = { Name = "Target", StackNum = 2 }
+    local other = { Name = "Other", StackNum = 4 }
+    local queuedTerminal, terminalCalls = nil, 0
+    local priorRun = _G.CurrentRun
+    _G.CurrentRun = { Hero = { Traits = { target, other } } }
+
+    local function nativeAddStack(source, args)
+        if args == nil then
+            args = copy(source)
+            source = {}
+        end
+        if args.Thread then
+            args.Thread = false
+            queuedTerminal = function()
+                callbacks.AddStackToTraits(nil, {}, nativeAddStack, source, args)
+            end
+            return
+        end
+        terminalCalls = terminalCalls + 1
+        lu.assertEquals(args.TraitName, target.Name)
+        lu.assertEquals(args.NumTraits, 1)
+        lu.assertEquals(args.NumStacks, 2)
+        target.StackNum = target.StackNum + args.NumStacks
+    end
+
+    callbacks.UseConsumableItem(nil, {}, function(nativeItem)
+        callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, nativeItem, {})
+        callbacks.UseStoreRewardRandomStack(nil, {}, function(directArgs)
+            -- Native applies its Fated adjustment before dispatching its own
+            -- threaded terminal. The published final count replaces it there.
+            directArgs.NumStacks = directArgs.NumStacks + 1
+            callbacks.AddStackToTraits(nil, {}, nativeAddStack, directArgs)
+        end, nativeItem.UseFunctionArgs, nativeItem)
+    end, item, {}, {})
+
+    lu.assertTrue(begins() > 0)
+    lu.assertNotNil(queuedTerminal)
+    lu.assertEquals(target.StackNum, 2)
+    lu.assertEquals(#completions, 0)
+    queuedTerminal()
+    lu.assertEquals(terminalCalls, 1)
+    lu.assertEquals(target.StackNum, 4)
+    lu.assertEquals(other.StackNum, 4)
+    lu.assertEquals(#completions, 1)
+    lu.assertEquals(item.UseFunctionArgs, { Thread = true, NumTraits = 1, NumStacks = 9 })
+    _G.CurrentRun = priorRun
+end
+
 function TestLevelAcquisitions.testNullNectarIsNoOpOnlyWhenNativeHasNoEligibleTarget()
     local item, row, callbacks, _, _, _, _, completions = directFixture(nil)
     local prior = _G.GetAllUpgradeableGodTraits
@@ -373,20 +426,39 @@ function TestLevelAcquisitions.testUnboundDirectLevelClaimsAtAcceptedPresentatio
     _G.CurrentRun = priorRun
 end
 
-function TestLevelAcquisitions.testRoomRewardNectarBindsTheExactConsumableObject()
+function TestLevelAcquisitions.testPurchasedPomSliceClaimsItsOwnPublishedLevelRole()
+    local item, _, callbacks, _, _, _, begins, completions = directFixture("Target", 2, false, false,
+        "StoreRewardRandomStack")
+    local target = { Name = "Target", StackNum = 2 }
+    local priorRun = _G.CurrentRun
+    _G.CurrentRun = { Hero = { Traits = { target } } }
+    useDirect(callbacks, item, function(_, args)
+        lu.assertEquals(args.TraitName, target.Name)
+        lu.assertEquals(args.NumTraits, 1)
+        lu.assertEquals(args.NumStacks, 2)
+        target.StackNum = target.StackNum + args.NumStacks
+    end)
+    lu.assertTrue(begins() > 0)
+    lu.assertEquals(target.StackNum, 4)
+    lu.assertEquals(#completions, 1)
+    _G.CurrentRun = priorRun
+end
+
+function TestLevelAcquisitions.testRoomRewardPomSliceBindsTheExactConsumableObject()
     local module, callbacks = capture()
     local state = { state = "synchronized" }
     local current = {
         occurrence = {
-            overview = { incomingReward = { producerLifecycleKey = "RoomReward", rewardType = "GiftDrop" } },
+            overview = { incomingReward = { producerLifecycleKey = "RoomReward", rewardType = "StoreRewardRandomStack" } },
         },
     }
-    local producer, handle, native = {}, {}, { Name = "GiftDrop" }
+    local producer, handle, native = {}, {}, { Name = "StoreRewardRandomStack" }
     local room = {
         current = function() return current end,
         resolve = function(_, _, contact)
-            if contact.kind == "producer" and contact.rewardType == "GiftDrop" then return producer end
-            if contact.kind == "materialized" and contact.source == producer and contact.gameName == "GiftDrop" then
+            if contact.kind == "producer" and contact.rewardType == "StoreRewardRandomStack" then return producer end
+            if contact.kind == "materialized" and contact.source == producer
+                and contact.gameName == "StoreRewardRandomStack" then
                 return handle
             end
         end,

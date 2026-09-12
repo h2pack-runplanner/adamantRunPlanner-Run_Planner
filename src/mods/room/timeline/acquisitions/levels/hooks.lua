@@ -10,7 +10,7 @@ function levels.isVisibleCarrier(value)
 end
 
 function levels.isDirectCarrier(value)
-    return type(value) == "table" and (value.Name or value.ItemName or value.LootName) == "GiftDrop"
+    return levelCarrier.isDirect(value)
 end
 
 local function resolution(payload)
@@ -66,6 +66,10 @@ local function carrier(state, room, native)
     if handle == nil or type(room.peek) ~= "function" then return nil end
     local payload = room.peek(state, handle)
     return handle, payload
+end
+
+local function nativeName(value)
+    return type(value) == "table" and (value.Name or value.ItemName or value.LootName) or nil
 end
 
 local function directLevelRole(transaction, contact)
@@ -256,7 +260,6 @@ function levels.attach(module, session, getState, report, room, seaStar)
             seaStar = seaStar.scope(state, payload),
         }
         activeDirectUses[item] = scope
-        if scope.handle ~= nil then activeDirectTerminals[scope.handle] = scope end
         local prior = item.__runPlannerLevelCarrier
         item.__runPlannerLevelCarrier = true
         if resolution(payload) ~= nil then forwardDirect(scope) end
@@ -287,7 +290,7 @@ function levels.attach(module, session, getState, report, room, seaStar)
         if scope ~= nil and not scope.accepted and result ~= false then
             if scope.handle == nil and type(roomCoordinator.claimReady) == "function" then
                 scope.handle, scope.payload = roomCoordinator.claimReady(scope.state, scope.current, {
-                    kind = "directLevel", gameName = "GiftDrop",
+                    kind = "directLevel", gameName = nativeName(item),
                 }, item, directLevelRole)
             end
             if scope.handle == nil or resolution(scope.payload) == nil then return result end
