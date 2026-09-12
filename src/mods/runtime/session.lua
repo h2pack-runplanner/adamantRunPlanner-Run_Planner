@@ -20,6 +20,7 @@ function runtime.create()
         reason = "not-started",
         diagnostics = {},
         admissionAttempted = false,
+        postbossAdmission = nil,
     }
 end
 
@@ -98,6 +99,8 @@ local function reset(state, admissionAttempted)
     state.admissionError = nil
     state.loggedMismatch = nil
     state.loggedAdmission = nil
+    state.postbossAdmission = nil
+    state.loggedPostbossAdmission = nil
     state.diagnostics = {}
     state.reason = "not-started"
     state.admissionAttempted = admissionAttempted == true
@@ -178,6 +181,12 @@ function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom)
         end,
     })
     state.state, state.reason = "synchronized", "ready"
+    state.postbossAdmission = {
+        occurrenceId = occurrence.id,
+        gameName = occurrence.gameName,
+        index = indexOrCount,
+        slot = activeSlot,
+    }
     return { occurrence = occurrence, index = indexOrCount }
 end
 

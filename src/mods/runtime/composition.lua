@@ -105,6 +105,18 @@ function composition.bind(root)
                         .. diagnosticValue(admission.observed))
                 end
             end
+            if state.postbossAdmission
+                and state.loggedPostbossAdmission ~= state.postbossAdmission then
+                state.loggedPostbossAdmission = state.postbossAdmission
+                if rom and rom.log and rom.log.info then
+                    local admission = state.postbossAdmission
+                    rom.log.info("[RunPlanner] postboss-resynchronized room="
+                        .. tostring(admission.gameName) .. " occurrence="
+                        .. tostring(admission.occurrenceId) .. " index="
+                        .. tostring(admission.index) .. " slot="
+                        .. tostring(admission.slot))
+                end
+            end
         end
 
         hexTree.attach(module)

@@ -26,6 +26,8 @@ function TestRuntimeSession.testNewRunResetClearsEveryProcessLocalExecutionRefer
     value.loggedFault = value.firstFault
     value.admissionError = { checkpoint = "stale-admission" }
     value.loggedAdmission = value.admissionError
+    value.postbossAdmission = { occurrenceId = "stale-postboss" }
+    value.loggedPostbossAdmission = value.postbossAdmission
     value.diagnostics = { { stale = true } }
 
     runtime.beginNewRun(value)
@@ -42,6 +44,8 @@ function TestRuntimeSession.testNewRunResetClearsEveryProcessLocalExecutionRefer
     lu.assertNil(value.loggedFault)
     lu.assertNil(value.admissionError)
     lu.assertNil(value.loggedAdmission)
+    lu.assertNil(value.postbossAdmission)
+    lu.assertNil(value.loggedPostbossAdmission)
     lu.assertEquals(value.diagnostics, {})
     lu.assertTrue(value.admissionAttempted)
 end
@@ -262,6 +266,12 @@ function TestRuntimeSession.testPostbossAdmissionBuildsFreshRouteAtTheSelectedIn
     lu.assertEquals(state.state, "synchronized")
     lu.assertEquals(route.expected(state.route), postboss)
     lu.assertEquals(state.route.index, 3)
+    lu.assertEquals(state.postbossAdmission, {
+        occurrenceId = "postboss",
+        gameName = "F_PostBoss01",
+        index = 3,
+        slot = 4,
+    })
     lu.assertNil(state.room.prepared)
     lu.assertNil(room.current(state))
     local entered = assert(route.enter(state.route, "postboss", "F_PostBoss01"))

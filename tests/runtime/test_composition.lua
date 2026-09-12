@@ -29,6 +29,64 @@ end
 
 TestRuntimeComposition = {}
 
+function TestRuntimeComposition.testSuccessfulPostbossAdmissionIsLoggedOnce()
+    local priorImport, priorRom = _G.import, _G.rom
+    local logs = {}
+    local admission = {
+        occurrenceId = "postboss",
+        gameName = "F_PostBoss01",
+        index = 3,
+        slot = 2,
+    }
+    local state = {
+        state = "synchronized",
+        reason = "ready",
+        postbossAdmission = admission,
+        diagnostics = {},
+    }
+    local function freshImport(path)
+        if path == "mods/runtime/composition.lua" then return assert(loadfile("src/" .. path))() end
+        if path == "mods/protocol/json.lua" or path == "mods/protocol/decoder.lua" then
+            return { decode = function(value) return value end }
+        end
+        if path == "mods/host/inbox.lua" then
+            return { create = function()
+                return { activeSlot = function() return 1 end, select = function() end,
+                    load = function() end, status = function() return {} end }
+            end }
+        end
+        if path == "mods/runtime/session.lua" then
+            return { create = function() return state end,
+                status = function() return { state = state.state, reason = state.reason } end }
+        end
+        if path == "mods/spells/hex_tree.lua" then
+            return { create = function() return { attach = function() end } end }
+        end
+        if path == "mods/room/timeline/encounters/thessaly.lua" then
+            return { create = shipCombatStub }
+        end
+        if path == "mods/room/hooks.lua" then
+            return { attach = function(_, _, _, report)
+                report({})
+                report({})
+            end }
+        end
+        return { create = function() return {} end, attach = function() return {} end }
+    end
+    _G.import = freshImport
+    _G.rom = { path = {}, log = { info = function(message) logs[#logs + 1] = message end } }
+
+    freshImport("mods/runtime/composition.lua").bind("/tmp/run-planner-test").attach({})
+
+    lu.assertEquals(#logs, 1)
+    lu.assertStrContains(logs[1], "postboss-resynchronized")
+    lu.assertStrContains(logs[1], "room=F_PostBoss01")
+    lu.assertStrContains(logs[1], "occurrence=postboss")
+    lu.assertStrContains(logs[1], "index=3")
+    lu.assertStrContains(logs[1], "slot=2")
+    _G.import, _G.rom = priorImport, priorRom
+end
+
 function TestRuntimeComposition.testFirstMismatchLogIncludesBoundedOccurrenceDiagnostics()
     local priorImport, priorRom = _G.import, _G.rom
     local logs = {}
