@@ -23,20 +23,6 @@ end
 function mystery.attach(module, session, getState, report, room)
     local unwrapScope
 
-    module.hooks.wrap("CreateLoot", "run-planner-mystery-provider-bind", function(_, _, base, args)
-        local result = base(args)
-        local scope = unwrapScope
-        if scope ~= nil and type(result) == "table"
-            and nativeName(result) == scope.forcedName then
-            if room.bind(scope.state, scope.current, scope.handle, result) == nil then
-                session.diagnostic(scope.state, "timeline-binding", {
-                    expected = "published Mystery provider", observed = nativeName(result),
-                })
-            end
-        end
-        return result
-    end)
-
     local function boundScope(state, item)
         local current = room.current(state)
         local handle = current and room.bound(state, current, item) or nil
@@ -101,10 +87,19 @@ function mystery.attach(module, session, getState, report, room)
     end)
 
     module.hooks.wrap("GiveLoot", "run-planner-mystery-provider", function(_, _, base, args)
-        if unwrapScope == nil or unwrapScope.forcedName == nil then return base(args) end
+        local scope = unwrapScope
+        if scope == nil or scope.forcedName == nil then return base(args) end
+        unwrapScope = nil
         local forcedArgs = copy(args)
-        forcedArgs.ForceLootName = unwrapScope.forcedName
-        return base(forcedArgs)
+        forcedArgs.ForceLootName = scope.forcedName
+        local result = base(forcedArgs)
+        if type(result) == "table" and nativeName(result) == scope.forcedName
+            and room.bind(scope.state, scope.current, scope.handle, result) == nil then
+            session.diagnostic(scope.state, "timeline-binding", {
+                expected = "published Mystery provider", observed = nativeName(result),
+            })
+        end
+        return result
     end)
 end
 
