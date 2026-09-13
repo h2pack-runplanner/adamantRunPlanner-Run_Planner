@@ -54,6 +54,10 @@ local function rowsAvailable(offer)
     return true
 end
 
+local function isNativeLastRunBoonMenu(source)
+    return type(source) == "table" and source.OnPressedFunctionNameOverride == "SelectEchoBoon"
+end
+
 function echo.attach(module, session, report, npcScope, traitScopes)
     local pendingBoon
     local activeBoon
@@ -89,6 +93,8 @@ function echo.attach(module, session, report, npcScope, traitScopes)
     module.hooks.wrap("OpenUpgradeChoiceMenu", "run-planner-echo-last-run-rows", function(_, _,
         base, source, args)
         local scope = activeBoon
+        if scope == nil or not isNativeLastRunBoonMenu(source) then return base(source, args) end
+        activeBoon = nil
         local offer = nestedOffer(scope)
         if offer == nil then return base(source, args) end
         if not rowsAvailable(offer) then

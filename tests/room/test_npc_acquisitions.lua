@@ -142,6 +142,10 @@ local function runMenu(callbacks, callbackName, source, args, selected, body, af
     end, source, args, { Source = source })
 end
 
+local function echoLastRunBoonMenuSource()
+    return { OnPressedFunctionNameOverride = "SelectEchoBoon", UpgradeOptions = {} }
+end
+
 function TestNpcAcquisitions.testNpcMenuInstallsPublishedRowsAndCompletesExactSelection()
     local selected = "NarcissusTwo"
     local callbacks, source, _, _, _, _, _, _, _, completions, finish = harness(
@@ -494,7 +498,7 @@ function TestNpcAcquisitions.testEchoBoonReplayInstallsMixedProviderRowsAndSelec
     local nestedRows
     runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
         callbacks.EchoLastRunBoon(nil, {}, function()
-            local nestedSource = { UpgradeOptions = {} }
+            local nestedSource = echoLastRunBoonMenuSource()
             return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
                 nestedRows = openSource.UpgradeOptions
                 return callbacks.SelectEchoBoon(nil, {}, function() return true end,
@@ -507,6 +511,65 @@ function TestNpcAcquisitions.testEchoBoonReplayInstallsMixedProviderRowsAndSelec
         { Type = "Trait", ItemName = "HeraWeaponBoon", Rarity = "Rare" },
         { Type = "Trait", ItemName = "ZeusSpecialBoon", Rarity = "Epic" },
         { Type = "Trait", ItemName = "SprintBoon", Rarity = "Common" },
+    })
+    lu.assertEquals(#completions, 1)
+end
+
+function TestNpcAcquisitions.testEchoBoonReplayIgnoresOtherMenusDuringItsNativeWaits()
+    local selected = "EchoLastRunBoon"
+    local outer = offer("Echo", selected)
+    outer.options[2].echoLastRunBoon = {
+        options = {
+            { giver = "Hera", key = "HeraWeaponBoon", rarity = "Rare" },
+            { giver = "Zeus", key = "ZeusSpecialBoon", rarity = "Epic" },
+        },
+        selected = "option2",
+    }
+    local callbacks, source, _, _, _, _, _, _, _, completions, finish = harness(
+        "Echo", selected, { offer = outer })
+    local args = { UpgradeOptions = {
+        { ItemName = "EchoOne" }, { ItemName = selected }, { ItemName = "EchoThree" },
+    } }
+    local nestedRows
+    local nested = coroutine.create(function()
+        callbacks.EchoLastRunBoon(nil, {}, function()
+            coroutine.yield("wait-for-boon-menu")
+            coroutine.yield("wait-before-boon-menu")
+            local nestedSource = echoLastRunBoonMenuSource()
+            return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
+                nestedRows = openSource.UpgradeOptions
+                return callbacks.SelectEchoBoon(nil, {}, function() return true end,
+                    { Source = openSource }, { Data = { Name = "ZeusSpecialBoon" } }, {})
+            end, nestedSource, {})
+        end, {}, {})
+    end)
+    runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
+        local resumed, yielded = coroutine.resume(nested)
+        lu.assertTrue(resumed)
+        lu.assertEquals(yielded, "wait-for-boon-menu")
+    end)
+    lu.assertEquals(#completions, 0)
+
+    local unrelated = { OnPressedFunctionNameOverride = "OtherMenu", UpgradeOptions = {
+        { ItemName = "NativeOnly" },
+    } }
+    callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
+        lu.assertEquals(openSource.UpgradeOptions, { { ItemName = "NativeOnly" } })
+    end, unrelated, {})
+    local resumed, yielded = coroutine.resume(nested)
+    lu.assertTrue(resumed)
+    lu.assertEquals(yielded, "wait-before-boon-menu")
+    callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
+        lu.assertEquals(openSource.UpgradeOptions, { { ItemName = "NativeOnly" } })
+    end, unrelated, {})
+    resumed = coroutine.resume(nested)
+    lu.assertTrue(resumed)
+    lu.assertEquals(coroutine.status(nested), "dead")
+
+    finish()
+    lu.assertEquals(nestedRows, {
+        { Type = "Trait", ItemName = "HeraWeaponBoon", Rarity = "Rare" },
+        { Type = "Trait", ItemName = "ZeusSpecialBoon", Rarity = "Epic" },
     })
     lu.assertEquals(#completions, 1)
 end
@@ -531,7 +594,7 @@ function TestNpcAcquisitions.testEchoBoonReplayKeepsNaturalSelectionScopedUntilI
     local queued, shuffled, applied
     runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
         callbacks.EchoLastRunBoon(nil, {}, function()
-            local nestedSource = { UpgradeOptions = {} }
+            local nestedSource = echoLastRunBoonMenuSource()
             return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
                 return callbacks.SelectEchoBoon(nil, {}, function()
                     queued = function()
@@ -580,7 +643,7 @@ function TestNpcAcquisitions.testEchoBoonReplayKeepsAllTogetherScopedUntilItsNat
     local queued, granted
     runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
         callbacks.EchoLastRunBoon(nil, {}, function()
-            local nestedSource = { UpgradeOptions = {} }
+            local nestedSource = echoLastRunBoonMenuSource()
             return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
                 return callbacks.SelectEchoBoon(nil, {}, function()
                     queued = function()
@@ -628,7 +691,7 @@ function TestNpcAcquisitions.testEchoBoonReplayKeepsBridalGlowTargetScopedUntilI
     local queued, upgraded
     runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
         callbacks.EchoLastRunBoon(nil, {}, function()
-            local nestedSource = { UpgradeOptions = {} }
+            local nestedSource = echoLastRunBoonMenuSource()
             return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
                 return callbacks.SelectEchoBoon(nil, {}, function()
                     queued = function()
@@ -672,7 +735,7 @@ function TestNpcAcquisitions.testBridalGlowTerminalWaitsForItsOuterSelectionToRe
     local bridalGlow = { Name = "HeraSuperchargeBoon" }
     runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
         callbacks.EchoLastRunBoon(nil, {}, function()
-            local nestedSource = { UpgradeOptions = {} }
+            local nestedSource = echoLastRunBoonMenuSource()
             return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
                 return callbacks.SelectEchoBoon(nil, {}, function()
                     _G.CurrentRun.Hero.Traits = { { Name = target } }
@@ -715,7 +778,7 @@ function TestNpcAcquisitions.testEchoBoonReplayUsesPublishedProviderForNativeLoo
     local published, native
     runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
         callbacks.EchoLastRunBoon(nil, {}, function()
-            local nestedSource = { UpgradeOptions = {} }
+            local nestedSource = echoLastRunBoonMenuSource()
             return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
                 return callbacks.SelectEchoBoon(nil, {}, function()
                     published = callbacks.GetLootSourceName(nil, {}, function() return "NativeSource" end,
@@ -750,7 +813,7 @@ function TestNpcAcquisitions.testEchoBoonReplayLeavesNativeLootHistoryLookupWhen
     local observed
     runMenu(callbacks, "EchoChoice", source, args, selected, nil, function()
         callbacks.EchoLastRunBoon(nil, {}, function()
-            local nestedSource = { UpgradeOptions = {} }
+            local nestedSource = echoLastRunBoonMenuSource()
             return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
                 return callbacks.SelectEchoBoon(nil, {}, function()
                     observed = callbacks.GetLootSourceName(nil, {}, function() return "NativeArtemis" end,
