@@ -305,19 +305,13 @@ function TestFeatureInteractionHooks.testPurchasedMysteryBoonCompletesAfterItsTr
         return roomCoordinatorModule.complete(runtimeState, handle)
     end
     mysteryAcquisitions.attach(module, session, function() return state end, function() end, roomCoordinatorModule)
-    local mysteryCallbacks = {
-        CreateLoot = callbacks.CreateLoot,
-        UnwrapRandomLoot = callbacks.UnwrapRandomLoot,
-        GiveLoot = callbacks.GiveLoot,
-    }
-    for name, callback in pairs(mysteryCallbacks) do callbacks[name] = callback end
     traitAcquisitions.attach(module, session, function() return state end,
         function() end, roomCoordinatorModule, traitSeaStar)
 
     callbacks.UnwrapRandomLoot(nil, {}, function()
         callbacks.GiveLoot(nil, {}, function(args)
             lu.assertEquals(args.ForceLootName, "HeraUpgrade")
-            return callbacks.CreateLoot(nil, {}, function() return loot end, { Name = args.ForceLootName })
+            return loot
         end, {})
     end, box)
     lu.assertNotNil(roomCoordinatorModule.bound(state, active, box))
