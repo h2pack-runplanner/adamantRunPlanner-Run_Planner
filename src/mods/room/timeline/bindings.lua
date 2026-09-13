@@ -12,6 +12,33 @@ local function add(index, namespace, key, transaction, detail)
     return true
 end
 
+-- A source/producer can publish several acquisitions (e.g. both trial gods).
+-- Keep those owners separate; material identity selects a row, never readiness.
+local function addSource(index, namespace, key, transaction)
+    if key == nil then return end
+    local rows = index[namespace][key] or {}
+    index[namespace][key] = rows
+    rows[#rows + 1] = { transaction = transaction }
+end
+
+local function resolveSource(index, namespace, key, gameName)
+    local matching
+    for _, row in ipairs(index[namespace][key] or {}) do
+        local matches = gameName == nil
+        for _, role in ipairs(row.transaction.roles or {}) do
+            if role.gameName == gameName then matches = true end
+        end
+        if matches then
+            if matching ~= nil then
+                return nil, { checkpoint = "timeline-binding",
+                    expected = "unique material source", observed = key }
+            end
+            matching = row
+        end
+    end
+    return matching
+end
+
 function bindings.index(occurrence)
     local index = {
         owner = {}, producer = {}, offer = {}, generation = {}, hermesShrineSource = {}, refill = {}, source = {},
@@ -43,12 +70,10 @@ function bindings.index(occurrence)
             ok, errorValue = add(index, "rewardWheelAcquisition", transaction.window.wheelKey, transaction)
             if not ok then return nil, errorValue end
         end
-        ok, errorValue = add(index, "source", transaction.sourceOwner, transaction)
-        if not ok then return nil, errorValue end
+        addSource(index, "source", transaction.sourceOwner, transaction)
         if transaction.producerLifecycleKey and transaction.reward then
-            ok, errorValue = add(index, "producer",
+            addSource(index, "producer",
                 transaction.producerLifecycleKey .. "\0" .. transaction.reward.rewardType, transaction)
-            if not ok then return nil, errorValue end
         end
         ok, errorValue = add(index, "slot", transaction.slotKey, transaction)
         if not ok then return nil, errorValue end
@@ -91,7 +116,8 @@ function bindings.resolve(index, contact, source)
     elseif contact.kind == "hermesShrineDelivery" then
         return indexed(index, "hermesShrineSource", contact.sourceKey)
     elseif contact.kind == "travelDealRefill" then return indexed(index, "refill", contact.carrier)
-    elseif contact.kind == "source" then return indexed(index, "source", contact.sourceOwner)
+    elseif contact.kind == "source" then
+        return resolveSource(index, "source", contact.sourceOwner, contact.gameName)
     elseif contact.kind == "encounterInteraction" then
         return indexed(index, "encounterInteraction", contact.phaseKey)
     elseif contact.kind == "rewardWheel" then
@@ -106,7 +132,8 @@ function bindings.resolve(index, contact, source)
     elseif contact.kind == "automatic" then
         return indexed(index, "automatic", contact.effect .. "\0" .. contact.phaseKey)
     elseif contact.kind == "producer" then
-        return indexed(index, "producer", contact.producerLifecycleKey .. "\0" .. contact.rewardType)
+        return resolveSource(index, "producer",
+            contact.producerLifecycleKey .. "\0" .. contact.rewardType, contact.gameName)
     elseif contact.kind == "produced" then
         local transaction = source and source.transaction
         if transaction == nil then return nil end

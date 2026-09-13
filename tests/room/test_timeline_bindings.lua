@@ -32,6 +32,53 @@ function TestTimelineBindings.testIndexesRejectAmbiguousPublishedKeys()
     lu.assertEquals(errorValue.checkpoint, "timeline-binding")
 end
 
+function TestTimelineBindings.testTrialAcquisitionsShareSourceButBindDistinctNativeGods()
+    local chosen = {
+        owner = "chosen", sourceOwner = "incoming", kind = "acquisition",
+        producerLifecycleKey = "RoomReward", reward = { rewardType = "Devotion" },
+        window = { kind = "standard", phase = "beforeCombat" },
+        roles = { { role = "chosenSource", gameName = "ZeusUpgrade" } },
+    }
+    local spurned = {
+        owner = "spurned", sourceOwner = "incoming", kind = "acquisition",
+        producerLifecycleKey = "RoomReward", reward = { rewardType = "Devotion" },
+        window = { kind = "standard", phase = "afterCombat" },
+        roles = { { role = "spurnedSource", gameName = "HeraUpgrade" } },
+    }
+    local item = {
+        overview = { incomingReward = chosen.reward },
+        transactionsByOwner = { chosen = chosen, spurned = spurned },
+    }
+    item.overview.incomingReward.producerLifecycleKey = "RoomReward"
+    local index = assert(bindings.index(item))
+    for _, transaction in ipairs({ chosen, spurned }) do
+        lu.assertEquals(resolved(index, { kind = "source", sourceOwner = "incoming",
+            gameName = transaction.roles[1].gameName }).transaction, transaction)
+    end
+    -- Native SpawnRoomReward creates the spurned reward after the trial;
+    -- resolve against actual material identity, not the shared source alone.
+    local callbacks, bound = {}, nil
+    local current = { occurrence = item }
+    require("mods.room.timeline.acquisitions.binding").attach({
+        hooks = { wrap = function(name, _, callback) callbacks[name] = callback end },
+    }, {}, function() return {} end, function() end, {
+        current = function() return current end,
+        resolve = function(_, _, contact)
+            return assert(bindings.resolve(index, contact, contact.source))
+        end,
+        bind = function(_, _, row, native) bound = { row = row, native = native } end,
+    })
+    local native = { Name = "HeraUpgrade", GodLoot = true }
+    callbacks.SpawnRoomReward(nil, {}, function()
+        return callbacks.CreateLoot(nil, {}, function() return native end, {})
+    end, {}, {})
+    lu.assertEquals(bound.row.transaction, spurned)
+    lu.assertEquals(bound.row.detail.role, "spurnedSource")
+    lu.assertIs(bound.native, native)
+    lu.assertEquals(resolved(index, { kind = "producer", producerLifecycleKey = "RoomReward",
+        rewardType = "Devotion", gameName = "ZeusUpgrade" }).transaction, chosen)
+end
+
 function TestTimelineBindings.testExactShopOwnerKeepsItsBlockedOwnerInsteadOfClaimingAReadyPeer()
     local normal = {
         owner = "normal", sourceOwner = "shop:normal", kind = "acquisition",

@@ -9,22 +9,22 @@ local chaos = type(import) == "function" and import("mods/traits/chaos.lua") or 
 
 local binding = {}
 
-local function producerFor(state, room, rewardWheelProducer)
+local function producerContact(state, room, rewardWheelProducer)
     local current = room.current(state)
     local wheel = current and rewardWheelProducer and rewardWheelProducer(state, current) or nil
     if wheel ~= nil then
-        return room.resolve(state, current, {
+        return {
             kind = "rewardWheelAcquisition", wheelKey = wheel.wheelKey,
-        }), current
+        }, current
     end
     local reward = current and current.occurrence.overview.incomingReward
     if current == nil or reward == nil or reward.producerLifecycleKey == nil or reward.rewardType == nil then
         return nil, current
     end
-    return room.resolve(state, current, {
+    return {
         kind = "producer", producerLifecycleKey = reward.producerLifecycleKey,
         rewardType = reward.rewardType,
-    }), current
+    }, current
 end
 
 function binding.attach(module, _session, getState, _report, room, rewardWheelProducer)
@@ -40,8 +40,10 @@ function binding.attach(module, _session, getState, _report, room, rewardWheelPr
         -- room-reward producer scope.
         producerScope = nil
         if not (type(args) == "table" and args.IgnoreRoomSpawnOnLootPoint == true) then
-            local handle, current = producerFor(state, room, rewardWheelProducer)
-            if handle ~= nil then producerScope = { state = state, current = current, handle = handle } end
+            local contact, current = producerContact(state, room, rewardWheelProducer)
+            if contact ~= nil then
+                producerScope = { state = state, current = current, contact = contact }
+            end
         end
         local ok, result = pcall(base, source, args)
         producerScope = prior
@@ -54,12 +56,15 @@ function binding.attach(module, _session, getState, _report, room, rewardWheelPr
         if producerScope ~= nil and (ordinary.isNativeCarrier(result) or levelCarrier.isVisible(result)
             or chaos.isNativeCarrier(result)) then
             local scope = producerScope
-            local handle = room.resolve(scope.state, scope.current, {
-                kind = "materialized", source = scope.handle,
-                gameName = result and (result.Name or result.ItemName or result.LootName),
+            local gameName = result and (result.Name or result.ItemName or result.LootName)
+            local current = scope.current
+            scope.contact.gameName = gameName
+            local producer = room.resolve(scope.state, current, scope.contact)
+            local handle = producer and room.resolve(scope.state, current, {
+                kind = "materialized", source = producer, gameName = gameName,
             })
             if handle ~= nil then
-                room.bind(scope.state, scope.current, handle, result)
+                room.bind(scope.state, current, handle, result)
                 scope.bound = true
             end
             -- A producer owns one concrete carrier. Retire the scope even if
@@ -74,12 +79,15 @@ function binding.attach(module, _session, getState, _report, room, rewardWheelPr
         local result = base(...)
         if producerScope ~= nil and type(result) == "table" then
             local scope = producerScope
-            local handle = room.resolve(scope.state, scope.current, {
-                kind = "materialized", source = scope.handle,
-                gameName = result and (result.Name or result.ItemName or result.LootName),
+            local gameName = result and (result.Name or result.ItemName or result.LootName)
+            local current = scope.current
+            scope.contact.gameName = gameName
+            local producer = room.resolve(scope.state, current, scope.contact)
+            local handle = producer and room.resolve(scope.state, current, {
+                kind = "materialized", source = producer, gameName = gameName,
             })
             if handle ~= nil then
-                room.bind(scope.state, scope.current, handle, result)
+                room.bind(scope.state, current, handle, result)
                 scope.bound = true
                 if producerScope == scope then producerScope = nil end
             end
