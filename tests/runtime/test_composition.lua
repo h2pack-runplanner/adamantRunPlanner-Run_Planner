@@ -321,11 +321,13 @@ function TestRuntimeComposition.testRuntimeCompositionSharesOneHexTreeAcrossLoad
     }
     local mismatches = {}
     local function mismatch(checkpoint) mismatches[#mismatches + 1] = checkpoint end
-    local startup = loadoutTree.prepare(expected, mismatch)
-    callbacks.CreateTalentTree(nil, {}, function() return "startup-tree" end, {})
+    local startup = loadoutTree.prepare(expected, "StartupTrait", mismatch)
+    callbacks.CreateTalentTree(nil, {}, function() return "startup-tree" end,
+        { TraitName = "StartupTrait" })
     loadoutTree.clear(startup)
-    local acquired = acquisitionTree.realize(expected, mismatch, function()
-        return callbacks.CreateTalentTree(nil, {}, function() return "acquired-tree" end, {})
+    local acquired = acquisitionTree.realize(expected, "AcquiredTrait", mismatch, function()
+        return callbacks.CreateTalentTree(nil, {}, function() return "acquired-tree" end,
+            { TraitName = "AcquiredTrait" })
     end)
     lu.assertEquals(acquired, "acquired-tree")
     lu.assertEquals(mismatches, {})

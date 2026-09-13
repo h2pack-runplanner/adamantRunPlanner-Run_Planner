@@ -13,8 +13,9 @@ function TestSpellAcquisitions.testCreatedHexTreesDoNotSharePendingScopes()
     local mismatches = {}
     local scope = first.prepare({
         layoutKey = "FirstLayout", rareTalentKeys = {}, epicTalentKeys = {},
-    }, function(checkpoint) mismatches[#mismatches + 1] = checkpoint end)
-    lu.assertEquals(secondCallbacks.CreateTalentTree(nil, {}, function() return "native" end, {}), "native")
+    }, "FirstTrait", function(checkpoint) mismatches[#mismatches + 1] = checkpoint end)
+    lu.assertEquals(secondCallbacks.CreateTalentTree(nil, {}, function() return "native" end,
+        { TraitName = "OtherTrait" }), "native")
     first.clear(scope)
     lu.assertEquals(mismatches, { "hex-tree-contact" })
     lu.assertNotNil(firstCallbacks.CreateTalentTree)
@@ -95,7 +96,7 @@ function TestSpellAcquisitions.testUnboundSpellSteersTheTreeWithoutComparingTheL
         callbacks.AcceptAndCloseSpellScreen(nil, nil, function()
             return callbacks.CreateTalentTree(nil, nil, function()
                 return { Name = "Lung", {} }
-            end, {})
+            end, _G.SpellData.SpellTwo)
         end, screen, screen.Components[2])
     end, item, {}, nil)
     lu.assertEquals(claims(), 1)
@@ -153,7 +154,7 @@ function TestSpellAcquisitions.testFreshImportedSpellAdapterUsesTheProvidedHexTr
                     local epic = callbacks.RemoveRandomValue(nil, nil,
                         function(values) return table.remove(values, 1) end, { "Epic" })
                     return { Name = "Lung", { { Name = rare }, { Name = epic } } }
-                end, {})
+                end, { TraitName = button.TraitName })
             end, screen, screen.Components[selected])
         end, item, {}, nil)
         lu.assertEquals(installed, payload.detail.traitOffer.options[selected].key)
@@ -161,6 +162,111 @@ function TestSpellAcquisitions.testFreshImportedSpellAdapterUsesTheProvidedHexTr
         lu.assertEquals(#completed, 1)
         lu.assertEquals(mismatches, {})
     end
+    _G.SpellData = prior
+end
+
+function TestSpellAcquisitions.testSelectedSpellTreeConsumesItsScopeBetweenNativePresentationWaits()
+    local prior = _G.SpellData
+    _G.SpellData = {
+        SpellOne = { TraitName = "SpellOneTrait" },
+        SpellTwo = { TraitName = "SpellTwoTrait" },
+        SpellThree = { TraitName = "SpellThreeTrait" },
+        Other = { TraitName = "OtherTrait" },
+    }
+    local offer = {
+        kind = "traits", giver = "SpellDrop", selected = "option2",
+        options = {
+            { key = "SpellOneTrait" }, { key = "SpellTwoTrait" }, { key = "SpellThreeTrait" },
+        },
+        hexTree = { layoutKey = "ExpectedLayout", rareTalentKeys = {}, epicTalentKeys = {} },
+    }
+    local detail = {
+        disposition = "normal", lifecyclePoint = "roomRewardPickup", gameName = "SpellDrop", traitOffer = offer,
+    }
+    local payload = { transaction = { kind = "acquisition", roles = { detail } }, detail = detail }
+    local callbacks, completed, mismatches = capture({ state = "synchronized" }, payload)
+    local item = { Name = "SpellDrop" }
+    local selectedTrees, selectedLayout = 0, nil
+    local native = coroutine.create(function()
+        callbacks.OpenSpellScreen(nil, nil, function(source)
+            local screen = { Source = source, Components = {
+                { TraitName = "SpellTwoTrait", SpellName = "SpellTwo" },
+            } }
+            return callbacks.AcceptAndCloseSpellScreen(nil, nil, function(_, button)
+                coroutine.yield("before-selected-tree")
+                local result = callbacks.CreateTalentTree(nil, nil, function()
+                    selectedTrees = selectedTrees + 1
+                    selectedLayout = callbacks.GetRandomValue(nil, nil,
+                        function(values) return values[1] end,
+                        { { Name = "NativeLayout" }, { Name = "ExpectedLayout" } })
+                    return "selected-tree"
+                end, _G.SpellData[button.SpellName])
+                coroutine.yield("after-selected-tree")
+                return result
+            end, screen, screen.Components[1])
+        end, item, {}, nil)
+    end)
+    local resumed, yielded = coroutine.resume(native)
+    lu.assertTrue(resumed)
+    lu.assertEquals(yielded, "before-selected-tree")
+    local before = callbacks.CreateTalentTree(nil, nil, function()
+        return callbacks.GetRandomValue(nil, nil, function(values) return values[1] end,
+            { { Name = "NativeBefore" }, { Name = "ExpectedLayout" } })
+    end, _G.SpellData.Other)
+    lu.assertEquals(before.Name, "NativeBefore")
+
+    resumed, yielded = coroutine.resume(native)
+    lu.assertTrue(resumed)
+    lu.assertEquals(yielded, "after-selected-tree")
+    lu.assertEquals(selectedTrees, 1)
+    lu.assertEquals(selectedLayout.Name, "ExpectedLayout")
+    local after = callbacks.CreateTalentTree(nil, nil, function()
+        return callbacks.GetRandomValue(nil, nil, function(values) return values[1] end,
+            { { Name = "NativeAfter" }, { Name = "ExpectedLayout" } })
+    end, _G.SpellData.SpellTwo)
+    lu.assertEquals(after.Name, "NativeAfter")
+
+    resumed = coroutine.resume(native)
+    lu.assertTrue(resumed)
+    lu.assertEquals(coroutine.status(native), "dead")
+    lu.assertEquals(#completed, 1)
+    lu.assertEquals(mismatches, {})
+    _G.SpellData = prior
+end
+
+function TestSpellAcquisitions.testSelectedSpellTreeErrorRetiresItsNativeConstructionScope()
+    local prior = _G.SpellData
+    _G.SpellData = {
+        SpellTwo = { TraitName = "SpellTwoTrait" }, Other = { TraitName = "OtherTrait" },
+    }
+    local offer = {
+        kind = "traits", giver = "SpellDrop", selected = "option2",
+        options = { { key = "SpellOneTrait" }, { key = "SpellTwoTrait" }, { key = "SpellThreeTrait" } },
+        hexTree = { layoutKey = "ExpectedLayout", rareTalentKeys = {}, epicTalentKeys = {} },
+    }
+    local detail = {
+        disposition = "normal", lifecyclePoint = "roomRewardPickup", gameName = "SpellDrop", traitOffer = offer,
+    }
+    local payload = { transaction = { kind = "acquisition", roles = { detail } }, detail = detail }
+    local callbacks = capture({ state = "synchronized" }, payload)
+    local item = { Name = "SpellDrop" }
+    local ok = pcall(callbacks.OpenSpellScreen, nil, nil, function(source)
+        local screen = { Source = source, Components = {
+            { TraitName = "SpellTwoTrait", SpellName = "SpellTwo" },
+        } }
+        return callbacks.AcceptAndCloseSpellScreen(nil, nil, function(_, button)
+            return callbacks.CreateTalentTree(nil, nil, function()
+                error("native tree failure")
+            end, _G.SpellData[button.SpellName])
+        end, screen, screen.Components[1])
+    end, item, {}, nil)
+    lu.assertFalse(ok)
+
+    local unrelated = callbacks.CreateTalentTree(nil, nil, function()
+        return callbacks.GetRandomValue(nil, nil, function(values) return values[1] end,
+            { { Name = "NativeAfterError" }, { Name = "ExpectedLayout" } })
+    end, _G.SpellData.Other)
+    lu.assertEquals(unrelated.Name, "NativeAfterError")
     _G.SpellData = prior
 end
 

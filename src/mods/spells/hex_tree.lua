@@ -20,9 +20,9 @@ function hexTree.create()
     local tree = {}
     local pending, active
 
-    function tree.prepare(expected, diagnosticCallback)
+    function tree.prepare(expected, traitKey, diagnosticCallback)
         local scope = {
-            prior = pending, expected = expected, diagnostic = diagnosticCallback,
+            prior = pending, expected = expected, traitKey = traitKey, diagnostic = diagnosticCallback,
             rare = keys(expected.rareTalentKeys), epic = keys(expected.epicTalentKeys),
             godSent = expected.godSent and expected.godSent.olympianTalentKey,
         }
@@ -34,8 +34,8 @@ function hexTree.create()
         pending = scope.prior
         if not scope.created then diagnostic(scope, "hex-tree-contact", "CreateTalentTree", "missing") end
     end
-    function tree.realize(expected, diagnosticCallback, action)
-        local scope = tree.prepare(expected, diagnosticCallback)
+    function tree.realize(expected, traitKey, diagnosticCallback, action)
+        local scope = tree.prepare(expected, traitKey, diagnosticCallback)
         local ok, result = pcall(action)
         tree.clear(scope)
         if not ok then error(result, 0) end
@@ -45,7 +45,10 @@ function hexTree.create()
     function tree.attach(module)
         module.hooks.wrap("CreateTalentTree", "run-planner-hex-tree", function(_, _, base, spellData)
             local scope = pending
-            if not scope then return base(spellData) end
+            if scope == nil or spellData.TraitName ~= scope.traitKey then
+                return base(spellData)
+            end
+            pending = scope.prior
             scope.created = true
             local prior = active; active = scope
             local ok, result = pcall(base, spellData)

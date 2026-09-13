@@ -121,7 +121,7 @@ function hooks.attach(module, session, getState, report, room, tree)
             return result
         end
         local ok, result = pcall(function()
-            return tree.realize(scope.offer.hexTree, diagnosticFor(scope.state),
+            return tree.realize(scope.offer.hexTree, button.TraitName, diagnosticFor(scope.state),
                 function() return base(screen, button) end)
         end)
         if not ok then clearScope(item, scope); error(result, 0) end

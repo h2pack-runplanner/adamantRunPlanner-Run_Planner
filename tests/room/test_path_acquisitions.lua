@@ -76,6 +76,36 @@ function TestPathAcquisitions.testOneThreeAndFivePointPickupsCompleteOnlyAfterTh
     end
 end
 
+function TestPathAcquisitions.testAcceptedPathUseRetainsItsItemScopeThroughNativeTalentScreenWait()
+    local callbacks, item, began, completed, mismatches = capture(payload("TalentDrop"))
+    local native = coroutine.create(function()
+        use(callbacks, item, function(_, source)
+            lu.assertEquals(source, item)
+            coroutine.yield("talent-screen-open")
+            return "native-screen-return"
+        end)
+    end)
+    local resumed, yielded = coroutine.resume(native)
+    lu.assertTrue(resumed)
+    lu.assertEquals(yielded, "talent-screen-open")
+    lu.assertEquals(began(), 1)
+    lu.assertEquals(#completed, 0)
+
+    local unrelated = { Name = "OtherTalentDrop" }
+    callbacks.OpenTalentScreen(nil, {}, function(_, source)
+        lu.assertEquals(source, unrelated)
+        return "unrelated-screen-return"
+    end, {}, unrelated, {})
+    lu.assertEquals(began(), 1)
+    lu.assertEquals(#completed, 0)
+
+    resumed = coroutine.resume(native)
+    lu.assertTrue(resumed)
+    lu.assertEquals(coroutine.status(native), "dead")
+    lu.assertEquals(#completed, 1)
+    lu.assertEquals(mismatches, {})
+end
+
 function TestPathAcquisitions.testUnboundPathCarrierClaimsOnlyAfterNativeAcceptance()
     local row = payload("TalentDrop")
     row.transaction.kind = "acquisition"

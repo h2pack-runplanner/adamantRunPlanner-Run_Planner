@@ -271,7 +271,7 @@ function TestLoadoutSession.testFreshImportedLoadoutUsesTheProvidedSeleneTree()
     local priorGame, priorRun, priorWeapon, priorSpell, priorTrait = _G.GameState, _G.CurrentRun, _G.GetEquippedWeapon, _G.SpellData, _G.TraitData
     _G.GameState = { LastWeaponUpgradeName = { WeaponSuit = "SuitHexAspect" }, LastAwardTrait = "ManaOverTimeRefundKeepsake", ShrineUpgrades = {}, MetaUpgradeState = {} }
     _G.GetEquippedWeapon = function() return "WeaponSuit" end
-    _G.SpellData = { MoonBeam = { Talents = { Unique = { "RareExpected", "RareOther" }, Legendary = { "EpicExpected", "DuoExpected" } } } }
+    _G.SpellData = { MoonBeam = { TraitName = "SpellMoonBeamTrait", Talents = { Unique = { "RareExpected", "RareOther" }, Legendary = { "EpicExpected", "DuoExpected" } } } }
     _G.TraitData = { EpicExpected = {}, DuoExpected = { IsDuoBoon = true } }
     _G.CurrentRun = { Hero = { TraitDictionary = { SuitHexAspect = true, SpellMoonBeamTrait = true } } }
     local hex = { spellTraitKey = "SpellMoonBeamTrait", layoutKey = "ExpectedLayout", rareTalentKeys = { "RareExpected" }, epicTalentKeys = { "EpicExpected" }, godSent = { olympianTalentKey = "DuoExpected", lineageTalentKey = "OlympianSpellCountTalent" } }
@@ -308,7 +308,7 @@ function TestLoadoutSession.testAttachedSeleneRejectsUnexpectedGodSentPair()
     local priorGame, priorRun, priorWeapon, priorSpell, priorTrait = _G.GameState, _G.CurrentRun, _G.GetEquippedWeapon, _G.SpellData, _G.TraitData
     _G.GameState = { LastWeaponUpgradeName = { WeaponSuit = "SuitHexAspect" }, LastAwardTrait = "ManaOverTimeRefundKeepsake", ShrineUpgrades = {}, MetaUpgradeState = {} }
     _G.GetEquippedWeapon = function() return "WeaponSuit" end
-    _G.SpellData = { MoonBeam = { Talents = { Unique = { "RareExpected" }, Legendary = { "EpicExpected", "UnexpectedDuo" } } } }
+    _G.SpellData = { MoonBeam = { TraitName = "SpellMoonBeamTrait", Talents = { Unique = { "RareExpected" }, Legendary = { "EpicExpected", "UnexpectedDuo" } } } }
     _G.TraitData = { EpicExpected = {}, UnexpectedDuo = { IsDuoBoon = true } }
     _G.CurrentRun = { Hero = { TraitDictionary = { SuitHexAspect = true, SpellMoonBeamTrait = true } } }
     local hex = { spellTraitKey = "SpellMoonBeamTrait", layoutKey = "ExpectedLayout", rareTalentKeys = { "RareExpected" }, epicTalentKeys = { "EpicExpected" } }

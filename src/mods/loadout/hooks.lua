@@ -72,7 +72,8 @@ function hooks.attach(module, loadoutRuntime, getState, report, room, hexTree)
         local expected = state.state == "starting" and state.plan and state.plan.startingLoadout
         local startingHex = expected and expected.startingHex or nil
         if startingHex ~= nil then
-            startingHexScope = hexTree.prepare(startingHex, function(checkpoint, _, observed)
+            startingHexScope = hexTree.prepare(startingHex, startingHex.spellTraitKey,
+                function(checkpoint, _, observed)
                 loadoutRuntime.session.diagnostic(state, checkpoint, observed)
             end)
         end
