@@ -21,25 +21,30 @@ function hooks.attach(module, session, getState, report, room, route, scope)
             { kind = "travelDealRefill", carrier = "worldShop" }) or nil
         local payload = handle and room.peek(state, handle) or nil
         local refill = payload and payload.transaction and payload.transaction.refill
-        if refill == nil then
-            return base(index, kitId, args)
-        end
-        if index ~= refill.replacement.slotIndex + 1 then
+        local thread = coroutine.running()
+        local refills = scope.worldShopRefills
+        local prior = refills[thread]
+        local refillScope = {
+            nativeOnly = true,
+            source = refill and refill.source or nil,
+            index = index,
+            kitId = kitId,
+        }
+        if refill ~= nil and index == refill.replacement.slotIndex + 1 then
+            refillScope = {
+                kind = "shop", handle = handle, refill = refill, source = refill.source,
+                index = index, kitId = kitId, groupIndex = refill.replacement.groupIndex,
+            }
+        elseif refill ~= nil then
             session.diagnostic(state, "shop-refill-slot", {
                 expected = refill.replacement.slotIndex + 1, observed = index,
             })
-            return base(index, kitId, args)
         end
-        local begun = room.begin(state, handle)
-        local prior = scope.worldShopRefill
-        scope.worldShopRefill = active and {
-            kind = "shop", index = index, kitId = kitId, groupIndex = refill.replacement.groupIndex,
-            refill = refill,
-        } or nil
+        refills[thread] = refillScope
         local ok, result = pcall(base, index, kitId, args)
-        scope.worldShopRefill = prior
+        refills[thread] = prior
         if not ok then error(result, 0) end
-        if begun ~= nil then session.complete(state, handle) end
+        if refillScope.begun then session.complete(state, handle) end
         report(runtime)
         return result
     end)

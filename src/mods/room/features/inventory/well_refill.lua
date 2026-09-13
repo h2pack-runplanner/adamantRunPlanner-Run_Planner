@@ -23,26 +23,28 @@ function refill.attach(module, session, getState, report, room, refillScopes)
         local expected = payload and payload.transaction and payload.transaction.refill
         local item = type(button) == "table" and (button.Data or button) or nil
         local generationKey = type(item) == "table" and item.__runPlannerGenerationKey or nil
-        local scope
+        local scope = { nativeOnly = true }
         if expected ~= nil then
             if generationKey ~= expected.source.generationKey then
                 session.diagnostic(state, "well-refill-source", {
                     expected = expected.source.generationKey, observed = generationKey,
                 })
+                scope = { nativeOnly = true }
             else
                 local slotIndex = buttonIndex(button, item)
                 if slotIndex == nil then
                     session.diagnostic(state, "well-refill-slot", {
                         expected = "native store slot", observed = nil,
                     })
+                    scope = { nativeOnly = true }
                 else
                     scope = { kind = "well", refill = expected, handle = handle, slotIndex = slotIndex }
                 end
-                refillScopes.setWell(scope)
             end
         end
+        refillScopes.setWell(scope)
         local ok, result = pcall(base, screen, button, args)
-        if scope ~= nil then refillScopes.setWell(nil) end
+        refillScopes.setWell(nil)
         if not ok then error(result, 0) end
         report(runtime)
         return result

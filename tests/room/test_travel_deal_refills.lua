@@ -42,10 +42,11 @@ local function transaction(carrier)
     return { kind = "travelDealRefill", owner = carrier .. "-refill", refill = refill }
 end
 
-local function harness(carrier, published)
+local function harness(carrier, published, options)
     local module, _, callbacks = capture()
     local node = transaction(carrier)
-    local active = opaque({ occurrence = { id = "room", overview = {} } }, function(contact)
+    local overview = options and options.overview or {}
+    local active = opaque({ occurrence = { id = "room", overview = overview } }, function(contact)
         if published ~= false and contact.kind == "travelDealRefill"
             and contact.carrier == carrier then return { transaction = node } end
     end)
@@ -54,6 +55,7 @@ local function harness(carrier, published)
     session.current = function() return active end
     session.begin = function(_, handle)
         begins = begins + 1
+        if options and options.denyBegin then return nil end
         return support.fakePayload(handle)
     end
     session.complete = function() completions = completions + 1 end
@@ -65,8 +67,9 @@ local function harness(carrier, published)
         function() return begins end, function() return completions end
 end
 
-local function fill(callbacks, storeData)
+local function fill(callbacks, storeData, observeArgs)
     return callbacks.FillInShopOptions(nil, {}, function(args)
+        if observeArgs then observeArgs(args) end
         local options = {}
         for _, group in ipairs(args.StoreData.GroupsOf or {}) do
             for _, option in ipairs(group.OptionsData or {}) do options[#options + 1] = option end
@@ -82,15 +85,32 @@ end
 
 function TestTravelDealRefills.testWorldShopUsesPublishedSlotAndCompletesAfterNativeRestock()
     local callbacks, refill, diagnostics, begins, completions = harness("worldShop")
-    local generated
-    callbacks.RestockWorldItem(nil, {}, function()
-        generated = fill(callbacks, { GroupsOf = { {
-            OptionsData = { { Name = "Other" }, { Name = refill.replacement.optionKey } },
-        } } })
-        lu.assertEquals(completions(), 0)
-        return true
-    end, 1, 91, {})
+    local generated, retried
+    local restock = coroutine.create(function()
+        return callbacks.RestockWorldItem(nil, {}, function()
+            coroutine.yield("waiting-for-restock-screen")
+            generated = fill(callbacks, { GroupsOf = { {
+                OptionsData = { { Name = "Other" }, { Name = refill.replacement.optionKey } },
+            } } })
+            retried = fill(callbacks, { GroupsOf = { {
+                OptionsData = { { Name = "Other" }, { Name = refill.replacement.optionKey } },
+            } } })
+            lu.assertEquals(completions(), 0)
+            return true
+        end, 1, 91, {})
+    end)
+    local resumed, reason = coroutine.resume(restock)
+    lu.assertTrue(resumed)
+    lu.assertEquals(reason, "waiting-for-restock-screen")
+    local foreign = fill(callbacks, { GroupsOf = { {
+        OptionsData = { { Name = "Foreign" } },
+    } } })
+    lu.assertEquals(foreign.StoreOptions[1].Name, "Foreign")
+    resumed = coroutine.resume(restock)
+    lu.assertTrue(resumed)
+    lu.assertEquals(coroutine.status(restock), "dead")
     lu.assertEquals(generated.StoreOptions[1].Name, "ArmorBoost")
+    lu.assertEquals(retried.StoreOptions[1].Name, "ArmorBoost")
     lu.assertEquals(begins(), 1)
     lu.assertEquals(completions(), 1)
     lu.assertEquals(diagnostics, {})
@@ -111,19 +131,53 @@ function TestTravelDealRefills.testWorldShopRefillConstructionMissDiagnosesAndCo
 end
 
 function TestTravelDealRefills.testWorldShopWrongRefillDiagnosesAndPassesNativeThroughUnclaimed()
-    local callbacks, _, diagnostics, begins, completions = harness("worldShop")
+    local initialOverview = { shop = { offers = { { offerKey = "InitialOffer" } } } }
+    local callbacks, _, diagnostics, begins, completions = harness("worldShop", true,
+        { overview = initialOverview })
     local nativeCalls = 0
-    callbacks.RestockWorldItem(nil, {}, function() nativeCalls = nativeCalls + 1; return true end, 2, 91, {})
+    local nativeStore = { GroupsOf = { { OptionsData = {
+        { Name = "InitialOffer" }, { Name = "NativeRefill" },
+    } } } }
+    local received
+    callbacks.RestockWorldItem(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, 2, 91, {})
     lu.assertEquals(diagnostics[1].checkpoint, "shop-refill-slot")
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
     lu.assertEquals(nativeCalls, 1)
+    lu.assertIs(received, nativeStore)
 
-    callbacks, _, diagnostics, begins, completions = harness("worldShop", false)
-    callbacks.RestockWorldItem(nil, {}, function() return true end, 1, 91, {})
+    callbacks, _, diagnostics, begins, completions = harness("worldShop", false,
+        { overview = initialOverview })
+    received = nil
+    callbacks.RestockWorldItem(nil, {}, function()
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, 1, 91, {})
     lu.assertEquals(diagnostics, {})
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
+    lu.assertIs(received, nativeStore)
+end
+
+function TestTravelDealRefills.testDeniedWorldRefillPassesNativeArgumentsWithoutInitialInventoryFallback()
+    local overview = { shop = { offers = { { offerKey = "InitialOffer" } } } }
+    local callbacks, _, diagnostics, begins, completions = harness("worldShop", true,
+        { overview = overview, denyBegin = true })
+    local nativeStore = { GroupsOf = { { OptionsData = {
+        { Name = "InitialOffer" }, { Name = "NativeRefill" },
+    } } } }
+    local received
+    local generated = callbacks.RestockWorldItem(nil, {}, function()
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, 1, 91, {})
+    lu.assertIs(received, nativeStore)
+    lu.assertEquals(#generated.StoreOptions, 2)
+    lu.assertEquals(generated.StoreOptions[2].Name, "NativeRefill")
+    lu.assertEquals(begins(), 1)
+    lu.assertEquals(completions(), 0)
+    lu.assertEquals(diagnostics, {})
 end
 
 function TestTravelDealRefills.testWellRefillUsesPublishedSourceAndCompletesAfterInventoryGeneration()
@@ -148,13 +202,25 @@ function TestTravelDealRefills.testWellRefillUsesPublishedSourceAndCompletesAfte
 end
 
 function TestTravelDealRefills.testWellWrongAndMissingRefillsStayDetectable()
-    local callbacks, _, diagnostics, begins, completions = harness("stygianWell")
-    callbacks.HandleStorePurchase(nil, {}, function() return true end, {}, {
+    local overview = { stygianWell = { interacted = true, offers = {
+        { generationKey = "initial:healing", offerKey = "HealDropRange" },
+        { generationKey = "initial:secondLeft", offerKey = "Source" },
+        { generationKey = "initial:secondRight", offerKey = "Other" },
+    } } }
+    local callbacks, _, diagnostics, begins, completions = harness("stygianWell", true,
+        { overview = overview })
+    local nativeStore = { HealingOffers = { WeightedList = { { Name = "HealDropRange" } } },
+        Traits = {}, Consumables = { { Name = "Source" }, { Name = "NativeRefill" } } }
+    local received
+    callbacks.HandleStorePurchase(nil, {}, function()
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, {}, {
         Index = 2, Data = { Name = "Other", __runPlannerGenerationKey = "initial:secondRight" },
     }, {})
     lu.assertEquals(diagnostics[1].checkpoint, "well-refill-source")
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
+    lu.assertIs(received, nativeStore)
 
     callbacks, _, diagnostics, begins, completions = harness("stygianWell")
     callbacks.HandleStorePurchase(nil, {}, function() return true end, {}, {
@@ -164,6 +230,37 @@ function TestTravelDealRefills.testWellWrongAndMissingRefillsStayDetectable()
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
 
+end
+
+function TestTravelDealRefills.testWellPurchaseRejectedBeforeFillDoesNotBeginRefill()
+    local callbacks, _, diagnostics, begins, completions = harness("stygianWell")
+    local result = callbacks.HandleStorePurchase(nil, {}, function() return "native-rejected" end, {}, {
+        Index = 2, Data = { Name = "Source", __runPlannerGenerationKey = "initial:secondLeft" },
+    }, {})
+    lu.assertEquals(result, "native-rejected")
+    lu.assertEquals(begins(), 0)
+    lu.assertEquals(completions(), 0)
+    lu.assertEquals(diagnostics, {})
+end
+
+function TestTravelDealRefills.testWellRefillWithoutCandidatePassesNativeArgumentsWithoutInitialFallback()
+    local overview = { stygianWell = { interacted = true, offers = {
+        { generationKey = "initial:healing", offerKey = "HealDropRange" },
+        { generationKey = "initial:secondLeft", offerKey = "Source" },
+        { generationKey = "initial:secondRight", offerKey = "Other" },
+    } } }
+    local callbacks, _, diagnostics, begins, completions = harness("stygianWell", false,
+        { overview = overview })
+    local nativeStore = { HealingOffers = { WeightedList = { { Name = "HealDropRange" } } },
+        Traits = {}, Consumables = { { Name = "Source" }, { Name = "NativeRefill" } } }
+    local received
+    callbacks.HandleStorePurchase(nil, {}, function()
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, {}, { Index = 2, Data = { Name = "Source" } }, {})
+    lu.assertIs(received, nativeStore)
+    lu.assertEquals(begins(), 0)
+    lu.assertEquals(completions(), 0)
+    lu.assertEquals(diagnostics, {})
 end
 
 function TestTravelDealRefills.testShrineRefillUsesPublishedSourceDelayAndEventualAcquisitionOwnership()
@@ -199,13 +296,24 @@ function TestTravelDealRefills.testShrineRefillUsesPublishedSourceDelayAndEventu
 end
 
 function TestTravelDealRefills.testShrineWrongAndMissingRefillsStayDetectable()
-    local callbacks, _, diagnostics, begins, completions = harness("hermesShrine")
-    callbacks.HandleSurfaceShopAction(nil, {}, function() return true end, {}, { Data = {
+    local overview = { hermesShrine = { offers = {
+        { offerKey = "InitialOffer" }, { offerKey = "Other" }, { offerKey = "Third" },
+    } } }
+    local callbacks, _, diagnostics, begins, completions = harness("hermesShrine", true,
+        { overview = overview })
+    local nativeStore = { GroupsOf = { { OptionsData = {
+        { Name = "InitialOffer" }, { Name = "NativeRefill" },
+    } } } }
+    local received
+    callbacks.HandleSurfaceShopAction(nil, {}, function()
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, {}, { Data = {
         Purchased = true, __runPlannerGenerationKey = "initial:secondRight",
     } }, {})
     lu.assertEquals(diagnostics[1].checkpoint, "shrine-refill-source")
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
+    lu.assertIs(received, nativeStore)
 
     callbacks, _, diagnostics, begins, completions = harness("hermesShrine")
     callbacks.HandleSurfaceShopAction(nil, {}, function() return true end, {}, { Data = {
@@ -215,6 +323,25 @@ function TestTravelDealRefills.testShrineWrongAndMissingRefillsStayDetectable()
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
 
+end
+
+function TestTravelDealRefills.testShrineRefillWithoutCandidatePassesNativeArgumentsWithoutInitialFallback()
+    local overview = { hermesShrine = { offers = {
+        { offerKey = "InitialOffer" }, { offerKey = "Other" }, { offerKey = "Third" },
+    } } }
+    local callbacks, _, diagnostics, begins, completions = harness("hermesShrine", false,
+        { overview = overview })
+    local nativeStore = { GroupsOf = { { OptionsData = {
+        { Name = "InitialOffer" }, { Name = "NativeRefill" },
+    } } } }
+    local received
+    callbacks.HandleSurfaceShopAction(nil, {}, function()
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, {}, { Data = { Purchased = true, Name = "Source" } }, {})
+    lu.assertIs(received, nativeStore)
+    lu.assertEquals(begins(), 0)
+    lu.assertEquals(completions(), 0)
+    lu.assertEquals(diagnostics, {})
 end
 
 return TestTravelDealRefills

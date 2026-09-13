@@ -17,6 +17,20 @@ local wellInventory = type(import) == "function"
     or require("mods.room.features.inventory.stygian_well")
 local hooks = {}
 
+local function currentRefill(scope)
+    local worldRefills = scope.worldShopRefills
+    local world = worldRefills and worldRefills[coroutine.running()] or nil
+    return scope.shrineRefill or scope.wellRefill or world
+end
+
+local function completeRefill(session, state, refillScope)
+    if refillScope and refillScope.handle ~= nil and refillScope.begun and not refillScope.completed
+        and refillScope.kind ~= "shop" then
+        refillScope.completed = true
+        session.complete(state, refillScope.handle)
+    end
+end
+
 local function prepareInventory(occurrence, args, refillScope, contractOnly)
     local expected = occurrence and occurrence.overview or {}
     local storeData = primitives.copy(type(args) == "table" and args.StoreData or nil)
@@ -42,7 +56,25 @@ function hooks.attach(module, session, getState, report, room, route, scope)
     module.hooks.wrap("FillInShopOptions", "run-planner-inventory", function(_, runtime, base, args)
         local state = getState(runtime)
         local active = current.resolve(state, room, route)
-        local activeRefill = scope.shrineRefill or scope.wellRefill or scope.worldShopRefill
+        local activeRefill = currentRefill(scope)
+        if activeRefill and activeRefill.nativeOnly then
+            local result = base(args)
+            report(runtime)
+            return result
+        end
+        if activeRefill and activeRefill.handle ~= nil and not activeRefill.beginAttempted then
+            activeRefill.beginAttempted = true
+            if room.begin(state, activeRefill.handle) ~= nil then
+                activeRefill.begun = true
+            else
+                activeRefill.nativeOnly = true
+            end
+        end
+        if activeRefill and activeRefill.nativeOnly then
+            local result = base(args)
+            report(runtime)
+            return result
+        end
         local prepared, errorValue = prepareInventory(active and active.occurrence, args, activeRefill,
             scope.contract ~= nil)
         if errorValue then
@@ -50,10 +82,7 @@ function hooks.attach(module, session, getState, report, room, route, scope)
                 expected = errorValue.expected, observed = errorValue.observed,
             })
             local result = base(args)
-            if activeRefill and activeRefill.handle ~= nil then
-                local payload = room.begin(state, activeRefill.handle)
-                if payload ~= nil then session.complete(state, activeRefill.handle) end
-            end
+            completeRefill(session, state, activeRefill)
             report(runtime)
             return result
         end
@@ -75,10 +104,7 @@ function hooks.attach(module, session, getState, report, room, route, scope)
                 expected = verifyError.expected, observed = verifyError.observed,
             })
         end
-        if activeRefill and activeRefill.handle ~= nil then
-            local payload = room.begin(state, activeRefill.handle)
-            if payload ~= nil then session.complete(state, activeRefill.handle) end
-        end
+        completeRefill(session, state, activeRefill)
         report(runtime)
         return result
     end)

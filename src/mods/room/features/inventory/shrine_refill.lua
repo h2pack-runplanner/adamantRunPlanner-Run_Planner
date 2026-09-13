@@ -17,14 +17,16 @@ function shrine.attach(module, session, getState, report, room, refillScopes)
         local purchased = type(item) == "table" and item.Purchased == true
         local scope
         if purchased then
+            scope = { nativeOnly = true }
             if refill ~= nil and generationKey ~= refill.source.generationKey then
                 session.diagnostic(state, "shrine-refill-source", {
                     expected = refill.source.generationKey, observed = generationKey,
                 })
+                scope = { nativeOnly = true }
             elseif refill ~= nil then
                 scope = { kind = "shrine", refill = refill, handle = handle }
-                refillScopes.setShrine(scope)
             end
+            refillScopes.setShrine(scope)
         end
         local ok, result = pcall(base, screen, button, args)
         if scope ~= nil then refillScopes.setShrine(nil) end

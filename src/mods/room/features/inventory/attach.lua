@@ -21,7 +21,7 @@ local wellRefill = type(import) == "function"
 local attach = {}
 
 function attach.attach(module, session, getState, report, room, route)
-    local scope = {}
+    local scope = { worldShopRefills = setmetatable({}, { __mode = "k" }) }
     inventoryHooks.attach(module, session, getState, report, room, route, scope)
     buttonHooks.attach(module, session, getState, report, room, route)
     poolHooks.attach(module, session, getState, report, room, route)
