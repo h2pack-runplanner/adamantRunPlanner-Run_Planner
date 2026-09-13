@@ -26,43 +26,8 @@ local function copyInvocationArgs(args)
     return result
 end
 
-local function nativeRequirementAvailable(source, option)
-    local requirements = option and option.GameStateRequirements
-    if requirements == nil then return true end
-    return _G.IsGameStateEligible(source, requirements) == true
-end
-
-local function optionsByName(options)
-    local result = {}
-    for _, option in ipairs(options or {}) do
-        if type(option) == "table" and option.ItemName ~= nil then result[option.ItemName] = option end
-    end
-    return result
-end
-
 local function encounterHandle(room, state, source)
     return type(room.encounterHandle) == "function" and room.encounterHandle(state, source) or nil
-end
-
-local function traitOffer(payload)
-    local _, offer = adapter.expectedTrait(payload)
-    return offer and offer.kind == "traits" and offer or nil
-end
-
-local function authoredOptionKey(offer, index)
-    local option = offer and offer.options and offer.options[index]
-    if option == nil then return nil end
-    return option.key
-end
-
-local function nativeRowsAvailable(scope, offer)
-    local byName = optionsByName(scope.nativeOptions)
-    for index in ipairs(offer.options or {}) do
-        local key = authoredOptionKey(offer, index)
-        local option = byName[key]
-        if option == nil or not nativeRequirementAvailable(scope.source, option) then return false end
-    end
-    return true
 end
 
 function npc.attach(module, session, getState, report, room)
@@ -71,9 +36,7 @@ function npc.attach(module, session, getState, report, room)
     local selectionObservers = {}
 
     local function installInput(scope, args)
-        if scope.nativeOptions == nil or scope.payload == nil then return false end
-        local offer = traitOffer(scope.payload)
-        if offer == nil or not nativeRowsAvailable(scope, offer) then return false end
+        if scope.payload == nil then return false end
         -- Install before the named NPC callback so native option-specific work
         -- (for example Circe's familiar preparation) sees the authored rows.
         return adapter.applyNpcTraitOffer(scope.payload, args)
@@ -99,13 +62,8 @@ function npc.attach(module, session, getState, report, room)
             if current ~= nil and resolution and resolution.kind == "traitOffer"
                 and resolution.offer.giver == giver then
                 invocationArgs = copyInvocationArgs(args)
-                local nativeOptions = {}
-                for _, option in ipairs(type(invocationArgs) == "table" and invocationArgs.UpgradeOptions or {}) do
-                    nativeOptions[#nativeOptions + 1] = copy(option)
-                end
                 local scope = {
                     state = state, current = current, handle = handle, payload = payload,
-                    source = source, nativeOptions = nativeOptions,
                 }
                 if installInput(scope, invocationArgs) then
                     scope.steered = true

@@ -421,7 +421,7 @@ function TestRuntimeComposition.testRuntimeCompositionInstallsSupportedHookGroup
         "ChooseStartingRoom", "StartRoom", "DoUnlockRoomExits", "LeaveRoom",
         "StartEncounter", "EndEncounterEffects", "SetupRoomMultipleEncountersData",
         "ShipsEncounterSetup", "ChooseNextRewardStore", "CreateDoorRewardPreview", "UseShipWheel",
-        "UseLoot", "UseConsumableItem", "AddStackToTraits", "HandleLootPickup",
+        "UseConsumableItem", "AddStackToTraits", "HandleLootPickup",
         "ConvertMetaRewardPresentation", "CreateLoot", "UnwrapRandomLoot",
         "ArachneCostumeChoice", "NarcissusBenefitChoice", "MedeaCurseChoice", "CirceBlessingChoice",
         "IcarusBenefitChoice", "EchoChoice", "SpawnNemesisForRandomEvents", "CheckAvailableTextLines",

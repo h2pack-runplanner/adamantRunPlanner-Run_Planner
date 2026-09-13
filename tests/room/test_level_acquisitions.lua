@@ -113,16 +113,6 @@ function TestLevelAcquisitions.testVisibleCountsOneTwoThreeAndNativeFatedBonusIs
     _G.IsFateValid, _G.GetTotalHeroTraitValue = priorFate, priorValue
 end
 
-function TestLevelAcquisitions.testFailedUseLootDoesNotBeginOrRetryThePublishedOwner()
-    local row = levelRow("StackUpgrade", 1, "Target")
-    local loot = { Name = "StackUpgrade" }
-    local callbacks, _, _, _, begins = harness(row, loot)
-    lu.assertEquals(callbacks.UseLoot(nil, {}, function() return false end, loot, {}, {}), false)
-    lu.assertEquals(begins(), 0)
-    lu.assertEquals(callbacks.UseLoot(nil, {}, function() return false end, loot, {}, {}), false)
-    lu.assertEquals(begins(), 0)
-end
-
 function TestLevelAcquisitions.testNativeRerollIsNotReSteeredAfterInitialVisibleRows()
     local row = levelRow("StackUpgrade", 1, "Target")
     row.detail.levelResolution.offeredTargets = { "Target", "Other" }

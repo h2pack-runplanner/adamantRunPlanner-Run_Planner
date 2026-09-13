@@ -13,7 +13,6 @@ TestNpcAcquisitions = {}
 function TestNpcAcquisitions:setUp()
     self.restoreNative = nativeGame.install({
         TraitData = nativeGame.anyTraitDeclarations(),
-        IsGameStateEligible = nativeGame.alwaysEligible,
     })
 end
 
@@ -152,8 +151,6 @@ function TestNpcAcquisitions.testNpcMenuInstallsPublishedRowsAndCompletesExactSe
         { ItemName = "NarcissusOne", Marker = 1 },
         { ItemName = selected, Marker = 2, PriorityRequirements = { "priority" } },
     } }
-    local priorEligibility = _G.IsGameStateEligible
-    _G.IsGameStateEligible = function() return true end
     runMenu(callbacks, "NarcissusBenefitChoice", source, args, selected, function(nativeSource)
         lu.assertEquals(nativeSource.UpgradeOptions, {
             { ItemName = "NarcissusOne", Marker = 1 },
@@ -161,7 +158,6 @@ function TestNpcAcquisitions.testNpcMenuInstallsPublishedRowsAndCompletesExactSe
             { ItemName = "NarcissusThree", Marker = 3, GameStateRequirements = { "native" } },
         })
     end)
-    _G.IsGameStateEligible = priorEligibility
     finish()
     lu.assertEquals(#completions, 1)
 end
@@ -204,7 +200,7 @@ function TestNpcAcquisitions.testNpcInvocationDoesNotConsumeSharedNativeOptionPo
     lu.assertEquals(#completions, 2)
 end
 
-function TestNpcAcquisitions.testNativePreprocessingSeesAuthoredRowsBeforeMenuRestoration()
+function TestNpcAcquisitions.testNativePreprocessingSeesAuthoredRowsAndMenuRestoresTheirOrder()
     local selected = "CirceTwo"
     local callbacks, source, _, _, _, _, _, _, _, completions, finish = harness(
         "Circe", selected, { offer = offer("Circe", selected) })
@@ -213,13 +209,22 @@ function TestNpcAcquisitions.testNativePreprocessingSeesAuthoredRowsBeforeMenuRe
         { ItemName = "CirceOne", Marker = 1 },
         { ItemName = selected, Marker = 2 },
     } }
-    runMenu(callbacks, "CirceBlessingChoice", source, args, selected, function(nativeSource)
-        lu.assertTrue(nativeSource.UpgradeOptions[1].NativePrepared)
-        lu.assertEquals(nativeSource.UpgradeOptions[1].ItemName, "CirceOne")
-    end, nil, function(_, nativeArgs)
+    callbacks.CirceBlessingChoice(nil, {}, function(nativeSource, nativeArgs)
         lu.assertEquals(nativeArgs.UpgradeOptions[1].ItemName, "CirceOne")
         nativeArgs.UpgradeOptions[1].NativePrepared = true
-    end)
+        nativeSource.UpgradeOptions = {
+            nativeArgs.UpgradeOptions[3], nativeArgs.UpgradeOptions[1], nativeArgs.UpgradeOptions[2],
+        }
+        return callbacks.OpenUpgradeChoiceMenu(nil, {}, function(openSource)
+            lu.assertEquals(openSource.UpgradeOptions, {
+                { ItemName = "CirceOne", Marker = 1, NativePrepared = true },
+                { ItemName = selected, Marker = 2 },
+                { ItemName = "CirceThree", Marker = 3 },
+            })
+            return callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
+                { Source = source }, { Data = { Name = selected } }, {})
+        end, nativeSource, nativeArgs)
+    end, source, args, { Source = source })
     finish()
     lu.assertEquals(#completions, 1)
 end
@@ -827,24 +832,4 @@ function TestNpcAcquisitions.testOtherEchoChoicesRemainNativeAuthoritative()
         lu.assertEquals(#mismatches, 0, selected)
         lu.assertEquals(#completions, 1, selected)
     end
-end
-
-function TestNpcAcquisitions.testUnavailablePublishedNpcRowDiagnosesAndCompletesAtSelectionTerminal()
-    local selected = "NarcissusTwo"
-    local callbacks, source, _, _, _, _, _, _, mismatches, completions, finish = harness(
-        "Narcissus", selected, { offer = offer("Narcissus", selected) })
-    local args = { UpgradeOptions = {
-        { ItemName = "NarcissusOne", GameStateRequirements = { "missing-requirement" } },
-        { ItemName = selected },
-        { ItemName = "NarcissusThree" },
-    } }
-    local priorEligibility = _G.IsGameStateEligible
-    _G.IsGameStateEligible = function() return false end
-    runMenu(callbacks, "NarcissusBenefitChoice", source, args, selected, function(nativeSource)
-        lu.assertEquals(nativeSource.UpgradeOptions, args.UpgradeOptions)
-    end)
-    _G.IsGameStateEligible = priorEligibility
-    finish()
-    lu.assertEquals(#completions, 1)
-    lu.assertEquals(mismatches[1].checkpoint, "npc-trait-offer")
 end

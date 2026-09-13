@@ -188,8 +188,6 @@ function TestAcquisitionHookComposition.testEachNativeNpcChoiceFunctionBindsItsP
         IcarusBenefitChoice = "Icarus",
         EchoChoice = "Echo",
     }
-    local priorEligibility = _G.IsGameStateEligible
-    _G.IsGameStateEligible = function() return true end
     for functionName, giver in pairs(contacts) do
         local module, _, callbacks = capture()
         local state = {}
@@ -261,7 +259,6 @@ function TestAcquisitionHookComposition.testEachNativeNpcChoiceFunctionBindsItsP
         _G.CurrentRun = priorRun
         lu.assertEquals(fakePayload(completed.row), row, functionName)
     end
-    _G.IsGameStateEligible = priorEligibility
 end
 
 function TestAcquisitionHookComposition.testIncidentalConsumableDoesNotClaimTheIncomingRewardTransaction()

@@ -130,23 +130,6 @@ function levels.attach(module, session, getState, report, room, seaStar)
         return base(propertyName, args)
     end)
 
-    module.hooks.wrap("UseLoot", "run-planner-level-use-loot", function(_, runtime, base, usee, args, user)
-        if not levels.isVisibleCarrier(usee) then return base(usee, args, user) end
-        local state = getState(runtime)
-        local _, payload = carrier(state, roomCoordinator, usee)
-        if payload ~= nil and not levels.isNormalPayload(payload) then
-            return base(usee, args, user)
-        end
-        if resolution(payload) == nil then return base(usee, args, user) end
-        local prior = usee.__runPlannerLevelCarrier
-        usee.__runPlannerLevelCarrier = true
-        local ok, result = pcall(base, usee, args, user)
-        usee.__runPlannerLevelCarrier = prior
-        if not ok then error(result, 0) end
-        report(runtime)
-        return result
-    end)
-
     module.hooks.wrap("HandleLootPickup", "run-planner-level-begin-loot", function(_, runtime, base,
         currentRun, loot, args)
         if not levels.isVisibleCarrier(loot) then return base(currentRun, loot, args) end
@@ -165,11 +148,7 @@ function levels.attach(module, session, getState, report, room, seaStar)
         local started = roomCoordinator.begin(state, handle)
         if started == nil then return base(currentRun, loot, args) end
         begunVisible[handle] = true
-        local prior = loot.__runPlannerLevelCarrier
-        loot.__runPlannerLevelCarrier = true
-        local ok, result = pcall(base, currentRun, loot, args)
-        loot.__runPlannerLevelCarrier = prior
-        if not ok then error(result, 0) end
+        local result = base(currentRun, loot, args)
         report(runtime)
         return result
     end)
@@ -192,7 +171,6 @@ function levels.attach(module, session, getState, report, room, seaStar)
                 expected = "published level rows", observed = "not installed",
             })
         end
-        loot.__runPlannerLevelCarrier = true
         local result
         if initial then
             result = withoutFatedPomBonus(function()
@@ -228,14 +206,8 @@ function levels.attach(module, session, getState, report, room, seaStar)
         if effect == nil then return base(screen, button, args) end
         if not begunVisible[handle] or not retainedVisible[handle] then return base(screen, button, args) end
         local seaStarScope = seaStar.scope(state, payload)
-        local prior = loot.__runPlannerLevelCarrier
-        loot.__runPlannerLevelCarrier = true
-        local ok, result = pcall(function()
-            return seaStar.call(seaStarScope, function() return base(screen, button, args) end,
-                seaStarDiagnostic)
-        end)
-        loot.__runPlannerLevelCarrier = prior
-        if not ok then error(result, 0) end
+        local result = seaStar.call(seaStarScope, function() return base(screen, button, args) end,
+            seaStarDiagnostic)
         seaStar.requireConsumed(seaStarScope, seaStarDiagnostic)
         session.complete(state, handle)
         begunVisible[handle], retainedVisible[handle] = nil, nil
@@ -260,15 +232,12 @@ function levels.attach(module, session, getState, report, room, seaStar)
             seaStar = seaStar.scope(state, payload),
         }
         activeDirectUses[item] = scope
-        local prior = item.__runPlannerLevelCarrier
-        item.__runPlannerLevelCarrier = true
         if resolution(payload) ~= nil then forwardDirect(scope) end
         local ok, result = pcall(function()
             return seaStar.call(scope.seaStar, function() return base(item, args, user) end,
                 seaStarDiagnostic)
         end)
         if scope.forwarded then item.UseFunctionArgs = scope.originalArgs end
-        item.__runPlannerLevelCarrier = prior
         if activeDirectUses[item] == scope then activeDirectUses[item] = nil end
         if scope.handle ~= nil and activeDirectTerminals[scope.handle] == scope
             and (scope.completed or not scope.deferred) then
