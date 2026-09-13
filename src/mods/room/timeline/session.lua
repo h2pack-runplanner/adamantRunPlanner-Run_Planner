@@ -136,9 +136,9 @@ function timeline.bound(session, native)
     return session.nativeHandles[native]
 end
 
--- A retained Sea Star consumable is the same native object after its source
--- owner completes.  Releasing only that completed binding lets the ordinary
--- ready-action claim attach the later duplicate on its next accepted use.
+-- Native carriers can survive their completed action (Sea Star consumables,
+-- ship wheels). Release that binding without undoing the owner's completion,
+-- so the adapter can bind the carrier's next action independently.
 function timeline.releaseCompletedBinding(session, handle, native)
     if session.closed then return fault(session, "room-session", "open session", "closed") end
     if terminal(session) ~= nil then return nil, terminal(session) end

@@ -7,6 +7,7 @@ local navigation = require("mods.navigation.hooks")
 local acquisitionBinding = require("mods.room.timeline.acquisitions.binding")
 local directPickups = require("mods.room.timeline.acquisitions.pickups.hooks")
 local timelineBindings = require("mods.room.timeline.bindings")
+local timeline = require("mods.room.timeline.session")
 
 TestThessaly = {}
 
@@ -56,6 +57,81 @@ local function fixture(offerCount, pickedOfferKey)
         encounterPhases = { { slotKey = "Intro" }, phase }, rewardWheels = { wheel },
     } } }
     return active, phase, wheel
+end
+
+local function successiveWheelChoices(firstCount, secondCount)
+    local active = fixture(firstCount, "offer" .. firstCount)
+    local occurrence = active.occurrence
+    occurrence.overview.rewardWheels[2] = {
+        wheelKey = "wheel2", pickedOfferKey = "offer" .. secondCount,
+    }
+    occurrence.timeline = {
+        transactions = {}, dependencies = { { owner = "choice2", afterOwner = "choice1" } },
+        obligations = {
+            { owner = "choice1", checkpoint = "roomExit" },
+            { owner = "choice2", checkpoint = "roomExit" },
+        },
+    }
+    occurrence.transactionsByOwner = {}
+    for i = 1, 2 do
+        local transaction = {
+            kind = "chooseRewardWheel", owner = "choice" .. i,
+            wheelKey = "wheel" .. i,
+            pickedOfferKey = occurrence.overview.rewardWheels[i].pickedOfferKey,
+            window = { kind = "shipPreCombat", wheelKey = "wheel" .. i },
+        }
+        occurrence.timeline.transactions[i] = transaction
+        occurrence.transactionsByOwner[transaction.owner] = transaction
+    end
+    local dag = timeline.new(occurrence)
+    local state = { state = "synchronized" }
+    local room = {
+        current = function() return active end,
+        resolve = function(_, _, contact) return timeline.resolve(dag, timelineBindings.resolve, contact) end,
+        bind = function(_, _, handle, native) return timeline.bind(dag, handle, native) end,
+        begin = function(_, handle) return timeline.begin(dag, handle) end,
+        window = function(_, window) return timeline.open(dag, window) end,
+        releaseCompletedBinding = function(_, _, handle, native)
+            return timeline.releaseCompletedBinding(dag, handle, native)
+        end,
+    }
+    local module, callbacks = capture()
+    local shipCombat = thessaly.create()
+    shipCombat.attach(module, {
+        complete = function(_, handle) return timeline.complete(dag, handle) end,
+        diagnostic = function() error("unexpected diagnostic") end,
+    }, function() return state end, function() end, room)
+    local centralWheel = { Name = "ShipsSteeringWheel", ObjectId = 1 }
+    for i, offerCount in ipairs({ firstCount, secondCount }) do
+        local wheelKey = "wheel" .. i
+        -- Native single-offer phases reuse the central wheel; two-offer
+        -- phases create temporary left/right carriers pointing to that wheel.
+        local carriers = offerCount == 1 and { centralWheel } or {
+            { Name = "ShipsSteeringWheelLeft", WheelObstacleId = centralWheel.ObjectId },
+            { Name = "ShipsSteeringWheelRight", WheelObstacleId = centralWheel.ObjectId },
+        }
+        local nativeWheel = carriers[offerCount]
+        nativeWheel.__runPlannerWheelKey = wheelKey
+        nativeWheel.__runPlannerOfferKey = "offer" .. offerCount
+        lu.assertTrue(timeline.open(dag, "shipPreCombat:" .. wheelKey))
+        callbacks.UseShipWheel(nil, {}, function(wheel)
+            lu.assertIs(wheel, nativeWheel)
+            lu.assertTrue(dag.completedOwners["choice" .. i])
+            lu.assertNil(timeline.bound(dag, nativeWheel))
+            lu.assertEquals(shipCombat.takeRewardProducer(state, active).wheelKey, wheelKey)
+        end, nativeWheel)
+    end
+    lu.assertNil(dag.firstFault)
+    lu.assertNil(dag.firstMismatch)
+    lu.assertTrue(timeline.checkpoint(dag, "roomExit"))
+end
+
+function TestThessaly.testSuccessiveCombatChoicesSupportBothNativeWheelLayouts()
+    for firstCount = 1, 2 do
+        for secondCount = 1, 2 do
+            successiveWheelChoices(firstCount, secondCount)
+        end
+    end
 end
 
 function TestThessaly.testExactPublishedPhaseCountBypassesNativeThirdPhaseRoll()
@@ -116,6 +192,10 @@ local function runWheel(offerCount, pickedOfferKey, selectedIndex)
         begin = function(_, value)
             lu.assertEquals(value, handle)
             return { transaction = { pickedOfferKey = wheel.pickedOfferKey } }
+        end,
+        releaseCompletedBinding = function(_, _, value)
+            lu.assertEquals(completed[#completed], value)
+            return true
         end,
     }
     local session = {
@@ -184,7 +264,7 @@ end
 
 function TestThessaly.testWheelSelectionPublishesBeforeNativeNotificationResumesSetup()
     local module, callbacks = capture()
-    local active, phase, wheel = fixture(1, "offer1")
+    local active, phase = fixture(1, "offer1")
     local state, encounter, handle = { state = "synchronized" }, {}, {}
     local windows, completed = {}, {}
     local room = {
@@ -205,6 +285,10 @@ function TestThessaly.testWheelSelectionPublishesBeforeNativeNotificationResumes
         begin = function(_, value)
             lu.assertEquals(value, handle)
             return { transaction = { pickedOfferKey = "offer1" } }
+        end,
+        releaseCompletedBinding = function(_, _, value)
+            lu.assertEquals(completed[#completed], value)
+            return true
         end,
     }
     local session = {

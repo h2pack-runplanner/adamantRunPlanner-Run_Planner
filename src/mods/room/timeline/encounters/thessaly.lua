@@ -123,6 +123,8 @@ function thessaly.create()
                         session.diagnostic(state, "ship-wheel-selection", observed)
                     end
                     session.complete(state, handle)
+                    -- Native reuses the central wheel for the next combat's choice.
+                    room.releaseCompletedBinding(state, active, handle, wheel)
                     -- Publish before native notification can synchronously
                     -- resume the waiting ShipsEncounterSetup coroutine.
                     if room.window(state, "shipPostCombat:" .. selected.wheelKey) then
