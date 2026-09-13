@@ -233,14 +233,6 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
         return result
     end)
 
-    module.hooks.wrap("UseExitDoor", "run-planner-exit-usable", function(_, runtime, base, door, args)
-        local state = getState(runtime)
-        if state == nil or state.state ~= "synchronized" then return base(door, args) end
-        room.checkpoint(state, "exitUsable")
-        report(runtime)
-        return base(door, args)
-    end)
-
     module.hooks.wrap("ChooseAvailableN_HubDoors", "run-planner-ephyra-hub-board", function(_, runtime, base, nativeRoom, args)
         local state = getState(runtime)
         local result = base(nativeRoom, args)

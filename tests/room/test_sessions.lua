@@ -304,6 +304,38 @@ function TestRouteRoomSessions.testEachLaterDeadlinePassesEarlierCheckpointsBefo
     lu.assertEquals(exit.firstMismatch.checkpoint, "obligation:roomExit")
 end
 
+function TestRouteRoomSessions.testRoomCloseChecksExitUsableBeforeRoomExitAndConformance()
+    local entry = occurrence()
+    entry.transactionsByOwner = {
+        usable = { owner = "usable", window = { kind = "postOutgoing" } },
+        exit = { owner = "exit", window = { kind = "standard", phase = "afterCombat" } },
+    }
+    entry.timeline = { dependencies = {}, obligations = {
+        { owner = "usable", checkpoint = "exitUsable" },
+        { owner = "exit", checkpoint = "roomExit" },
+    } }
+
+    local incomplete = newSession(entry)
+    local conformanceCalled = false
+    lu.assertNil(room.close(incomplete, function()
+        conformanceCalled = true
+        return true
+    end))
+    lu.assertEquals(incomplete.firstMismatch.checkpoint, "obligation:exitUsable")
+    lu.assertFalse(conformanceCalled)
+    lu.assertFalse(incomplete.closed)
+    lu.assertNotNil(incomplete._timeline)
+
+    local completeExit = newSession(entry)
+    lu.assertTrue(room.openWindow(completeExit, "postOutgoing"))
+    lu.assertTrue(complete(completeExit, "usable"))
+    lu.assertTrue(room.openWindow(completeExit, "afterCombat"))
+    lu.assertTrue(complete(completeExit, "exit"))
+    lu.assertTrue(room.close(completeExit, function() return true end))
+    lu.assertTrue(completeExit.closed)
+    lu.assertNil(completeExit._timeline)
+end
+
 function TestRouteRoomSessions.testPhaseCapabilityIsTransientAndRoomCloseDisposesTimelineState()
     local entry = occurrence()
     entry.transactionsByOwner = {

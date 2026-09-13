@@ -530,6 +530,45 @@ function TestRoomEntryHooks.testLeaveRoomProvesDoorsBeforeClosingTheRoomSession(
     lu.assertTrue(nativeCalled)
 end
 
+function TestRoomEntryHooks.testLeaveRoomContinuesNativeAfterRoomCloseMismatch()
+    local module, _, callbacks = capture()
+    local state = { state = "synchronized", route = {} }
+    local mismatch, closed, advanced, nativeCalled
+    local session = stub()
+    session.mismatch = function(_, errorValue)
+        mismatch = errorValue
+        state.state = "desynchronized"
+    end
+    local route = {
+        exit = function() advanced = true; return true end,
+        expected = function() return {} end,
+    }
+    local roomSession = {
+        close = function()
+            closed = true
+            return session.mismatch(state, {
+                checkpoint = "obligation:exitUsable", expected = "usable", observed = "incomplete",
+            })
+        end,
+    }
+    local navigationEntry = {
+        proveOutgoingDoors = function() return true end,
+    }
+    roomHooks.attach(module, session, function() return state end, function() end,
+        route, roomSession, nil, navigationEntry, unusedLoadoutScope)
+
+    local result = callbacks.LeaveRoom(nil, {}, function()
+        nativeCalled = true
+        return "native-exit"
+    end, {}, {})
+
+    lu.assertEquals(result, "native-exit")
+    lu.assertTrue(closed)
+    lu.assertEquals(mismatch.checkpoint, "obligation:exitUsable")
+    lu.assertNil(advanced)
+    lu.assertTrue(nativeCalled)
+end
+
 function TestRoomEntryHooks.testLeaveRoomAdvancesBeforeNativeLeaveCanEnterNextRoom()
     local module, _, callbacks = capture()
     local first = { id = "one", gameName = "F_One" }

@@ -154,40 +154,6 @@ function TestNavigationHooks.testAnomalyDoorUsesNativeReplacementPresentation()
     lu.assertNil(currentRun.CurrentRoom.DoAnomalies)
 end
 
-function TestNavigationHooks.testDoorUseDoesNotInterpretOrAdvanceTheRouteDestination()
-    local module, _, callbacks = capture()
-    local first = {
-        id = "first", gameName = "F_First",
-        overview = { additional = {} },
-        doors = { kind = "fixed", target = { id = "second", gameName = "F_Second" } },
-    }
-    local second = { id = "second", gameName = "F_Second" }
-    local plan = {
-        selectedOccurrenceIds = { "first", "second" },
-        occurrencesById = { first = first, second = second },
-    }
-    local routeState = routeSession.new(plan)
-    lu.assertEquals(routeSession.enter(routeState, "first", "F_First"), first)
-    local active = { occurrence = first }
-    local state = { state = "synchronized", route = routeState, plan = plan }
-    local checkpoint
-    local room = {
-        current = function() return active end,
-        checkpoint = function(_, value) checkpoint = value; return true end,
-    }
-    navigation.attach(module, stub(), function() return state end, function() end,
-        routeSession, room)
-
-    local door = { Room = { __runPlannerExecutionRoomId = "unexpected" } }
-    lu.assertEquals(callbacks.UseExitDoor(nil, {}, function() return "native" end, door, {}), "native")
-
-    lu.assertEquals(routeState.index, 1)
-    lu.assertEquals(routeState.currentOccurrence, first)
-    lu.assertNil(routeState.firstMismatch)
-    lu.assertEquals(checkpoint, "exitUsable")
-    lu.assertEquals(active.occurrence, first)
-end
-
 function TestNavigationHooks.testDoorMismatchIsDeferredUntilExitProof()
     local module, _, callbacks = capture()
     local occurrence = {
@@ -277,7 +243,6 @@ function TestNavigationHooks.testChaosDoorIsExcludedAfterNormalDoorGeneration()
         normalDoor.Room = callbacks.ChooseNextRoomData(nil, {}, function() return nil end, {}, {}, {})
         return true
     end, {}, {})
-    callbacks.UseExitDoor(nil, {}, function() return true end, chaosDoor, {})
     local proved, errorValue = navigationScope.proveOutgoingDoors(state, {})
     _G.MapState, _G.CollapseTableOrdered, _G.game = priorMap, priorCollapse, priorGame
 

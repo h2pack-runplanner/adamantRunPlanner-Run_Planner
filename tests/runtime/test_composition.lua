@@ -489,16 +489,12 @@ function TestRuntimeComposition.testMismatchStopsEnforcementWithoutBlockingNativ
     local entered = callbacks.StartRoom(nil, {}, function()
         return "native-entry"
     end, {}, { Name = "NativeOpening" })
-    local used = callbacks.UseExitDoor(nil, {}, function(door)
-        return door.Name
-    end, { Name = "NativeDoor" }, {})
     local left = callbacks.LeaveRoom(nil, {}, function()
         return "native-exit"
     end, {}, {})
 
     lu.assertEquals(starting, { Name = "NativeOpening" })
     lu.assertEquals(entered, "native-entry")
-    lu.assertEquals(used, "NativeDoor")
     lu.assertEquals(left, "native-exit")
 end
 

@@ -147,7 +147,9 @@ end
 
 function room.close(session, proveConformance)
     if session.closed then return fault(session, "room-session", "open session", "closed") end
-    local ok, errorValue = room.checkpoint(session, "roomExit")
+    local ok, errorValue = room.checkpoint(session, "exitUsable")
+    if not ok then return nil, errorValue end
+    ok, errorValue = room.checkpoint(session, "roomExit")
     if not ok then return nil, errorValue end
     if proveConformance ~= nil then
         local conformed, conformanceError = proveConformance()
