@@ -182,6 +182,125 @@ function TestThessaly.testDivergentWheelChoiceDoesNotBlockNativeUse()
     lu.assertEquals(result.diagnostics, { { "ship-wheel-selection", "offer1" } })
 end
 
+function TestThessaly.testWheelSelectionPublishesBeforeNativeNotificationResumesSetup()
+    local module, callbacks = capture()
+    local active, phase, wheel = fixture(1, "offer1")
+    local state, encounter, handle = { state = "synchronized" }, {}, {}
+    local windows, completed = {}, {}
+    local room = {
+        current = function() return active end,
+        encounterPhase = function(_, value) return value == encounter and phase or nil end,
+        window = function(_, value) windows[#windows + 1] = value; return true end,
+        resolve = function(_, context, contact)
+            lu.assertEquals(context, active)
+            lu.assertEquals(contact, { kind = "rewardWheel", wheelKey = "wheel1" })
+            return handle
+        end,
+        bind = function(_, context, value, native)
+            lu.assertEquals(context, active)
+            lu.assertEquals(value, handle)
+            lu.assertNotNil(native)
+            return handle
+        end,
+        begin = function(_, value)
+            lu.assertEquals(value, handle)
+            return { transaction = { pickedOfferKey = "offer1" } }
+        end,
+    }
+    local session = {
+        complete = function(_, value) completed[#completed + 1] = value end,
+        diagnostic = function() error("unexpected diagnostic") end,
+    }
+    local shipCombat = thessaly.create()
+    navigation.attach(module, session, function() return state end, function() end, {}, room, nil,
+        shipCombat.rewardContext)
+    shipCombat.attach(module, session, function() return state end, function() end, room)
+
+    local nativeRoom = { Encounter = encounter }
+    local selected, resumed = {}, false
+    local setup = coroutine.create(function()
+        return callbacks.ShipsEncounterSetup(nil, {}, function()
+            callbacks.RandomChance(nil, {}, function() return false end, 1)
+            callbacks.ChooseNextRewardStore(nil, {}, function() return "NativeStore" end, {})
+            local rewardType = callbacks.ChooseRoomReward(nil, {}, function() return "NativeReward" end,
+                {}, nativeRoom, "NativeStore", {}, { IgnoreForcedReward = true })
+            callbacks.SetupRoomReward(nil, {}, function()
+                nativeRoom.ForceLootName = "native-source"
+            end, {}, nativeRoom, {}, { AlwaysSetupForceLootName = true })
+            callbacks.CreateDoorRewardPreview(nil, {}, function() return true end, selected, rewardType)
+            coroutine.yield("wait-for-wheel")
+            resumed = true
+            return "setup-resumed"
+        end, encounter, {})
+    end)
+    local ok, yielded = coroutine.resume(setup)
+    lu.assertTrue(ok)
+    lu.assertEquals(yielded, "wait-for-wheel")
+    lu.assertEquals(selected.__runPlannerWheelKey, "wheel1")
+    lu.assertEquals(selected.__runPlannerOfferKey, "offer1")
+
+    local unrelated = {}
+    lu.assertEquals(callbacks.ChooseNextRewardStore(nil, {}, function() return "NativeStore" end, {}), "NativeStore")
+    callbacks.CreateDoorRewardPreview(nil, {}, function(obstacle)
+        lu.assertNil(obstacle.__runPlannerWheelKey)
+        return true
+    end, unrelated, "NativeReward")
+
+    local result = callbacks.UseShipWheel(nil, {}, function()
+        lu.assertEquals(completed, { handle })
+        lu.assertEquals(windows, { "shipPreCombat:wheel1", "shipPostCombat:wheel1" })
+        local producer = shipCombat.takeRewardProducer(state, active)
+        lu.assertEquals(producer.active, active)
+        lu.assertEquals(producer.wheelKey, "wheel1")
+        lu.assertNil(shipCombat.takeRewardProducer(state, active))
+        local resumedOk = coroutine.resume(setup)
+        lu.assertTrue(resumedOk)
+        lu.assertEquals(coroutine.status(setup), "dead")
+        return "native-use"
+    end, selected)
+    lu.assertEquals(result, "native-use")
+    lu.assertTrue(resumed)
+end
+
+function TestThessaly.testDeniedStampedWheelBeginLeavesNativeUseUnsteered()
+    local module, callbacks = capture()
+    local active = fixture(1, "offer1")
+    local state, handle = { state = "synchronized" }, {}
+    local bound, nativeUsed, reports = false, false, 0
+    local room = {
+        current = function() return active end,
+        resolve = function(_, context, contact)
+            lu.assertEquals(context, active)
+            lu.assertEquals(contact, { kind = "rewardWheel", wheelKey = "wheel1" })
+            return handle
+        end,
+        bind = function(_, context, value)
+            lu.assertEquals(context, active)
+            lu.assertEquals(value, handle)
+            bound = true
+            return handle
+        end,
+        begin = function() return nil end,
+        window = function() error("denied wheel must not open a window") end,
+    }
+    local session = {
+        complete = function() error("denied wheel must not complete") end,
+        diagnostic = function() error("denied wheel must not diagnose selection") end,
+    }
+    local shipCombat = thessaly.create()
+    shipCombat.attach(module, session, function() return state end, function() reports = reports + 1 end, room)
+    local wheel = { __runPlannerWheelKey = "wheel1", __runPlannerOfferKey = "offer1" }
+    local result = callbacks.UseShipWheel(nil, {}, function(value)
+        nativeUsed = value == wheel
+        return "native-use"
+    end, wheel)
+    lu.assertEquals(result, "native-use")
+    lu.assertTrue(nativeUsed)
+    lu.assertTrue(bound)
+    lu.assertEquals(reports, 1)
+    lu.assertNil(shipCombat.takeRewardProducer(state, active))
+end
+
 function TestThessaly.testSelectedWheelRewardBindsAndCompletesThroughStandardPickupLifecycle()
     local module, callbacks = capture()
     local active, phase, wheel = fixture(1, "offer1")

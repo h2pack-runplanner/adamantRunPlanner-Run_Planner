@@ -10,6 +10,12 @@ local function wheelForPhase(active, phaseKey)
     return nil
 end
 
+local function wheelForKey(active, wheelKey)
+    for _, wheel in ipairs(active.occurrence.overview.rewardWheels or {}) do
+        if wheel.wheelKey == wheelKey then return wheel end
+    end
+end
+
 function thessaly.create()
     local instance = {}
     local wheelScope
@@ -63,7 +69,7 @@ function thessaly.create()
             room.window(state, "shipPreCombat:" .. wheel.wheelKey)
             local prior = wheelScope
             wheelScope = {
-                state = state, active = active, wheel = wheel, offerIndex = 0,
+                prior = prior, state = state, active = active, wheel = wheel, offerIndex = 0,
                 offerCountPending = true, currentOffer = nil,
             }
             local ok, result = pcall(base, encounter, args)
@@ -92,37 +98,42 @@ function thessaly.create()
                 wheelObstacle.__runPlannerWheelKey = scope.wheel.wheelKey
                 wheelObstacle.__runPlannerOfferKey = scope.currentOffer.offerKey
             end
-            return base(wheelObstacle, ...)
+            local result = base(wheelObstacle, ...)
+            if wheelScope == scope and scope ~= nil and scope.offerIndex == #scope.wheel.offers then
+                wheelScope = scope.prior
+            end
+            return result
         end)
 
         module.hooks.wrap("UseShipWheel", "run-planner-observe-ship-wheel", function(_, runtime, base, wheel)
-            local result = base(wheel)
-            local scope = wheelScope
             local state = getState(runtime)
-            if scope ~= nil and state ~= nil and state.state == "synchronized" then
-                local handle = room.resolve(state, scope.active, {
-                    kind = "rewardWheel", wheelKey = scope.wheel.wheelKey,
+            local active = state and room.current(state) or nil
+            local wheelKey = type(wheel) == "table" and wheel.__runPlannerWheelKey or nil
+            local selected = active and wheelKey and wheelForKey(active, wheelKey) or nil
+            if state ~= nil and state.state == "synchronized" and selected ~= nil then
+                local handle = room.resolve(state, active, {
+                    kind = "rewardWheel", wheelKey = selected.wheelKey,
                 })
-                handle = room.bind(state, scope.active, handle, wheel)
+                handle = handle and room.bind(state, active, handle, wheel) or nil
                 local payload = handle and room.begin(state, handle) or nil
                 local expected = payload and payload.transaction.pickedOfferKey
                 local observed = type(wheel) == "table" and wheel.__runPlannerOfferKey or nil
-                if expected ~= observed then
-                    session.diagnostic(state, "ship-wheel-selection", observed)
-                end
                 if handle ~= nil and payload ~= nil then
+                    if expected ~= observed then
+                        session.diagnostic(state, "ship-wheel-selection", observed)
+                    end
                     session.complete(state, handle)
-                    -- Native now owns the selected reward and starts combat.
-                    -- The later SpawnRoomReward contact cannot occur before
-                    -- this point, so expose its published acquisition window.
-                    if room.window(state, "shipPostCombat:" .. scope.wheel.wheelKey) then
+                    -- Publish before native notification can synchronously
+                    -- resume the waiting ShipsEncounterSetup coroutine.
+                    if room.window(state, "shipPostCombat:" .. selected.wheelKey) then
                         selectedRewardByState[state] = {
-                            active = scope.active, wheelKey = scope.wheel.wheelKey,
+                            active = active, wheelKey = selected.wheelKey,
                         }
                     end
                 end
-                report(runtime)
             end
+            local result = base(wheel)
+            if selected ~= nil then report(runtime) end
             return result
         end)
     end
