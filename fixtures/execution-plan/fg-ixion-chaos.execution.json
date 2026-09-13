@@ -386,7 +386,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 0,
@@ -789,7 +791,9 @@
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 4,
@@ -1099,7 +1103,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 8,
@@ -1392,7 +1398,9 @@
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 12,
@@ -1686,7 +1694,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 16,
@@ -2994,7 +3004,12 @@
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
       "roomExitConformance": {
-        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }, { "kind": "chaos" }, { "kind": "pathOfStars" }]
+        "facts": [
+          { "kind": "elementCounts" },
+          { "kind": "traitInventory" },
+          { "kind": "chaos" },
+          { "kind": "pathOfStars" }
+        ]
       },
       "diagnostics": {
         "roomEntered": {
@@ -3307,7 +3322,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 40,

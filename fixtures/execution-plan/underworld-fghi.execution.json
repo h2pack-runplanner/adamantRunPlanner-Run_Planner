@@ -54,12 +54,7 @@
   },
   "extent": {
     "kind": "configuredPrefix",
-    "biomeKeys": [
-      "F",
-      "G",
-      "H",
-      "I"
-    ],
+    "biomeKeys": ["F", "G", "H", "I"],
     "terminalBiomeKey": "I"
   },
   "selectedOccurrenceIds": [
@@ -759,9 +754,7 @@
             },
             "keepsakes": {
               "currentKey": "ManaOverTimeRefundKeepsake",
-              "usedKeys": [
-                "ManaOverTimeRefundKeepsake"
-              ],
+              "usedKeys": ["ManaOverTimeRefundKeepsake"],
               "blockedKeys": [],
               "fatedStatus": "Unknown"
             },
@@ -871,9 +864,7 @@
               }
             ],
             "godPool": {
-              "acquiredSourceKeys": [
-                "ApolloUpgrade"
-              ],
+              "acquiredSourceKeys": ["ApolloUpgrade"],
               "effectiveSourceKeys": [
                 "AphroditeUpgrade",
                 "ApolloUpgrade",
@@ -1316,10 +1307,7 @@
               }
             ],
             "godPool": {
-              "acquiredSourceKeys": [
-                "ApolloUpgrade",
-                "ZeusUpgrade"
-              ],
+              "acquiredSourceKeys": ["ApolloUpgrade", "ZeusUpgrade"],
               "effectiveSourceKeys": [
                 "AphroditeUpgrade",
                 "ApolloUpgrade",
@@ -1671,10 +1659,7 @@
                   "entry": "[\"acquisitionEntry\",\"Underworld\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Underworld\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Underworld\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"golden-f-b4-e1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
                 },
                 "levelResolution": {
-                  "offeredTargets": [
-                    "ApolloWeaponBoon",
-                    "ZeusSpecialBoon"
-                  ],
+                  "offeredTargets": ["ApolloWeaponBoon", "ZeusSpecialBoon"],
                   "selectedTarget": "ApolloWeaponBoon",
                   "levelCount": 1
                 }
@@ -2295,11 +2280,7 @@
               }
             ],
             "godPool": {
-              "acquiredSourceKeys": [
-                "ApolloUpgrade",
-                "HeraUpgrade",
-                "ZeusUpgrade"
-              ],
+              "acquiredSourceKeys": ["ApolloUpgrade", "HeraUpgrade", "ZeusUpgrade"],
               "effectiveSourceKeys": [
                 "AphroditeUpgrade",
                 "ApolloUpgrade",
@@ -3558,9 +3539,7 @@
       "gameName": "G_Intro",
       "kind": "EmptyEncounter",
       "overview": {
-        "unmodeledEncounterKeys": [
-          "Empty"
-        ],
+        "unmodeledEncounterKeys": ["Empty"],
         "encounterPhases": [],
         "requiredObjects": []
       },
@@ -5776,9 +5755,7 @@
       "gameName": "H_Intro",
       "kind": "EmptyEncounter",
       "overview": {
-        "unmodeledEncounterKeys": [
-          "Empty"
-        ],
+        "unmodeledEncounterKeys": ["Empty"],
         "encounterPhases": [],
         "requiredObjects": []
       },
@@ -7150,11 +7127,7 @@
                   "entry": "[\"acquisitionEntry\",\"Underworld\",\"H\",\"[\\\"acquisitionSite\\\",\\\"Underworld\\\",\\\"H\\\",\\\"[\\\\\\\"localReward\\\\\\\",\\\\\\\"Underworld\\\\\\\",\\\\\\\"H\\\\\\\",\\\\\\\"golden-h-combat05\\\\\\\",\\\\\\\"cages\\\\\\\",\\\\\\\"cage1\\\\\\\"]\\\",\\\"localReward:cages:cage1\\\"]\",\"cage1\"]"
                 },
                 "levelResolution": {
-                  "offeredTargets": [
-                    "ApolloWeaponBoon",
-                    "ZeusSpecialBoon",
-                    "HeraCastBoon"
-                  ],
+                  "offeredTargets": ["ApolloWeaponBoon", "ZeusSpecialBoon", "HeraCastBoon"],
                   "selectedTarget": "ApolloWeaponBoon",
                   "levelCount": 1
                 }
@@ -7733,9 +7706,7 @@
       "gameName": "I_Intro",
       "kind": "EmptyEncounter",
       "overview": {
-        "unmodeledEncounterKeys": [
-          "Empty"
-        ],
+        "unmodeledEncounterKeys": ["Empty"],
         "encounterPhases": [],
         "requiredObjects": []
       },

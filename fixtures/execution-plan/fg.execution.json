@@ -386,7 +386,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 0,
@@ -789,7 +791,9 @@
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 4,
@@ -1099,7 +1103,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 8,
@@ -1392,7 +1398,9 @@
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 12,
@@ -1686,7 +1694,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 16,
@@ -2240,7 +2250,11 @@
       "biomeKey": "G",
       "gameName": "G_Intro",
       "kind": "EmptyEncounter",
-      "overview": { "encounterPhases": [], "requiredObjects": [], "unmodeledEncounterKeys": ["Empty"] },
+      "overview": {
+        "encounterPhases": [],
+        "requiredObjects": [],
+        "unmodeledEncounterKeys": ["Empty"]
+      },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-intro\"}]",
@@ -2393,7 +2407,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 30,
@@ -2677,7 +2693,9 @@
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 34,
@@ -3109,7 +3127,9 @@
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 40,
@@ -3281,7 +3301,9 @@
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }] },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
       "diagnostics": {
         "roomEntered": {
           "frame": 42,

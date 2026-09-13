@@ -54,12 +54,7 @@
   },
   "extent": {
     "kind": "configuredPrefix",
-    "biomeKeys": [
-      "N",
-      "O",
-      "P",
-      "Q"
-    ],
+    "biomeKeys": ["N", "O", "P", "Q"],
     "terminalBiomeKey": "Q"
   },
   "selectedOccurrenceIds": [
@@ -810,9 +805,7 @@
             },
             "keepsakes": {
               "currentKey": "ManaOverTimeRefundKeepsake",
-              "usedKeys": [
-                "ManaOverTimeRefundKeepsake"
-              ],
+              "usedKeys": ["ManaOverTimeRefundKeepsake"],
               "blockedKeys": [],
               "fatedStatus": "Unknown"
             },
@@ -922,9 +915,7 @@
               }
             ],
             "godPool": {
-              "acquiredSourceKeys": [
-                "ApolloUpgrade"
-              ],
+              "acquiredSourceKeys": ["ApolloUpgrade"],
               "effectiveSourceKeys": [
                 "AphroditeUpgrade",
                 "ApolloUpgrade",
@@ -1238,10 +1229,7 @@
               "roomHistoryOrdinal": 2
             },
             "godPool": {
-              "acquiredSourceKeys": [
-                "ApolloUpgrade",
-                "AresUpgrade"
-              ],
+              "acquiredSourceKeys": ["ApolloUpgrade", "AresUpgrade"],
               "effectiveSourceKeys": [
                 "AphroditeUpgrade",
                 "ApolloUpgrade",
@@ -1326,9 +1314,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ],
+        "requiredObjects": ["SoulPylon"],
         "localSlots": [
           {
             "slotKey": "sideDoor1",
@@ -1844,9 +1830,7 @@
             "kind": "miniboss"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ],
+        "requiredObjects": ["SoulPylon"],
         "localSlots": []
       },
       "timeline": {
@@ -1945,11 +1929,7 @@
               "roomHistoryOrdinal": 10
             },
             "godPool": {
-              "acquiredSourceKeys": [
-                "ApolloUpgrade",
-                "AresUpgrade",
-                "HephaestusUpgrade"
-              ],
+              "acquiredSourceKeys": ["ApolloUpgrade", "AresUpgrade", "HephaestusUpgrade"],
               "effectiveSourceKeys": [
                 "AphroditeUpgrade",
                 "ApolloUpgrade",
@@ -2044,9 +2024,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ],
+        "requiredObjects": ["SoulPylon"],
         "localSlots": [
           {
             "slotKey": "sideDoor1",
@@ -2320,9 +2298,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ],
+        "requiredObjects": ["SoulPylon"],
         "localSlots": [
           {
             "slotKey": "sideDoor1",
@@ -2735,9 +2711,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ],
+        "requiredObjects": ["SoulPylon"],
         "localSlots": [
           {
             "slotKey": "sideDoor1",
@@ -2945,9 +2919,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ],
+        "requiredObjects": ["SoulPylon"],
         "localSlots": [
           {
             "slotKey": "sideDoor1",
@@ -3006,13 +2978,8 @@
                   "selected": "option1",
                   "hexTree": {
                     "layoutKey": "Lung",
-                    "rareTalentKeys": [
-                      "DamageBuffTalent",
-                      "ShieldTalent"
-                    ],
-                    "epicTalentKeys": [
-                      "ClearCastTalent"
-                    ]
+                    "rareTalentKeys": ["DamageBuffTalent", "ShieldTalent"],
+                    "epicTalentKeys": ["ClearCastTalent"]
                   }
                 }
               }
@@ -3145,11 +3112,7 @@
             "hexProgress": {
               "spellTraitKey": "SpellPotionTrait",
               "layoutKey": "Lung",
-              "talentKeys": [
-                "DamageBuffTalent",
-                "ShieldTalent",
-                "ClearCastTalent"
-              ],
+              "talentKeys": ["DamageBuffTalent", "ShieldTalent", "ClearCastTalent"],
               "closed": false,
               "bankedPathPoints": 0,
               "investedPathPoints": 0
@@ -3418,9 +3381,7 @@
       "gameName": "O_Intro",
       "kind": "EmptyEncounter",
       "overview": {
-        "unmodeledEncounterKeys": [
-          "Empty"
-        ],
+        "unmodeledEncounterKeys": ["Empty"],
         "encounterPhases": [],
         "requiredObjects": []
       },
@@ -4614,11 +4575,7 @@
                   "entry": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"rewardWheel\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-combat02\\\\\\\",\\\\\\\"wheel1\\\\\\\"]\\\",\\\"wheel1\\\"]\",\"picked\"]"
                 },
                 "levelResolution": {
-                  "offeredTargets": [
-                    "ApolloWeaponBoon",
-                    "AresSpecialBoon",
-                    "HephaestusCastBoon"
-                  ],
+                  "offeredTargets": ["ApolloWeaponBoon", "AresSpecialBoon", "HephaestusCastBoon"],
                   "selectedTarget": "ApolloWeaponBoon",
                   "levelCount": 1
                 }
@@ -6924,11 +6881,7 @@
                   "entry": "[\"acquisitionEntry\",\"Surface\",\"P\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"P\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"P\\\\\\\",\\\\\\\"surface-p-8-1-p_combat12\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
                 },
                 "levelResolution": {
-                  "offeredTargets": [
-                    "ApolloWeaponBoon",
-                    "AresSpecialBoon",
-                    "HephaestusCastBoon"
-                  ],
+                  "offeredTargets": ["ApolloWeaponBoon", "AresSpecialBoon", "HephaestusCastBoon"],
                   "selectedTarget": "ApolloWeaponBoon",
                   "levelCount": 1
                 }
@@ -7424,9 +7377,7 @@
       "gameName": "Q_Intro",
       "kind": "EmptyEncounter",
       "overview": {
-        "unmodeledEncounterKeys": [
-          "Empty"
-        ],
+        "unmodeledEncounterKeys": ["Empty"],
         "encounterPhases": [],
         "requiredObjects": []
       },
@@ -8781,9 +8732,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ]
+        "requiredObjects": ["SoulPylon"]
       },
       "timeline": {
         "transactions": [],
@@ -8814,9 +8763,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ]
+        "requiredObjects": ["SoulPylon"]
       },
       "timeline": {
         "transactions": [],
@@ -8848,9 +8795,7 @@
             "kind": "combat"
           }
         ],
-        "requiredObjects": [
-          "SoulPylon"
-        ]
+        "requiredObjects": ["SoulPylon"]
       },
       "timeline": {
         "transactions": [],
