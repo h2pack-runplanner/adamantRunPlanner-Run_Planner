@@ -51,16 +51,16 @@ function composition.bind(root)
         local transformationHooks = import("mods/room/timeline/transformations/hooks.lua")
 
         local function getState() return executionState end
-        local function diagnosticValue(value, depth)
-            depth = depth or 0
-            if depth >= 2 then return "…" end
+        local function diagnosticValue(value, ancestors)
             if type(value) ~= "table" then return tostring(value) end
-            local parts, count = {}, 0
+            ancestors = ancestors or {}
+            if ancestors[value] then return "<cycle>" end
+            ancestors[value] = true
+            local parts = {}
             for key, nested in pairs(value) do
-                count = count + 1
-                if count > 6 then parts[#parts + 1] = "…"; break end
-                parts[#parts + 1] = tostring(key) .. "=" .. diagnosticValue(nested, depth + 1)
+                parts[#parts + 1] = tostring(key) .. "=" .. diagnosticValue(nested, ancestors)
             end
+            ancestors[value] = nil
             return "{" .. table.concat(parts, ",") .. "}"
         end
         local function fieldsPoint(value)

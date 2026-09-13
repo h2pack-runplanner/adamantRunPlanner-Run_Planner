@@ -88,7 +88,7 @@ function TestRuntimeComposition.testSuccessfulPostbossAdmissionIsLoggedOnce()
     _G.import, _G.rom = priorImport, priorRom
 end
 
-function TestRuntimeComposition.testFirstMismatchLogIncludesBoundedOccurrenceDiagnostics()
+function TestRuntimeComposition.testFirstMismatchLogIncludesFullInventoryAndOccurrenceDiagnostics()
     local priorImport, priorRom = _G.import, _G.rom
     local logs = {}
     local state = {
@@ -98,6 +98,13 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesBoundedOccurrenceDia
             occurrenceId = "one", checkpoint = "run-state", expected = { gold = 1 }, observed = { gold = 2 },
         } },
     }
+    state.firstMismatch.checkpoint = "room-exit-conformance:traitInventory"
+    state.firstMismatch.expected = { present = {} }
+    state.firstMismatch.observed = { present = {} }
+    for index = 1, 8 do
+        state.firstMismatch.expected.present[index] = { traitKey = "Trait" .. index, rarity = "Rare", level = 4 }
+        state.firstMismatch.observed.present[index] = { traitKey = "Trait" .. index, rarity = "Common", level = 4 }
+    end
     local function freshImport(path)
         if path == "mods/runtime/composition.lua" then return assert(loadfile("src/" .. path))() end
         if path == "mods/protocol/json.lua" or path == "mods/protocol/decoder.lua" then
@@ -130,7 +137,11 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesBoundedOccurrenceDia
     freshImport("mods/runtime/composition.lua").bind("/tmp/run-planner-test").attach({})
 
     lu.assertEquals(#logs, 1)
-    lu.assertStrContains(logs[1], "first-mismatch checkpoint=room-entry")
+    lu.assertStrContains(logs[1], "first-mismatch checkpoint=room-exit-conformance:traitInventory")
+    for index = 1, 8 do lu.assertStrContains(logs[1], "traitKey=Trait" .. index) end
+    lu.assertStrContains(logs[1], "rarity=Rare")
+    lu.assertStrContains(logs[1], "rarity=Common")
+    lu.assertStrContains(logs[1], "level=4")
     lu.assertStrContains(logs[1], "diagnostics=")
     lu.assertStrContains(logs[1], "run-state")
     _G.import, _G.rom = priorImport, priorRom
