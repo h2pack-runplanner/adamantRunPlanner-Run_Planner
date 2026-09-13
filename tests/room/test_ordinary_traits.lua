@@ -427,7 +427,7 @@ function TestOrdinaryTraits.testFreshImportedTraitCarrierUsesTheProvidedSeaStar(
     callbacks.HandleUpgradeChoiceSelection(nil, {}, function()
         chance.value = callbacks.GetTotalHeroTraitValue(nil, {}, function() return 0 end,
             "DoubleRewardChance", {})
-        chance.result = callbacks.RandomChance(nil, {}, function() return false end, 0.25, {})
+        chance.result = nativeGame.randomChance(0)(chance.value)
         return true
     end, {}, { LootData = loot, Data = { Name = "ApolloAttack" } }, {})
     lu.assertEquals(chance, { value = 1, result = true })

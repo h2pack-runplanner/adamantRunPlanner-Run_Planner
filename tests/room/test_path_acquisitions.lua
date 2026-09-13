@@ -2,6 +2,7 @@
 local lu = require("luaunit")
 local seaStar = require("mods.room.timeline.acquisitions.sea_star").create()
 local path = require("mods.room.timeline.acquisitions.path.hooks")
+local nativeGame = require("tests.harness.native_game")
 
 TestPathAcquisitions = {}
 
@@ -128,7 +129,7 @@ function TestPathAcquisitions.testFreshImportedPathCarrierUsesProvidedSeaStarThr
         callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, source, {})
         chance.value = callbacks.GetTotalHeroTraitValue(nil, {}, function() return 0 end,
             "DoubleRewardChance", {})
-        chance.result = callbacks.RandomChance(nil, {}, function() return false end, 0.25, {})
+        chance.result = nativeGame.randomChance(0)(chance.value)
         return callbacks.OpenTalentScreen(nil, {}, function() return "native-screen-return" end, {}, source, {})
     end, item, {}, {})
     lu.assertEquals(result, "native-screen-return")

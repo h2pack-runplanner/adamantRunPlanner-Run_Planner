@@ -3,6 +3,7 @@ local lu = require("luaunit")
 local binding = require("mods.room.timeline.acquisitions.binding")
 local seaStar = require("mods.room.timeline.acquisitions.sea_star").create()
 local pickups = require("mods.room.timeline.acquisitions.pickups.hooks")
+local nativeGame = require("tests.harness.native_game")
 
 TestDirectPickupAcquisitions = {}
 
@@ -167,9 +168,9 @@ function TestDirectPickupAcquisitions.testFreshImportedPickupCarrierUsesTheProvi
         acceptedUse(callbacks, item, function()
             chance.value = callbacks.GetTotalHeroTraitValue(nil, {}, function() return 0 end,
                 "DoubleRewardChance", {})
-            chance.result = callbacks.RandomChance(nil, {}, function() return nil end, 0.25, {})
+            chance.result = nativeGame.randomChance(expected == "proc" and 0 or 0.5)(chance.value)
         end)
-        lu.assertEquals(chance.value, 1)
+        lu.assertEquals(chance.value, expected == "proc" and 1 or -1)
         lu.assertEquals(chance.result, expected == "proc")
         lu.assertEquals(#completions, 1)
         lu.assertEquals(releases(), expected == "proc" and 1 or 0)

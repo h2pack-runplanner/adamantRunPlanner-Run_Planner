@@ -166,7 +166,7 @@ function TestLevelAcquisitions.testFreshImportedLevelCarrierUsesProvidedSeaStarB
     callbacks.HandleUpgradeChoiceSelection(nil, {}, function(_, button)
         chance.value = callbacks.GetTotalHeroTraitValue(nil, {}, function() return 0 end,
             "DoubleRewardChance", {})
-        chance.result = callbacks.RandomChance(nil, {}, function() return nil end, 0.25, {})
+        chance.result = nativeGame.randomChance(0)(chance.value)
         return button
     end, {}, { LootData = loot, Data = { Name = "Target" } }, {})
     lu.assertEquals(chance.value, 1)
@@ -203,7 +203,7 @@ local function useDirect(callbacks, item, terminal, nativeFatedBonus, seaStarCha
         if seaStarChance then
             seaStarChance.value = callbacks.GetTotalHeroTraitValue(nil, {}, function() return 0 end,
                 "DoubleRewardChance", {})
-            seaStarChance.result = callbacks.RandomChance(nil, {}, function() return nil end, 0.25, {})
+            seaStarChance.result = nativeGame.randomChance(0)(seaStarChance.value)
         end
         callbacks.UseStoreRewardRandomStack(nil, {}, function(directArgs)
             if nativeFatedBonus then directArgs.NumStacks = directArgs.NumStacks + nativeFatedBonus end
@@ -247,7 +247,7 @@ function TestLevelAcquisitions.testDeferredDirectLevelTerminalKeepsSeaStarScopeU
         callbacks.ConsumableUsedPresentation(nil, {}, function() return true end, {}, nativeItem, {})
         chance.value = callbacks.GetTotalHeroTraitValue(nil, {}, function() return 0 end,
             "DoubleRewardChance", {})
-        chance.result = callbacks.RandomChance(nil, {}, function() return nil end, 0.25, {})
+        chance.result = nativeGame.randomChance(0)(chance.value)
         callbacks.UseStoreRewardRandomStack(nil, {}, function(directArgs)
             callbacks.AddStackToTraits(nil, {}, function(nativeSource, nativeArgs)
                 local actual = nativeArgs or nativeSource

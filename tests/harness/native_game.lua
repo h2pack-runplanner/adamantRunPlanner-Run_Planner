@@ -39,4 +39,11 @@ function nativeGame.noShrineUpgrades()
     return 0
 end
 
+function nativeGame.randomChance(roll, observed)
+    return function(chance)
+        if observed ~= nil then observed[#observed + 1] = chance end
+        return roll <= chance
+    end
+end
+
 return nativeGame

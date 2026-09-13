@@ -7,6 +7,7 @@ local roomFeatureHooks = require("mods.room.features.hooks")
 local transformations = require("mods.room.timeline.transformations.hooks")
 local acquisitions = require("mods.room.timeline.acquisitions.hooks")
 local seaStarDefinition = require("mods.room.timeline.acquisitions.sea_star")
+local nativeGame = require("tests.harness.native_game")
 local traitAcquisitions = require("mods.room.timeline.acquisitions.traits.hooks")
 local hexTreeDefinition = require("mods.spells.hex_tree")
 local loadoutHooks = require("mods.loadout.hooks")
@@ -229,7 +230,7 @@ function TestRuntimeComposition.testAcquisitionCompositionSharesOneSeaStarAcross
                         local result = carrierSeaStar.call(scope, function()
                             local chance = callbacks.GetTotalHeroTraitValue(nil, {}, function() return 0 end,
                                 "DoubleRewardChance", {})
-                            local proc = callbacks.RandomChance(nil, {}, function() return false end, 0.25, {})
+                            local proc = nativeGame.randomChance(0)(chance)
                             return { chance = chance, proc = proc }
                         end, function(_, checkpoint) mismatch = checkpoint end)
                         return result, mismatch
