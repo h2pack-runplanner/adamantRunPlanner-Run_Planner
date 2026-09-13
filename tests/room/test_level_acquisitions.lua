@@ -113,6 +113,24 @@ function TestLevelAcquisitions.testVisibleCountsOneTwoThreeAndNativeFatedBonusIs
     _G.IsFateValid, _G.GetTotalHeroTraitValue = priorFate, priorValue
 end
 
+function TestLevelAcquisitions.testVisibleFatedBonusScopeClearsAfterNativeScreenFault()
+    local row = levelRow("StackUpgrade", 2, "Target")
+    row.detail.levelResolution.offeredTargets = { "Target" }
+    local loot = { Name = "StackUpgrade", UpgradeOptions = {} }
+    local callbacks = harness(row, loot)
+    callbacks.HandleLootPickup(nil, {}, function() end, {}, loot, {})
+
+    local ok, message = pcall(callbacks.CreateBoonLootButtons, nil, {}, function()
+        lu.assertEquals(callbacks.GetTotalHeroTraitValue(nil, {}, function() return 1 end,
+            "FatedPomLevelBonus", {}), 0)
+        error("native level screen failure")
+    end, {}, loot, false, {})
+    lu.assertFalse(ok)
+    lu.assertStrContains(message, "native level screen failure")
+    lu.assertEquals(callbacks.GetTotalHeroTraitValue(nil, {}, function() return 1 end,
+        "FatedPomLevelBonus", {}), 1)
+end
+
 function TestLevelAcquisitions.testNativeRerollIsNotReSteeredAfterInitialVisibleRows()
     local row = levelRow("StackUpgrade", 1, "Target")
     row.detail.levelResolution.offeredTargets = { "Target", "Other" }

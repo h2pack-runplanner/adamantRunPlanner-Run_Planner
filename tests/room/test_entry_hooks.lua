@@ -378,6 +378,94 @@ function TestRoomEntryHooks.testStructuralShopEligibilityFollowsTheResolvedRoomO
     lu.assertTrue(callbacks.IsSurfaceShopEligible(nil, {}, function() return false end, {}, nativeDestination))
 end
 
+function TestRoomEntryHooks.testStructuralPresenceRetainsNativeShopAndFeatureConstruction()
+    local module, _, callbacks = capture()
+    local occurrence = { overview = { stygianWell = { offers = {} } } }
+    local state = { state = "synchronized" }
+    local roomSession = {
+        occurrence = function() return occurrence end,
+        additional = function() return nil end,
+    }
+    roomFeatureHooks.attach(module, stub(), function() return state end, function() end, roomSession)
+
+    -- RunShopGeneration runs before HandleSecretSpawns. The predicates only
+    -- open the published branches; native creation and bookkeeping remain
+    -- the caller's responsibility.
+    local wellRoom = {}
+    local wellRun = { CurrentRoom = wellRoom, RunDepthCache = 7 }
+    if callbacks.IsWellShopEligible(nil, {}, function() return false end, wellRun, wellRoom) then
+        wellRoom.Store = { native = "well" }
+    end
+    callbacks.HandleSecretSpawns(nil, {}, function(currentRun)
+        local room = currentRun.CurrentRoom
+        if callbacks.IsWellShopEligible(nil, {}, function() return false end, currentRun, room) then
+            room.WellShop = { native = true }
+            currentRun.LastWellShopDepth = currentRun.RunDepthCache
+        end
+    end, wellRun)
+    lu.assertEquals(wellRoom.Store, { native = "well" })
+    lu.assertEquals(wellRoom.WellShop, { native = true })
+    lu.assertEquals(wellRun.LastWellShopDepth, 7)
+
+    occurrence = { overview = { hermesShrine = { offers = {} } } }
+    local shrineRoom = {}
+    local shrineRun = { CurrentRoom = shrineRoom }
+    if callbacks.IsSurfaceShopEligible(nil, {}, function() return false end, shrineRun, shrineRoom) then
+        shrineRoom.Store = { native = "shrine" }
+    end
+    callbacks.HandleSecretSpawns(nil, {}, function(currentRun)
+        local room = currentRun.CurrentRoom
+        if callbacks.IsSurfaceShopEligible(nil, {}, function() return false end, currentRun, room) then
+            room.SurfaceShop = { native = true }
+        end
+    end, shrineRun)
+    lu.assertEquals(shrineRoom.Store, { native = "shrine" })
+    lu.assertEquals(shrineRoom.SurfaceShop, { native = true })
+
+    occurrence = { overview = { purgingPool = { sales = {} } } }
+    local poolRoom = {}
+    callbacks.HandleSecretSpawns(nil, {}, function(currentRun)
+        local room = currentRun.CurrentRoom
+        if callbacks.IsSellTraitShopEligible(nil, {}, function() return false end, room) then
+            room.SellTraitShop = { native = true }
+            room.SellOptions = { "native-generated" }
+        end
+    end, { CurrentRoom = poolRoom })
+    lu.assertEquals(poolRoom.SellTraitShop, { native = true })
+    lu.assertEquals(poolRoom.SellOptions, { "native-generated" })
+end
+
+function TestRoomEntryHooks.testSecretPresenceScopeClearsAfterFaultAndPassesThroughOutsideOwnership()
+    local module, _, callbacks = capture()
+    local publishedChaos = true
+    local state = { state = "synchronized" }
+    local roomSession = {
+        additional = function()
+            return publishedChaos and {} or nil
+        end,
+    }
+    roomFeatureHooks.attach(module, stub(), function() return state end, function() end, roomSession)
+
+    local ok, message = pcall(callbacks.HandleSecretSpawns, nil, {}, function()
+        lu.assertTrue(callbacks.IsSecretDoorEligible(nil, {}, function() return false end, {}, {}))
+        error("native secret spawn failure")
+    end, {})
+    lu.assertFalse(ok)
+    lu.assertStrContains(message, "native secret spawn failure")
+
+    local nativeCalls = 0
+    lu.assertEquals(callbacks.IsSecretDoorEligible(nil, {}, function()
+        nativeCalls = nativeCalls + 1
+        return "native"
+    end, {}, {}), "native")
+    lu.assertEquals(nativeCalls, 1)
+
+    publishedChaos = false
+    callbacks.HandleSecretSpawns(nil, {}, function()
+        lu.assertFalse(callbacks.IsSecretDoorEligible(nil, {}, function() return true end, {}, {}))
+    end, {})
+end
+
 function TestRoomEntryHooks.testIncomingRewardProofRemainsNavigationOwnedAtRoomEntry()
     local module, _, callbacks = capture()
     local occurrence = { id = "opening", gameName = "F_Opening01" }
