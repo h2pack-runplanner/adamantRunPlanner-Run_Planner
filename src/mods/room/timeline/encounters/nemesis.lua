@@ -18,9 +18,10 @@ end
 
 function nemesis.attach(module, session, getState, report, room)
     local nemesisSpawnDepth = 0
-    local pendingNemesis
     local npcRewardSource
     local tradeTargets = setmetatable({}, { __mode = "k" })
+    local tradeExchanges = setmetatable({}, { __mode = "k" })
+    local damageContests = setmetatable({}, { __mode = "k" })
 
     local function interactionHandle(state, source)
         return room.encounterHandle(state, source)
@@ -28,7 +29,7 @@ function nemesis.attach(module, session, getState, report, room)
 
     local function row(state, source)
         local handle = interactionHandle(state, source)
-        local payload = handle and room.begin(state, handle) or nil
+        local payload = handle and room.peek(state, handle) or nil
         local resolution = payload and payload.transaction.resolution
         if resolution and resolution.kind == "nemesisRandomEvent" then
             return handle, payload, resolution.outcome
@@ -94,6 +95,8 @@ function nemesis.attach(module, session, getState, report, room)
         screen)
         local state = getState(runtime)
         local handle, payload, outcome = row(state, source)
+        if handle ~= nil then payload = room.begin(state, handle) end
+        if payload == nil then handle, outcome = nil, nil end
         local thread = currentThread()
         local prior = tradeTargets[thread]
         if handle and outcome and outcome.kind == "traitTrade" then
@@ -110,7 +113,7 @@ function nemesis.attach(module, session, getState, report, room)
                 session.diagnostic(state, "nemesis-trade-response", accepted)
             end
             if outcome.kind == "traitTrade" and accepted then
-                pendingNemesis = { handle = handle, payload = payload, traitKey = outcome.traitKey }
+                tradeExchanges[screen] = { state = state, handle = handle }
             else
                 session.complete(state, handle)
             end
@@ -143,39 +146,50 @@ function nemesis.attach(module, session, getState, report, room)
         return unpackValues(results, 1, results.n)
     end)
 
-    module.hooks.wrap("RemoveTrait", "run-planner-nemesis-trait-removal", function(_, runtime, base, unit,
-        traitName, args)
-        local result = base(unit, traitName, args)
-        if pendingNemesis then
-            local state, pending = getState(runtime), pendingNemesis
-            pendingNemesis = nil
-            if traitName ~= pending.traitKey then
-                session.diagnostic(state, "nemesis-trait-removal", traitName)
+    module.hooks.wrap("TradeDoExchange", "run-planner-nemesis-trade-terminal", function(_, runtime, base,
+        screen, args)
+        local pending = tradeExchanges[screen]
+        tradeExchanges[screen] = nil
+        local results = packValues(base(screen, args))
+        if pending then session.complete(pending.state, pending.handle) end
+        report(runtime)
+        return unpackValues(results, 1, results.n)
+    end)
+
+    module.hooks.wrap("StartNemesisDamageContest", "run-planner-nemesis-contest-start", function(_, runtime,
+        base, source, args)
+        local state = getState(runtime)
+        local handle, _, outcome = row(state, source)
+        local pending
+        if handle and outcome and outcome.kind == "damageContest" then
+            if room.begin(state, handle) ~= nil then
+                pending = { state = state, handle = handle, result = outcome.result }
+                damageContests[source] = pending
             end
-            session.complete(state, pending.handle)
-            report(runtime)
         end
+        local ok, result = pcall(base, source, args)
+        if not ok then
+            if damageContests[source] == pending then damageContests[source] = nil end
+            error(result, 0)
+        end
+        report(runtime)
         return result
     end)
 
     module.hooks.wrap("NemesisDamageContestTimer", "run-planner-nemesis-contest", function(_, runtime, base, source,
         args)
-        local priorSource = npcRewardSource
-        npcRewardSource = source
-        local ok, result = pcall(base, source, args)
-        npcRewardSource = priorSource
-        if not ok then error(result, 0) end
-        local state = getState(runtime)
-        local handle, _, outcome = row(state, source)
-        if handle and outcome and outcome.kind == "damageContest" then
+        local pending = damageContests[source]
+        damageContests[source] = nil
+        local result = base(source, args)
+        if pending then
             local details = source.DamageContestArgs or {}
             local success = type(source.DamageContestAmount) == "number"
                 and type(details.DamageGoal) == "number"
                 and source.DamageContestAmount >= details.DamageGoal
-            if (outcome.result == "success") ~= success then
-                session.diagnostic(state, "nemesis-damage-contest", success)
+            if (pending.result == "success") ~= success then
+                session.diagnostic(pending.state, "nemesis-damage-contest", success)
             end
-            session.complete(state, handle)
+            session.complete(pending.state, pending.handle)
         end
         report(runtime)
         return result
@@ -195,7 +209,7 @@ function nemesis.attach(module, session, getState, report, room)
         base, args, choice, line)
         local state = getState(runtime)
         local source = npcRewardSource or type(args) == "table" and args.Source or nil
-        local handle, payload, outcome = row(state, source)
+        local handle, _, outcome = row(state, source)
         if handle and outcome and outcome.kind == "freeItem" then
             local matches = {}
             local consumables = type(args) == "table" and type(args.Consumables) == "table"
@@ -210,7 +224,6 @@ function nemesis.attach(module, session, getState, report, room)
             else
                 args.Consumables = constrainConsumables(consumables, matches)
             end
-            pendingNemesis = { handle = handle, payload = payload, reward = true }
         end
         local result = base(args, choice, line)
         report(runtime)
@@ -218,12 +231,12 @@ function nemesis.attach(module, session, getState, report, room)
     end)
 
     module.hooks.wrap("NPCRewardDrop", "run-planner-nemesis-reward", function(_, runtime, base, source, args)
+        local state = getState(runtime)
+        local handle, _, outcome = row(state, source)
+        local begun = handle and outcome and outcome.kind == "freeItem"
+            and room.begin(state, handle) ~= nil
         local result = base(source, args)
-        local pending = pendingNemesis
-        if pending and pending.reward then
-            pendingNemesis = nil
-            session.complete(getState(runtime), pending.handle)
-        end
+        if begun then session.complete(state, handle) end
         report(runtime)
         return result
     end)
