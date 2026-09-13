@@ -197,7 +197,7 @@ local function minimalPlan(transactions)
     end
     local plan = tagged({
         format = "run-planner-execution",
-        protocolVersion = 36,
+        protocolVersion = 37,
         catalogVersion = "0.55.0-anvil-of-fates",
         projectId = "test-project",
         planFingerprint = "00000000",
@@ -1114,6 +1114,32 @@ function TestProtocol.testDoorCageRewardsMatchTheirReferencedFieldsTarget()
     nonFieldsTarget.cageRewards = {}
     refreshFingerprint(illegal)
     lu.assertNil(protocol.decode(illegal))
+end
+
+function TestProtocol.testDestinationContractPresenceIsStrictAndMatchesItsOverview()
+    local function firstBatchTarget(plan)
+        for _, occurrence in ipairs(plan.occurrences) do
+            if occurrence.doors.kind == "batch" and occurrence.doors.targets[1] ~= nil then
+                return occurrence.doors.targets[1]
+            end
+        end
+        error("fixture lacks a batch target")
+    end
+
+    local missing = decode("fg")
+    firstBatchTarget(missing).zagreusContractPresent = nil
+    refreshFingerprint(missing)
+    lu.assertNil(protocol.decode(missing))
+
+    local nonBoolean = decode("fg")
+    firstBatchTarget(nonBoolean).zagreusContractPresent = "true"
+    refreshFingerprint(nonBoolean)
+    lu.assertNil(protocol.decode(nonBoolean))
+
+    local disagreement = decode("fg")
+    firstBatchTarget(disagreement).zagreusContractPresent = true
+    refreshFingerprint(disagreement)
+    lu.assertNil(protocol.decode(disagreement))
 end
 
 function TestProtocol.testOpaqueOwnerReferencesAreLocalAndLaterContactsAreRejected()

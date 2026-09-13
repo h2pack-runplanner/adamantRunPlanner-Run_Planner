@@ -64,7 +64,6 @@ function hooks.attach(module, session, getState, report, room)
         if state == nil or state.state ~= "synchronized" then return base(nativeRoom, args) end
         local additional, occurrence = room.additional(state, "zagreusContract")
         pendingAdditional = occurrence and { occurrence = occurrence, additional = additional } or nil
-        if type(nativeRoom) == "table" then nativeRoom.ZagreusContractSuccess = additional ~= nil end
         local ok, result = pcall(base, nativeRoom, args)
         pendingAdditional = nil
         if not ok then error(result, 0) end

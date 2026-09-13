@@ -77,6 +77,7 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
             end
         end
         local result = base(roomData, args)
+        navigation.applyZagreusContractPresence(roomData, result)
         if type(result) == "table" and occurrence ~= nil then
             room.realizeFeatures(state, occurrence, result)
             result.__runPlannerExecutionRoomId = occurrence.id

@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 36,
+  "protocolVersion": 37,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "golden-fg",
   "routeKey": "Underworld",
@@ -489,6 +489,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat02"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCurrencyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -918,6 +919,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat03"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -933,6 +935,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat03"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxHealthDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1120,6 +1123,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat04"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxHealthDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1134,6 +1138,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat04"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1397,6 +1402,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat05"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -1411,6 +1417,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat11"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1613,6 +1620,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat06"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1627,6 +1635,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat06"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCurrencyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1872,6 +1881,7 @@
               "biomeKey": "F",
               "gameName": "F_MiniBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -1887,6 +1897,7 @@
               "biomeKey": "F",
               "gameName": "F_MiniBoss02"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -2106,6 +2117,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat11"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2377,6 +2389,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat12"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "WeaponUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -2391,6 +2404,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat12"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "HermesUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -2570,6 +2584,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat14"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2584,6 +2599,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat14"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "GiftDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2839,6 +2855,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat15"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2853,6 +2870,7 @@
               "biomeKey": "F",
               "gameName": "F_Combat15"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "SpellDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3047,6 +3065,7 @@
               "biomeKey": "F",
               "gameName": "F_PreBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -3061,6 +3080,7 @@
               "biomeKey": "F",
               "gameName": "F_PreBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -3242,7 +3262,8 @@
           "id": "golden-f-preboss-shop:boss",
           "biomeKey": "F",
           "gameName": "F_Boss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -3333,7 +3354,8 @@
           "id": "golden-f-preboss-shop:postboss",
           "biomeKey": "F",
           "gameName": "F_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -3416,7 +3438,8 @@
           "id": "golden-g-intro",
           "biomeKey": "G",
           "gameName": "G_Intro"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -3477,6 +3500,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -3672,6 +3696,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat02"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCurrencyBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3686,6 +3711,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat02"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3931,6 +3957,7 @@
               "biomeKey": "G",
               "gameName": "G_Story01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Story",
               "producerLifecycleKey": "RoomReward",
@@ -3945,6 +3972,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat03"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3959,6 +3987,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat03"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -4158,6 +4187,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat10"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -4453,6 +4483,7 @@
               "biomeKey": "G",
               "gameName": "G_Shop01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -4467,6 +4498,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat12"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -4622,6 +4654,7 @@
               "biomeKey": "G",
               "gameName": "G_MiniBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -4637,6 +4670,7 @@
               "biomeKey": "G",
               "gameName": "G_MiniBoss02"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -4856,6 +4890,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat12"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -4871,6 +4906,7 @@
               "biomeKey": "G",
               "gameName": "G_Combat13"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -5166,6 +5202,7 @@
               "biomeKey": "G",
               "gameName": "G_PreBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -5180,6 +5217,7 @@
               "biomeKey": "G",
               "gameName": "G_PreBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -5442,7 +5480,8 @@
           "id": "golden-g-preboss-shop:boss",
           "biomeKey": "G",
           "gameName": "G_Boss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -5533,7 +5572,8 @@
           "id": "golden-g-preboss-shop:postboss",
           "biomeKey": "G",
           "gameName": "G_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -5616,7 +5656,8 @@
           "id": "golden-h-intro",
           "biomeKey": "H",
           "gameName": "H_Intro"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -5677,6 +5718,7 @@
               "biomeKey": "H",
               "gameName": "H_Combat02"
             },
+            "zagreusContractPresent": false,
             "cageRewards": [
               {
                 "rewardType": "MaxHealthDrop",
@@ -5922,6 +5964,7 @@
               "biomeKey": "H",
               "gameName": "H_Combat09"
             },
+            "zagreusContractPresent": false,
             "cageRewards": [
               {
                 "rewardType": "HermesUpgrade",
@@ -5943,6 +5986,7 @@
               "biomeKey": "H",
               "gameName": "H_Combat03"
             },
+            "zagreusContractPresent": false,
             "cageRewards": [
               {
                 "rewardType": "MaxHealthDrop",
@@ -6221,6 +6265,7 @@
               "biomeKey": "H",
               "gameName": "H_MiniBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -6236,6 +6281,7 @@
               "biomeKey": "H",
               "gameName": "H_Bridge01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Story",
               "producerLifecycleKey": "RoomReward",
@@ -6565,6 +6611,7 @@
               "biomeKey": "H",
               "gameName": "H_Combat05"
             },
+            "zagreusContractPresent": false,
             "cageRewards": [
               {
                 "rewardType": "StackUpgrade",
@@ -6593,6 +6640,7 @@
               "biomeKey": "H",
               "gameName": "H_Combat04"
             },
+            "zagreusContractPresent": false,
             "cageRewards": [
               {
                 "rewardType": "MaxManaDrop",
@@ -7057,6 +7105,7 @@
               "biomeKey": "H",
               "gameName": "H_PreBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -7071,6 +7120,7 @@
               "biomeKey": "H",
               "gameName": "H_PreBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -7387,7 +7437,8 @@
           "id": "golden-h-preboss-shop:boss",
           "biomeKey": "H",
           "gameName": "H_Boss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -7478,7 +7529,8 @@
           "id": "golden-h-preboss-shop:postboss",
           "biomeKey": "H",
           "gameName": "H_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": {
         "facts": [
@@ -7588,5 +7640,5 @@
       }
     }
   ],
-  "planFingerprint": "75809e8c"
+  "planFingerprint": "e6edf50f"
 }

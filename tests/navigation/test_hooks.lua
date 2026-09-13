@@ -46,7 +46,10 @@ end
 function TestNavigationHooks.testDoorChoiceIsForcedDuringNativeGeneration()
     local module, _, callbacks = capture()
     local selected, mismatch
-    local target = { room = { id = "next", gameName = "F_Next" }, reward = { rewardType = "Boon" } }
+    local target = {
+        room = { id = "next", gameName = "F_Next" }, zagreusContractPresent = true,
+        reward = { rewardType = "Boon" },
+    }
     local active = { occurrence = {
         overview = { additional = {} },
         doors = { kind = "batch", targets = { target } },
@@ -78,9 +81,48 @@ function TestNavigationHooks.testDoorChoiceIsForcedDuringNativeGeneration()
     local proved, errorValue = navigationScope.proveOutgoingDoors(state, {})
     _G.MapState, _G.game, _G.CollapseTableOrdered = priorMap, priorGame, priorCollapse
     lu.assertEquals(selected.__runPlannerExecutionRoomId, "next")
+    lu.assertTrue(selected.__runPlannerExecutionZagreusContractPresent)
     lu.assertNil(mismatch)
     lu.assertTrue(proved, errorValue)
     lu.assertEquals(physicalDoor.Room.__runPlannerExecutionRoomId, "next")
+end
+
+function TestNavigationHooks.testDestinationContractPresenceReplacesNativeCreateRoomInitialization()
+    local module = { hooks = { wrap = function() end } }
+    local scope = navigation.attach(module, stub(), function() return nil end, function() end, {}, {})
+    local native = { ZagreusContractSuccess = true }
+
+    scope.applyZagreusContractPresence({ __runPlannerExecutionZagreusContractPresent = false }, native)
+    lu.assertFalse(native.ZagreusContractSuccess)
+    scope.applyZagreusContractPresence({ __runPlannerExecutionZagreusContractPresent = true }, native)
+    lu.assertTrue(native.ZagreusContractSuccess)
+end
+
+function TestNavigationHooks.testFixedDoorCarriesDestinationContractPresence()
+    local module, _, callbacks = capture()
+    local target = { id = "next", gameName = "F_Next" }
+    local occurrence = {
+        overview = { additional = {} },
+        doors = { kind = "fixed", target = target, zagreusContractPresent = true },
+    }
+    local state = { state = "synchronized", plan = { occurrencesById = { next = {} } }, route = {} }
+    local room = {
+        checkpoint = function() return true end,
+        window = function() return true end,
+    }
+    navigation.attach(module, stub(), function() return state end, function() end,
+        { current = function() return occurrence end }, room)
+    local priorMap, priorGame, priorCollapse = _G.MapState, _G.game, _G.CollapseTableOrdered
+    local physicalDoor = { ObjectId = 101 }
+    _G.MapState = { OfferedExitDoors = { [101] = physicalDoor } }
+    _G.game = { RoomData = { F_Next = { GenusName = "F_Next" } } }
+    _G.CollapseTableOrdered = function() return { physicalDoor } end
+    callbacks.DoUnlockRoomExits(nil, {}, function()
+        physicalDoor.Room = callbacks.ChooseNextRoomData(nil, {}, function() return nil end, {}, {}, {})
+        return true
+    end, {}, {})
+    _G.MapState, _G.game, _G.CollapseTableOrdered = priorMap, priorGame, priorCollapse
+    lu.assertTrue(physicalDoor.Room.__runPlannerExecutionZagreusContractPresent)
 end
 
 function TestNavigationHooks.testAnomalyDoorUsesNativeReplacementPresentation()

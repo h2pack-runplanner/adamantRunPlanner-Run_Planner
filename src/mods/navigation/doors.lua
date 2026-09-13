@@ -19,6 +19,13 @@ local function rewardName(value)
     return type(value) == "table" and (value.RewardType or value.Name or value.Reward) or value
 end
 
+local function markZagreusContractPresence(room, target)
+    if type(room) == "table" and type(target) == "table" then
+        room.__runPlannerExecutionZagreusContractPresent = target.zagreusContractPresent
+    end
+    return room
+end
+
 local function destinationId(door)
     local room = type(door) == "table" and (door.Room or door.RoomData or door) or nil
     return type(door) == "table" and door.__runPlannerExecutionDoorTarget
@@ -191,7 +198,9 @@ end
 function doors.realize(occurrence, nativeDoors, game, occurrencesById)
     local expected = occurrence.doors
     if expected.kind == "terminal" then return {} end
-    local targets = expected.kind == "fixed" and { { room = expected.target } } or expected.targets
+    local targets = expected.kind == "fixed" and {
+        { room = expected.target, zagreusContractPresent = expected.zagreusContractPresent },
+    } or expected.targets
     local rows = {}
     for index, target in ipairs(targets) do
         local row = nativeDoors and nativeDoors[index] or {}
@@ -201,6 +210,7 @@ function doors.realize(occurrence, nativeDoors, game, occurrencesById)
         realized.Room.GenusName = target.room.gameName
         realized.Room.Name = target.room.gameName
         realized.Room.__runPlannerExecutionRoomId = target.room.id
+        markZagreusContractPresence(realized.Room, target)
         if not preservesNativeRequiredReward(target, occurrencesById) then
             realized.RewardType = target.reward and target.reward.rewardType or nil
             realized.Room.RewardType = realized.RewardType
@@ -230,8 +240,9 @@ end
 
 function doors.chooseNext(occurrence, game, index)
     local expected = occurrence.doors
-    local target = expected.kind == "fixed" and expected.target
-        or expected.kind == "batch" and expected.targets[index or 1] and expected.targets[index or 1].room
+    local door = expected.kind == "fixed" and expected
+        or expected.kind == "batch" and expected.targets[index or 1]
+    local target = door and (expected.kind == "fixed" and door.target or door.room)
     if target == nil or game == nil or game.RoomData == nil then return nil end
     local declaration = game.RoomData[target.gameName]
     if type(declaration) ~= "table" then return nil end
@@ -239,7 +250,15 @@ function doors.chooseNext(occurrence, game, index)
     result.GenusName = target.gameName
     result.Name = target.gameName
     result.__runPlannerExecutionRoomId = target.id
+    markZagreusContractPresence(result, door)
     return result
+end
+
+function doors.applyZagreusContractPresence(roomData, nativeRoom)
+    if type(roomData) ~= "table" or type(nativeRoom) ~= "table" then return nativeRoom end
+    local present = roomData.__runPlannerExecutionZagreusContractPresent
+    if type(present) == "boolean" then nativeRoom.ZagreusContractSuccess = present end
+    return nativeRoom
 end
 
 return doors

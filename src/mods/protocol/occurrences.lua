@@ -203,7 +203,7 @@ local function doors(value, ids, label)
         for index, valueTarget in ipairs(targets) do
             local target, targetError = p.exact(
                 valueTarget,
-                { "exitKey", "index", "room" },
+                { "exitKey", "index", "room", "zagreusContractPresent" },
                 { "reward", "cageRewards" },
                 label .. ".targets[" .. index .. "]"
             )
@@ -219,6 +219,14 @@ local function doors(value, ids, label)
             continuations[reference.id] = true
             local targetOccurrence = ids[reference.id]
             local targetLabel = label .. ".targets[" .. index .. "]"
+            local expectedContract = false
+            for _, additional in ipairs(targetOccurrence.overview.additional or {}) do
+                if additional.kind == "zagreusContract" then expectedContract = true end
+            end
+            if not p.bool(target.zagreusContractPresent, targetLabel .. ".zagreusContractPresent")
+                or target.zagreusContractPresent ~= expectedContract then
+                return p.fail(targetLabel .. ".zagreusContractPresent must match the destination Overview.additional")
+            end
             if targetOccurrence.kind == "FieldsEncounter" then
                 if target.cageRewards == nil then
                     return p.fail(targetLabel .. ".cageRewards is required for FieldsEncounter target")
@@ -247,11 +255,21 @@ local function doors(value, ids, label)
         return batch, continuations
     end
     if record.kind == "fixed" then
-        local fixed, fixedError = p.exact(record, { "kind", "owner", "target" }, {}, label)
+        local fixed, fixedError = p.exact(
+            record, { "kind", "owner", "target", "zagreusContractPresent" }, {}, label
+        )
         if not fixed then return nil, fixedError end
         if not p.str(fixed.owner, label .. ".owner", p.MAX_OWNER_STRING) then return p.fail(label .. " invalid owner") end
         local reference, referenceError = assertRoomReference(fixed.target, ids, label .. ".target")
         if not reference then return nil, referenceError end
+        local expectedContract = false
+        for _, additional in ipairs(ids[reference.id].overview.additional or {}) do
+            if additional.kind == "zagreusContract" then expectedContract = true end
+        end
+        if not p.bool(fixed.zagreusContractPresent, label .. ".zagreusContractPresent")
+            or fixed.zagreusContractPresent ~= expectedContract then
+            return p.fail(label .. ".zagreusContractPresent must match the destination Overview.additional")
+        end
         return fixed, { [reference.id] = true }
     end
     if record.kind == "terminal" then

@@ -99,6 +99,7 @@ end
 
 M.navigationEntryStub = {
     realizeIncomingReward = function(_, nativeRoom) return nativeRoom end,
+    applyZagreusContractPresence = function(_, nativeRoom) return nativeRoom end,
     proveIncomingReward = function() return true end,
     proveOutgoingDoors = function() return true end,
 }

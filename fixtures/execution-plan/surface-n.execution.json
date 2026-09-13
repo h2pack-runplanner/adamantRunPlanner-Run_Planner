@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 36,
+  "protocolVersion": 37,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "surface-2",
   "routeKey": "Surface",
@@ -276,6 +276,7 @@
             "exitKey": "prehub",
             "index": 1,
             "room": { "id": "surface-n-prehub", "biomeKey": "N", "gameName": "N_PreHub01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -1909,7 +1910,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss\"]",
         "kind": "fixed",
-        "target": { "id": "surface-n-preboss:boss", "biomeKey": "N", "gameName": "N_Boss01" }
+        "target": { "id": "surface-n-preboss:boss", "biomeKey": "N", "gameName": "N_Boss01" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -1962,7 +1964,8 @@
           "id": "surface-n-preboss:postboss",
           "biomeKey": "N",
           "gameName": "N_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -2185,5 +2188,5 @@
       }
     }
   ],
-  "planFingerprint": "a7e1b263"
+  "planFingerprint": "fe1a8d29"
 }

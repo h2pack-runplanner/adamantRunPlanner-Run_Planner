@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 36,
+  "protocolVersion": 37,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "golden-fg",
   "routeKey": "Underworld",
@@ -380,6 +380,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b1-e1", "biomeKey": "F", "gameName": "F_Combat02" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCurrencyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -651,6 +652,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b2-e1", "biomeKey": "F", "gameName": "F_Combat03" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -662,6 +664,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b2-e2", "biomeKey": "F", "gameName": "F_Combat03" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxHealthDrop",
               "producerLifecycleKey": "RoomReward",
@@ -775,6 +778,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b3-e1", "biomeKey": "F", "gameName": "F_Combat04" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxHealthDrop",
               "producerLifecycleKey": "RoomReward",
@@ -785,6 +789,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b3-e2", "biomeKey": "F", "gameName": "F_Combat04" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -942,6 +947,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b4-e1", "biomeKey": "F", "gameName": "F_Combat05" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -952,6 +958,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b4-e2", "biomeKey": "F", "gameName": "F_Combat11" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1081,6 +1088,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b5-e1", "biomeKey": "F", "gameName": "F_Combat06" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1091,6 +1099,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b5-e2", "biomeKey": "F", "gameName": "F_Combat06" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCurrencyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1233,6 +1242,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b6-e1", "biomeKey": "F", "gameName": "F_MiniBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -1244,6 +1254,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b6-e2", "biomeKey": "F", "gameName": "F_MiniBoss02" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -1381,6 +1392,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b7-e1", "biomeKey": "F", "gameName": "F_Combat11" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1540,6 +1552,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b8-e1", "biomeKey": "F", "gameName": "F_Combat12" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "WeaponUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -1550,6 +1563,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b8-e2", "biomeKey": "F", "gameName": "F_Combat12" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "HermesUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -1661,6 +1675,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b9-e1", "biomeKey": "F", "gameName": "F_Combat14" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1671,6 +1686,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b9-e2", "biomeKey": "F", "gameName": "F_Combat14" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "GiftDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1815,6 +1831,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-b10-e1", "biomeKey": "F", "gameName": "F_Combat15" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1825,6 +1842,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-b10-e2", "biomeKey": "F", "gameName": "F_Combat15" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "SpellDrop",
               "producerLifecycleKey": "RoomReward",
@@ -1949,6 +1967,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-f-preboss-shop", "biomeKey": "F", "gameName": "F_PreBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -1959,6 +1978,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-f-preboss-free", "biomeKey": "F", "gameName": "F_PreBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -2065,7 +2085,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-preboss-shop\"]",
         "kind": "fixed",
-        "target": { "id": "golden-f-preboss-shop:boss", "biomeKey": "F", "gameName": "F_Boss01" }
+        "target": { "id": "golden-f-preboss-shop:boss", "biomeKey": "F", "gameName": "F_Boss01" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -2177,7 +2198,8 @@
           "id": "golden-f-preboss-shop:postboss",
           "biomeKey": "F",
           "gameName": "F_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "keepsakeEffects" }] },
       "diagnostics": {
@@ -2279,7 +2301,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-preboss-shop:postboss\"]",
         "kind": "fixed",
-        "target": { "id": "golden-g-intro", "biomeKey": "G", "gameName": "G_Intro" }
+        "target": { "id": "golden-g-intro", "biomeKey": "G", "gameName": "G_Intro" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -2320,6 +2343,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-b1-e1", "biomeKey": "G", "gameName": "G_Combat01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -2441,6 +2465,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-b2-e1", "biomeKey": "G", "gameName": "G_Combat02" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCurrencyBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2451,6 +2476,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-g-b2-e2", "biomeKey": "G", "gameName": "G_Combat02" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2588,6 +2614,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-b3-e1", "biomeKey": "G", "gameName": "G_Story01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Story",
               "producerLifecycleKey": "RoomReward",
@@ -2598,6 +2625,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-g-b3-e2", "biomeKey": "G", "gameName": "G_Combat03" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2608,6 +2636,7 @@
             "exitKey": "exit3",
             "index": 3,
             "room": { "id": "golden-g-b3-e3", "biomeKey": "G", "gameName": "G_Combat03" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2731,6 +2760,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-b4-e1", "biomeKey": "G", "gameName": "G_Combat10" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -2900,6 +2930,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-b5-e1", "biomeKey": "G", "gameName": "G_Shop01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -2910,6 +2941,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-g-b5-e2", "biomeKey": "G", "gameName": "G_Combat12" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -2998,6 +3030,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-b6-e1", "biomeKey": "G", "gameName": "G_MiniBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -3009,6 +3042,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-g-b6-e2", "biomeKey": "G", "gameName": "G_MiniBoss02" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -3146,6 +3180,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-b7-e1", "biomeKey": "G", "gameName": "G_Combat12" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -3157,6 +3192,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-g-b7-e2", "biomeKey": "G", "gameName": "G_Combat13" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3317,6 +3353,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "golden-g-preboss-shop", "biomeKey": "G", "gameName": "G_PreBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -3327,6 +3364,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "golden-g-preboss-free-2", "biomeKey": "G", "gameName": "G_PreBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -3457,7 +3495,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-preboss-shop\"]",
         "kind": "fixed",
-        "target": { "id": "golden-g-preboss-shop:boss", "biomeKey": "G", "gameName": "G_Boss01" }
+        "target": { "id": "golden-g-preboss-shop:boss", "biomeKey": "G", "gameName": "G_Boss01" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -3551,7 +3590,8 @@
           "id": "golden-g-preboss-shop:postboss",
           "biomeKey": "G",
           "gameName": "G_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -3657,5 +3697,5 @@
       }
     }
   ],
-  "planFingerprint": "174ccfe1"
+  "planFingerprint": "ebe22406"
 }

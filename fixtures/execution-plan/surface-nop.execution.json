@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 36,
+  "protocolVersion": 37,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "surface-3",
   "routeKey": "Surface",
@@ -496,6 +496,7 @@
             "exitKey": "prehub",
             "index": 1,
             "room": { "id": "surface-n-prehub", "biomeKey": "N", "gameName": "N_PreHub01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -2193,7 +2194,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss\"]",
         "kind": "fixed",
-        "target": { "id": "surface-n-preboss:boss", "biomeKey": "N", "gameName": "N_Boss01" }
+        "target": { "id": "surface-n-preboss:boss", "biomeKey": "N", "gameName": "N_Boss01" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -2246,7 +2248,8 @@
           "id": "surface-n-preboss:postboss",
           "biomeKey": "N",
           "gameName": "N_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -2328,7 +2331,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss:postboss\"]",
         "kind": "fixed",
-        "target": { "id": "surface-o-intro", "biomeKey": "O", "gameName": "O_Intro" }
+        "target": { "id": "surface-o-intro", "biomeKey": "O", "gameName": "O_Intro" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -2372,7 +2376,8 @@
           {
             "exitKey": "exit1",
             "index": 1,
-            "room": { "id": "surface-o-combat04", "biomeKey": "O", "gameName": "O_Combat04" }
+            "room": { "id": "surface-o-combat04", "biomeKey": "O", "gameName": "O_Combat04" },
+            "zagreusContractPresent": false
           }
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
@@ -2495,7 +2500,8 @@
           {
             "exitKey": "exit1",
             "index": 1,
-            "room": { "id": "surface-o-combat07", "biomeKey": "O", "gameName": "O_Combat07" }
+            "room": { "id": "surface-o-combat07", "biomeKey": "O", "gameName": "O_Combat07" },
+            "zagreusContractPresent": false
           }
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
@@ -2618,7 +2624,8 @@
           {
             "exitKey": "exit1",
             "index": 1,
-            "room": { "id": "surface-o-combat01", "biomeKey": "O", "gameName": "O_Combat01" }
+            "room": { "id": "surface-o-combat01", "biomeKey": "O", "gameName": "O_Combat01" },
+            "zagreusContractPresent": false
           }
         ],
         "resolvedSharedRewardStoreKey": "MetaProgress"
@@ -2742,6 +2749,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-o-devotion", "biomeKey": "O", "gameName": "O_Devotion01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Devotion",
               "producerLifecycleKey": "RoomReward",
@@ -2895,6 +2903,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-o-story", "biomeKey": "O", "gameName": "O_Story01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Story",
               "producerLifecycleKey": "RoomReward",
@@ -3008,7 +3017,8 @@
           {
             "exitKey": "exit1",
             "index": 1,
-            "room": { "id": "surface-o-combat02", "biomeKey": "O", "gameName": "O_Combat02" }
+            "room": { "id": "surface-o-combat02", "biomeKey": "O", "gameName": "O_Combat02" },
+            "zagreusContractPresent": false
           }
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
@@ -3158,6 +3168,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-o-preboss", "biomeKey": "O", "gameName": "O_PreBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -3261,7 +3272,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss\"]",
         "kind": "fixed",
-        "target": { "id": "surface-o-preboss:boss", "biomeKey": "O", "gameName": "O_Boss01" }
+        "target": { "id": "surface-o-preboss:boss", "biomeKey": "O", "gameName": "O_Boss01" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -3307,7 +3319,8 @@
           "id": "surface-o-preboss:postboss",
           "biomeKey": "O",
           "gameName": "O_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -3389,7 +3402,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss:postboss\"]",
         "kind": "fixed",
-        "target": { "id": "surface-p-intro", "biomeKey": "P", "gameName": "P_Intro" }
+        "target": { "id": "surface-p-intro", "biomeKey": "P", "gameName": "P_Intro" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -3435,6 +3449,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-1-1-p_combat03", "biomeKey": "P", "gameName": "P_Combat03" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxHealthDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3445,6 +3460,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "surface-p-1-2-p_combat05", "biomeKey": "P", "gameName": "P_Combat05" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3554,6 +3570,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-2-1-p_combat02", "biomeKey": "P", "gameName": "P_Combat02" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCurrencyBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3564,6 +3581,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "surface-p-2-2-p_combat06", "biomeKey": "P", "gameName": "P_Combat06" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MetaCardPointsCommonBigDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3666,6 +3684,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-3-1-p_combat04", "biomeKey": "P", "gameName": "P_Combat04" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -3676,6 +3695,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "surface-p-3-2-p_combat08", "biomeKey": "P", "gameName": "P_Combat08" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -3778,6 +3798,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-4-1-p_combat07", "biomeKey": "P", "gameName": "P_Combat07" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "HermesUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -3788,6 +3809,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "surface-p-4-2-p_combat11", "biomeKey": "P", "gameName": "P_Combat11" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -3905,6 +3927,7 @@
               "biomeKey": "P",
               "gameName": "P_MiniBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Boon",
               "producerLifecycleKey": "RoomReward",
@@ -3916,6 +3939,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "surface-p-5-2-p_combat09", "biomeKey": "P", "gameName": "P_Combat09" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "WeaponUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -4058,6 +4082,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-6-1-p_combat10", "biomeKey": "P", "gameName": "P_Combat10" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "RoomMoneyDrop",
               "producerLifecycleKey": "RoomReward",
@@ -4068,6 +4093,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "surface-p-6-2-p_combat13", "biomeKey": "P", "gameName": "P_Combat13" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxHealthDrop",
               "producerLifecycleKey": "RoomReward",
@@ -4215,6 +4241,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-7-1-p_story01", "biomeKey": "P", "gameName": "P_Story01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Story",
               "producerLifecycleKey": "RoomReward",
@@ -4229,6 +4256,7 @@
               "biomeKey": "P",
               "gameName": "P_Reprieve01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -4329,6 +4357,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-8-1-p_combat12", "biomeKey": "P", "gameName": "P_Combat12" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "StackUpgrade",
               "producerLifecycleKey": "RoomReward",
@@ -4339,6 +4368,7 @@
             "exitKey": "exit2",
             "index": 2,
             "room": { "id": "surface-p-8-2-p_combat14", "biomeKey": "P", "gameName": "P_Combat14" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxManaDrop",
               "producerLifecycleKey": "RoomReward",
@@ -4477,6 +4507,7 @@
             "exitKey": "exit1",
             "index": 1,
             "room": { "id": "surface-p-preboss-shop", "biomeKey": "P", "gameName": "P_PreBoss01" },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "Shop",
               "producerLifecycleKey": "RoomReward",
@@ -4491,6 +4522,7 @@
               "biomeKey": "P",
               "gameName": "P_PreBoss01"
             },
+            "zagreusContractPresent": false,
             "reward": {
               "rewardType": "MaxHealthDrop",
               "producerLifecycleKey": "RoomReward",
@@ -4605,7 +4637,8 @@
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-preboss-shop\"]",
         "kind": "fixed",
-        "target": { "id": "surface-p-preboss-shop:boss", "biomeKey": "P", "gameName": "P_Boss01" }
+        "target": { "id": "surface-p-preboss-shop:boss", "biomeKey": "P", "gameName": "P_Boss01" },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -4651,7 +4684,8 @@
           "id": "surface-p-preboss-shop:postboss",
           "biomeKey": "P",
           "gameName": "P_PostBoss01"
-        }
+        },
+        "zagreusContractPresent": false
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -5090,5 +5124,5 @@
       }
     }
   ],
-  "planFingerprint": "b7e8e4e2"
+  "planFingerprint": "7e4a5dbb"
 }

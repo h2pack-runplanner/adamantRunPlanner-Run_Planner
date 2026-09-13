@@ -444,9 +444,11 @@ function TestRoomEntryHooks.testZagreusContractRemainsAnAdditionalDoorDuringExit
         additional = function()
             return additional, contractOccurrence
         end,
-        realize = function(_, target)
+        realize = function(_, target, _, input)
             return { Name = target.gameName, GenusName = target.gameName,
-                __runPlannerExecutionRoomId = target.id }
+                __runPlannerExecutionRoomId = target.id,
+                __runPlannerExecutionZagreusContractPresent = input
+                    and input.__runPlannerExecutionZagreusContractPresent }
         end,
         realizeFeatures = function(_, nativeRoom) return nativeRoom end,
         checkpoint = function() return true end,
@@ -462,19 +464,42 @@ function TestRoomEntryHooks.testZagreusContractRemainsAnAdditionalDoorDuringExit
     roomHooks.attach(module, session, function() return state end, function() end,
         route, roomSession, featureScope, navigationEntry, unusedLoadoutScope)
 
+    local function createHost(present, nativeValue)
+        return callbacks.CreateRoom(nil, {}, function(roomData)
+            roomData.ZagreusContractSuccess = nativeValue
+            return roomData
+        end, {
+            Name = "F_Shop01", __runPlannerExecutionRoomId = "shop",
+            __runPlannerExecutionZagreusContractPresent = present,
+        }, {})
+    end
+
+    local hostRoom = createHost(true, false)
+    lu.assertTrue(hostRoom.ZagreusContractSuccess)
+
     local contractRoom
     local contractDoor = { ObjectId = 3 }
-    callbacks.SpawnZagContract(nil, {}, function()
+    callbacks.SpawnZagContract(nil, {}, function(nativeRoom)
+        lu.assertTrue(nativeRoom.ZagreusContractSuccess)
+        if not nativeRoom.ZagreusContractSuccess then return end
         contractRoom = callbacks.CreateRoom(nil, {}, function(roomData) return roomData end,
             { Name = "C_Boss01" }, {})
         callbacks.AssignRoomToExitDoor(nil, {}, function(door, createdRoom)
             door.Room = createdRoom
         end, contractDoor, contractRoom)
-    end, {}, {})
+    end, hostRoom, {})
     lu.assertEquals(contractRoom.__runPlannerExecutionAdditionalOwner, "contract-exit")
     lu.assertEquals(contractRoom.__runPlannerExecutionAdditionalKind, "zagreusContract")
+    lu.assertNil(contractRoom.ZagreusContractSuccess)
     lu.assertEquals(contractDoor.__runPlannerExecutionAdditionalOwner, "contract-exit")
     lu.assertEquals(contractDoor.__runPlannerExecutionAdditionalKind, "zagreusContract")
+
+    local absentHost = createHost(false, true)
+    lu.assertFalse(absentHost.ZagreusContractSuccess)
+    callbacks.SpawnZagContract(nil, {}, function(nativeRoom)
+        lu.assertFalse(nativeRoom.ZagreusContractSuccess)
+        if nativeRoom.ZagreusContractSuccess then error("native SpawnZagContract must not create a contract") end
+    end, absentHost, {})
 
     local priorMap, priorCollapse, priorGame = _G.MapState, _G.CollapseTableOrdered, _G.game
     local oneDoor, twoDoor = { Room = { Name = "F_One" } }, { Room = { Name = "F_Two" } }
