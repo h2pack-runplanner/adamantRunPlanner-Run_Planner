@@ -678,6 +678,12 @@ function TestProtocol.testShipWheelRequiresOneCompletePickedCohortAndMatchingLif
     lu.assertNotNil(protocol.decode(plan))
 
     plan = shipPlan()
+    table.remove(plan.occurrences[1].timeline.transactions, 2)
+    plan.occurrences[1].timeline.dependencies = tagged({}, "dependencies", true)
+    refreshFingerprint(plan)
+    lu.assertNotNil(protocol.decode(plan))
+
+    plan = shipPlan()
     plan.occurrences[1].overview.rewardWheels[1].offerCount = 1
     refreshFingerprint(plan)
     lu.assertNil(protocol.decode(plan))

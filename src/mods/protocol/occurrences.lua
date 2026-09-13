@@ -36,17 +36,21 @@ local function validateRewardWheelProduct(row, label)
     local choiceCount, acquisitionCount = 0, 0
     for _, transaction in ipairs(row.timeline.transactions) do
         if transaction.kind == "chooseRewardWheel" then choiceCount = choiceCount + 1 end
-        if transaction.kind == "acquisition" and transaction.window.kind == "shipPostCombat" then
+        if transaction.kind == "acquisition" then
             local source = p.json.decode(transaction.sourceOwner)
-            if source ~= nil and p.json.isArray(source) and source[1] == "rewardWheelOffer" then
+            local acquisitionOwner = p.json.decode(transaction.owner)
+            if (source ~= nil and p.json.isArray(source) and source[1] == "rewardWheelOffer")
+                or (acquisitionOwner ~= nil and p.json.isArray(acquisitionOwner)
+                    and acquisitionOwner[1] == "rewardWheelOffer") then
                 acquisitionCount = acquisitionCount + 1
             end
         end
     end
-    if choiceCount ~= #wheels or acquisitionCount ~= #wheels then
+    if choiceCount ~= #wheels then
         return p.fail(label .. ".overview.rewardWheels is disconnected from its timeline product")
     end
 
+    local matchedAcquisitionCount = 0
     for _, wheel in ipairs(wheels) do
         local phaseCount = 0
         for _, phase in ipairs(row.overview.encounterPhases) do
@@ -112,20 +116,23 @@ local function validateRewardWheelProduct(row, label)
                 acquisition = transaction
             end
         end
-        if acquisition == nil then
-            return p.fail(label .. ".overview.rewardWheels." .. wheel.wheelKey
-                .. " must match one picked acquisition")
-        end
-        local hasDependency = false
-        for _, dependency in ipairs(row.timeline.dependencies) do
-            if dependency.owner == acquisition.owner and dependency.afterOwner == choice.owner then
-                hasDependency = true
+        -- Time Piece destroys the selected reward without an acquisition.
+        if acquisition ~= nil then
+            matchedAcquisitionCount = matchedAcquisitionCount + 1
+            local hasDependency = false
+            for _, dependency in ipairs(row.timeline.dependencies) do
+                if dependency.owner == acquisition.owner and dependency.afterOwner == choice.owner then
+                    hasDependency = true
+                end
+            end
+            if not hasDependency then
+                return p.fail(label .. ".overview.rewardWheels." .. wheel.wheelKey
+                    .. " is missing its choice dependency")
             end
         end
-        if not hasDependency then
-            return p.fail(label .. ".overview.rewardWheels." .. wheel.wheelKey
-                .. " is missing its choice dependency")
-        end
+    end
+    if matchedAcquisitionCount ~= acquisitionCount then
+        return p.fail(label .. ".overview.rewardWheels has an unmatched picked acquisition")
     end
     return true
 end
