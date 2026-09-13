@@ -21,6 +21,75 @@ function TestSpellAcquisitions.testCreatedHexTreesDoNotSharePendingScopes()
     lu.assertNotNil(firstCallbacks.CreateTalentTree)
 end
 
+function TestSpellAcquisitions.testNativeGodSentPresenceDoesNotSteerThePublishedPairOrSpecialTalents()
+    local callbacks = {}
+    tree.attach({ hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } })
+    for _, nativeDuo in ipairs({ "NativeDuo", false }) do
+        local diagnostics = {}
+        local result = tree.realize({
+            layoutKey = "ExpectedLayout", rareTalentKeys = { "RareExpected" },
+            epicTalentKeys = { "EpicExpected" },
+            godSent = { olympianTalentKey = "PublishedDuo" },
+        }, "SpellTrait", function(checkpoint) diagnostics[#diagnostics + 1] = checkpoint end, function()
+            return callbacks.CreateTalentTree(nil, nil, function()
+                local layout = callbacks.GetRandomValue(nil, nil, function(values) return values[1] end,
+                    { { Name = "NativeLayout" }, { Name = "ExpectedLayout" } })
+                local rare = callbacks.RemoveRandomValue(nil, nil, function(values) return table.remove(values, 1) end,
+                    { "RareOther", "RareExpected" })
+                local epic = callbacks.RemoveRandomValue(nil, nil, function(values) return table.remove(values, 1) end,
+                    { "EpicExpected" })
+                local duo
+                if nativeDuo then
+                    duo = callbacks.RemoveRandomValue(nil, nil, function(values) return table.remove(values, 1) end,
+                        { nativeDuo, "PublishedDuo" })
+                end
+                return { layout.Name, rare, epic, duo }
+            end, { TraitName = "SpellTrait" })
+        end)
+        lu.assertEquals(result, { "ExpectedLayout", "RareExpected", "EpicExpected", nativeDuo or nil })
+        lu.assertEquals(diagnostics, {})
+    end
+end
+
+function TestSpellAcquisitions.testNativeGodSentEligibilityRemainsActiveWithoutAPublishedPair()
+    local callbacks = {}
+    tree.attach({ hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } })
+    local priorTalentData = _G.SpellTalentData
+    local requirements = {}
+    _G.SpellTalentData = { ServeDuoGameRequirements = requirements }
+    for _, nativeEligible in ipairs({ true, false }) do
+        local diagnostics = {}
+        local result = tree.realize({
+            layoutKey = "ExpectedLayout", rareTalentKeys = { "RareExpected" }, epicTalentKeys = { "EpicExpected" },
+        }, "SpellTrait", function(checkpoint) diagnostics[#diagnostics + 1] = checkpoint end, function()
+            return callbacks.CreateTalentTree(nil, nil, function()
+                local layout = callbacks.GetRandomValue(nil, nil, function(values) return values[1] end,
+                    { { Name = "NativeLayout" }, { Name = "ExpectedLayout" } })
+                local rare = callbacks.RemoveRandomValue(nil, nil, function(values) return table.remove(values, 1) end,
+                    { "RareOther", "RareExpected" })
+                local epic = callbacks.RemoveRandomValue(nil, nil, function(values) return table.remove(values, 1) end,
+                    { "EpicExpected" })
+                local nativeEligibility = function(_, receivedRequirements)
+                    lu.assertIs(receivedRequirements, requirements)
+                    return nativeEligible
+                end
+                local eligible = callbacks.IsGameStateEligible
+                    and callbacks.IsGameStateEligible(nil, nil, nativeEligibility, {}, requirements)
+                    or nativeEligibility({}, requirements)
+                local duo
+                if eligible then
+                    duo = callbacks.RemoveRandomValue(nil, nil, function(values) return table.remove(values, 1) end,
+                        { "NativeDuo" })
+                end
+                return { layout.Name, rare, epic, duo }
+            end, { TraitName = "SpellTrait" })
+        end)
+        lu.assertEquals(result, { "ExpectedLayout", "RareExpected", "EpicExpected", nativeEligible and "NativeDuo" or nil })
+        lu.assertEquals(diagnostics, {})
+    end
+    _G.SpellTalentData = priorTalentData
+end
+
 local function capture(state, payload, treeAdapter, spellAdapter, isBound)
     local callbacks = {}
     local module = { hooks = { wrap = function(name, _, callback)

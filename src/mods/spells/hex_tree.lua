@@ -24,7 +24,6 @@ function hexTree.create()
         local scope = {
             prior = pending, expected = expected, traitKey = traitKey, diagnostic = diagnosticCallback,
             rare = keys(expected.rareTalentKeys), epic = keys(expected.epicTalentKeys),
-            godSent = expected.godSent and expected.godSent.olympianTalentKey,
         }
         pending = scope
         return scope
@@ -56,7 +55,6 @@ function hexTree.create()
             if not ok then error(result, 0) end
             for key in pairs(scope.rare) do diagnostic(scope, "hex-tree-rare", key, "missing") end
             for key in pairs(scope.epic) do diagnostic(scope, "hex-tree-epic", key, "missing") end
-            if scope.godSent then diagnostic(scope, "hex-tree-god-sent", scope.godSent, "missing") end
             return result
         end)
         module.hooks.wrap("GetRandomValue", "run-planner-hex-layout", function(_, _, base, values, ...)
@@ -68,21 +66,10 @@ function hexTree.create()
             end
             return base(values, ...)
         end)
-        module.hooks.wrap("IsGameStateEligible", "run-planner-hex-god-sent-absence",
-            function(_, _, base, source, requirements, ...)
-            if active and active.expected.godSent == nil and _G.SpellTalentData
-                and requirements == _G.SpellTalentData.ServeDuoGameRequirements then return false end
-            return base(source, requirements, ...)
-            end)
         module.hooks.wrap("RemoveRandomValue", "run-planner-hex-special-talents", function(_, _, base, values, ...)
             if active and type(values) == "table" then
                 local selected = removeExpected(values, active.rare) or removeExpected(values, active.epic)
                 if selected then return selected end
-                if active.godSent then
-                    for index, value in ipairs(values) do
-                        if value == active.godSent then active.godSent = nil; return table.remove(values, index) end
-                    end
-                end
             end
             return base(values, ...)
         end)

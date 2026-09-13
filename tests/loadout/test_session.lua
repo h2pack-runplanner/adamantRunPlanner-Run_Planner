@@ -304,7 +304,7 @@ function TestLoadoutSession.testFreshImportedLoadoutUsesTheProvidedSeleneTree()
     lu.assertEquals(state.state, "synchronized")
 end
 
-function TestLoadoutSession.testAttachedSeleneRejectsUnexpectedGodSentPair()
+function TestLoadoutSession.testAttachedSeleneLeavesNativeGodSentPairToLoadoutConformance()
     local priorGame, priorRun, priorWeapon, priorSpell, priorTrait = _G.GameState, _G.CurrentRun, _G.GetEquippedWeapon, _G.SpellData, _G.TraitData
     _G.GameState = { LastWeaponUpgradeName = { WeaponSuit = "SuitHexAspect" }, LastAwardTrait = "ManaOverTimeRefundKeepsake", ShrineUpgrades = {}, MetaUpgradeState = {} }
     _G.GetEquippedWeapon = function() return "WeaponSuit" end
