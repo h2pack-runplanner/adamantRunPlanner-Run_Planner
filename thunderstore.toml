@@ -3,10 +3,10 @@ schemaVersion = "0.0.1"
 
 [package]
 namespace = "adamantRunPlanner"
-name = "Plan_Executor"
-description = "Loads bounded resolved Run Planner execution plans from the module inbox."
+name = "Run_Planner"
+description = "The Hades II game companion to the Run Planner application."
 versionNumber = "0.3.0"
-websiteUrl = "https://github.com/h2pack-runplanner/adamantRunPlanner-Plan_Executor"
+websiteUrl = "https://github.com/h2pack-runplanner/adamantRunPlanner-Run_Planner"
 containsNsfwContent = false
 
 [package.dependencies]

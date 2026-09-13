@@ -1,4 +1,4 @@
--- Plan Executor is a thin consumer of the Run Planner execution-only JSON.
+-- Run Planner's game companion consumes the application's execution-only JSON.
 -- It freezes a decoded plan at StartNewRun and never imports planner code.
 -- luacheck: globals rom import_as_fallback modutil lib _PLUGIN game reload import
 
@@ -20,10 +20,10 @@ local function initialize()
     local module = lib.createModule({
         pluginGuid = _PLUGIN.guid,
         modpack = "run-planner",
-        id = "Plan_Executor",
-        name = "Plan Executor",
-        shortName = "Plan Executor",
-        tooltip = "Execute a published Run Planner execution plan.",
+        id = "Run_Planner",
+        name = "Run Planner",
+        shortName = "Run Planner",
+        tooltip = "Play a run planned in the Run Planner application.",
     })
     if not module then return end
     module.data.define(data.buildStorage())

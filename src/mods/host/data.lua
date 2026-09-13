@@ -6,7 +6,7 @@ function data.buildStorage()
             type = "int",
             alias = "ActivePlanSlot",
             label = "Active plan slot",
-            tooltip = "Plan Executor uses this slot for the next run.",
+            tooltip = "Run Planner uses this slot for the next run.",
             default = 1,
             min = 1,
             max = 6,

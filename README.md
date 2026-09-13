@@ -1,49 +1,44 @@
-# Run Planner Plan Executor
+# Run Planner
 
-Plan Executor is the Hades II mod that carries out plans created by
-[Run Planner](https://github.com/maybe-adamant/RunPlanner).
+Plan your Hades II run, then play it in-game.
 
-Run Planner owns authoring, simulation, and validation. Its desktop app
-publishes a game-ready execution plan to one of six fixed slots; Plan Executor
-loads the selected active slot when a new run begins and steers the
-corresponding rooms, rewards, offers, and other modeled outcomes in Hades II.
-If the game and plan diverge, the executor records the discrepancy and stops
-steering the remaining plan without blocking normal gameplay.
+Run Planner is the game companion to the
+[Run Planner application](https://github.com/maybe-adamant/RunPlanner).
+Build your route in the app, choose your rewards and upgrades, and send the
+plan to the mod. It then guides the game's rooms, rewards, and offers to match
+what you planned. You still play the run and make the planned choices.
 
-## How it connects to Run Planner
+## Getting started
 
-1. Create and validate a run in the Run Planner desktop app.
-2. Use **Publish to Game** to choose a compatible game profile and one of the
+1. Install the mod in your Hades II mod-manager profile.
+2. Create a run in the Run Planner desktop app and resolve its findings.
+3. Click **Publish to Game**, choose your game profile, and pick one of the
    six plan slots.
-3. In Plan Executor's in-game settings, choose that slot as the active plan.
-4. Start a new Hades II run. Plan Executor loads the selected slot at run
-   startup. Changing the active slot later does not change that live session.
+4. In Run Planner's in-game settings, select that slot as your active plan.
+5. Start a new run with the loadout you planned.
 
-The browser version of Run Planner cannot publish directly to the game. Plan
-Executor consumes the published execution plan only; it does not read or
-reinterpret an editable Run Planner project.
+You can keep up to six plans ready to play. Changing the active slot during a
+run only changes which plan will be used for the next run; it does not replace
+the plan already in progress.
 
-## Repository layout
+Direct **Publish to Game** requires the Windows desktop app, not the browser
+version of the planner.
 
-- `src/` — the active Hades II module.
-- `fixtures/` — execution plans shared with Run Planner for compatibility
-  testing.
-- `tests/` — Lua unit and integration tests.
+## While playing
 
-Within `src/mods/`, code is grouped by its runtime responsibility: host and
-protocol integration, route navigation, room behavior, timeline interactions,
-and modeled traits or keepsakes.
+Follow the rooms and choices you authored in the app. If the run no longer
+matches the plan, the mod reports the mismatch and stops steering. Normal
+gameplay continues—you can keep playing or start a fresh planned run.
 
-## Development
+## Beta and feedback
 
-Run the Lua test suite from the repository root:
+Run Planner is in beta. You may encounter bugs or differences between your
+plan and the game.
 
-```sh
-lua tests/all.lua
-```
+If something goes wrong, [report an issue](https://github.com/h2pack-runplanner/adamantRunPlanner-Run_Planner/issues)
+with your plan, the room where it happened, what you expected, and what you
+actually saw. Include `logOutput.log` from your profile's `ReturnOfModding`
+folder when possible.
 
-Check the active module with Luacheck:
-
-```sh
-luacheck src/
-```
+Interested in the code? See the
+[development guide](https://github.com/h2pack-runplanner/adamantRunPlanner-Run_Planner/blob/main/CONTRIBUTING.md).
