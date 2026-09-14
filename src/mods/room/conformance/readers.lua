@@ -120,16 +120,16 @@ local function pathOfStars(run, expected)
     local expectedKeys = type(expected) == "table" and expected.talentKeys or nil
     local expectedSet = {}
     for _, key in ipairs(expectedKeys or {}) do expectedSet[key] = true end
-    local function collect(node)
-        if type(node) ~= "table" then return end
-        if type(node.Name) == "string" and node.Name ~= talents.Name
-            and (expectedSet[node.Name] or node.Rarity == "Rare" or node.Rarity == "Epic"
-                or node.Rarity == "Duo") then
-            nativeTalentKeys[node.Name] = true
+    -- Native trees have sequential depths but sparse positions within each depth.
+    for _, column in ipairs(talents or {}) do
+        for _, node in pairs(column) do
+            if type(node.Name) == "string"
+                and (expectedSet[node.Name] or node.Rarity == "Rare" or node.Rarity == "Epic"
+                    or node.Rarity == "Duo") then
+                nativeTalentKeys[node.Name] = true
+            end
         end
-        for _, child in ipairs(node) do collect(child) end
     end
-    collect(talents)
     -- The planner intentionally projects only frozen Rare/Epic/God Sent
     -- identities. Reconstruct that canonical published order from native
     -- presence, then retain unexpected high-value nodes as evidence instead

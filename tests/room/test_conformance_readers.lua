@@ -419,6 +419,56 @@ function TestConformanceReaders.testPathReaderProjectsOnlyPublishedHighValueTale
     })
 end
 
+function TestConformanceReaders.testPathReaderVisitsSparseNativeTalentPositions()
+    local common = { Name = "UnmodeledCommonTalent", Rarity = "Common" }
+    -- SpellData's Nacelle grid: depth is sequential, but node positions are not.
+    local talents = {
+        Name = "Nacelle", OffsetY = 15,
+        [1] = { [2] = common, [4] = common },
+        [2] = { [2] = common, [4] = common },
+        [3] = {
+            [0] = common, [1] = common,
+            [2] = { Name = "PolymorphBossDamageTalent", Rarity = "Rare" },
+            [3] = common,
+            [4] = { Name = "PolymorphDeathExplodeTalent", Rarity = "Rare" },
+            [5] = common, [6] = common,
+        },
+        [4] = {
+            [2] = common,
+            [3] = { Name = "PolymorphTauntTalent", Rarity = "Rare" },
+            [4] = common,
+            [5] = { Name = "PolymorphZeusTalent" },
+        },
+        [5] = {
+            [2] = common,
+            [3] = { Name = "OlympianSpellCountTalent", Rarity = "Common" },
+            [4] = common,
+        },
+        [6] = {
+            [2] = { Name = "PolymorphSandwichTalent", Rarity = "Epic" },
+            [4] = { Name = "PolymorphCurseTalent", Rarity = "Epic" },
+        },
+    }
+    local expected = { talentKeys = {
+        "PolymorphBossDamageTalent", "PolymorphDeathExplodeTalent", "PolymorphTauntTalent",
+        "PolymorphSandwichTalent", "PolymorphCurseTalent", "PolymorphZeusTalent", "OlympianSpellCountTalent",
+    } }
+    local run = { Hero = { SlottedSpell = {
+        TraitName = "SpellPolymorphTrait", Talents = talents,
+    } } }
+    lu.assertEquals(readers.read("pathOfStars", run, nil, expected), {
+        spellTraitKey = "SpellPolymorphTrait", layoutKey = "Nacelle", talentKeys = expected.talentKeys,
+        closed = false, bankedPathPoints = 0, investedPathPoints = 0,
+    })
+
+    talents[6][4] = { Name = "PolymorphTeleportCastTalent", Rarity = "Epic" }
+    lu.assertEquals(readers.read("pathOfStars", run, nil, expected).talentKeys, {
+        "PolymorphBossDamageTalent", "PolymorphDeathExplodeTalent", "PolymorphTauntTalent",
+        "PolymorphSandwichTalent", "PolymorphZeusTalent", "OlympianSpellCountTalent",
+        "PolymorphTeleportCastTalent",
+    })
+end
+
 function TestConformanceReaders.testStygianWellReaderRetainsIxionAndDurationStateExactlyOnce()
     local run = { Hero = { Traits = {
         { Name = "TemporaryForcedSecretDoorTrait", RemainingUses = 2 },
