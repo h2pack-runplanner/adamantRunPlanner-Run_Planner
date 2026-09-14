@@ -18,6 +18,9 @@ return {
         },
     },
     roomFeatures = {
+        resolvedShopOptionNames = {
+            SpellDrop = { TalentDrop = "TalentDrop" },
+        },
         shopOptionCarriers = {
             BoostedRandomLoot = {
                 name = "RandomLoot",

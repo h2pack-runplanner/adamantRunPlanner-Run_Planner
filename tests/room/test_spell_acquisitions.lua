@@ -4,6 +4,110 @@ local spell = require("mods.room.timeline.acquisitions.spell.hooks")
 
 TestSpellAcquisitions = {}
 
+function TestSpellAcquisitions.testShopSpellPregeneratesBeforeSpawnReturnsAndInstallsTheSelectedTree()
+    local room = require("mods.room.coordinator")
+    local callbacks = {}
+    local module = { hooks = { wrap = function(name, _, callback)
+        local prior = callbacks[name]
+        callbacks[name] = function(host, runtime, base, ...)
+            return callback(host, runtime, function(...)
+                if prior then return prior(host, runtime, base, ...) end
+                return base(...)
+            end, ...)
+        end
+    end } }
+    local function invoke(name, base, ...)
+        if callbacks[name] then return callbacks[name](nil, {}, base, ...) end
+        return base(...)
+    end
+    local offer = {
+        kind = "traits", giver = "SpellDrop", selected = "option1",
+        options = {
+            { key = "SpellPolymorphTrait" }, { key = "SpellMeteorTrait" }, { key = "SpellTransformTrait" },
+        },
+        hexTree = { layoutKey = "Nacelle", rareTalentKeys = { "PolymorphBossDamageTalent" },
+            epicTalentKeys = { "PolymorphSandwichTalent" } },
+    }
+    local transaction = { kind = "acquisition", owner = "shop-spell", sourceOwner = "shop-spell",
+        window = { kind = "postOutgoing" }, roles = { {
+            role = "self", kind = "loot", gameName = "SpellDrop", disposition = "normal", traitOffer = offer,
+        } } }
+    local occurrence = { id = "preboss", overview = {}, transactionsByOwner = { [transaction.owner] = transaction },
+        timeline = { transactions = { transaction }, dependencies = {}, obligations = {} } }
+    local plan = { occurrencesById = { [occurrence.id] = occurrence } }
+    local diagnostics, completions = {}, 0
+    local state = { state = "synchronized", plan = plan, room = room.new(plan, function(errorValue)
+        error(errorValue.checkpoint)
+    end) }
+    local active = assert(room.enter(state, occurrence))
+    local session = {
+        diagnostic = function(_, checkpoint, value) diagnostics[#diagnostics + 1] = { checkpoint, value } end,
+        complete = function(value, handle) completions = completions + 1; return room.complete(value, handle) end,
+    }
+    local getState, report = function() return state end, function() end
+    require("mods.room.features.inventory.world_item_hooks").attach(module, session, getState, report, room, nil, {})
+    local hexTree = require("mods.spells.hex_tree").create()
+    hexTree.attach(module)
+    spell.attach(module, session, getState, report, room, hexTree)
+    local restore = require("tests.harness.native_game").install({
+        SpellData = {
+            Heal = { TraitName = "SpellHealTrait" }, Beam = { TraitName = "SpellLaserTrait" },
+            Polymorph = { TraitName = "SpellPolymorphTrait" }, Meteor = { TraitName = "SpellMeteorTrait" },
+            Transform = { TraitName = "SpellTransformTrait" },
+        },
+        SessionMapState = {},
+    })
+    local function removeRandom(values)
+        return invoke("RemoveRandomValue", function(pool) return table.remove(pool, 1) end, values)
+    end
+    local ok, failure = pcall(function()
+        local item = invoke("SpawnStoreItemInWorld", function()
+            local native = { Name = "SpellDrop", SetupEvents = { { FunctionName = "PregenerateSpells" } } }
+            -- Native CreateConsumableItemFromData runs SetupEvents before returning the item.
+            invoke("RunEventsGeneric", function(_, source)
+                invoke("PregenerateSpells", function()
+                    _G.SessionMapState.SelectedSpells = {}
+                    local eligible = { "Heal", "Beam", "Polymorph", "Meteor", "Transform" }
+                    for index = 1, 3 do _G.SessionMapState.SelectedSpells[index] = removeRandom(eligible) end
+                end, source)
+            end, native.SetupEvents, native)
+            return native
+        end, { Name = "SpellDrop", __runPlannerWorldShop = true,
+            __runPlannerTransactionOwner = transaction.owner }, 10)
+        lu.assertEquals(_G.SessionMapState.SelectedSpells, { "Polymorph", "Meteor", "Transform" })
+        lu.assertNotNil(room.bound(state, active, item))
+        lu.assertEquals(completions, 0)
+        assert(room.window(state, "postOutgoing"))
+        local installed
+        invoke("OpenSpellScreen", function(source)
+            local screen = { Source = source, Components = {} }
+            invoke("CreateSpellButtons", function(value)
+                -- GetEligibleSpells returns the cached list; button creation consumes it in place.
+                for index = 1, 3 do
+                    local name = removeRandom(_G.SessionMapState.SelectedSpells)
+                    value.Components[index] = { TraitName = _G.SpellData[name].TraitName, SpellName = name }
+                end
+            end, screen)
+            lu.assertEquals(screen.Components[1].TraitName, "SpellPolymorphTrait")
+            invoke("AcceptAndCloseSpellScreen", function(_, button)
+                installed = invoke("CreateTalentTree", function()
+                    local layout = invoke("GetRandomValue", function(values) return values[1] end,
+                        { { Name = "Maze" }, { Name = "Nacelle" } })
+                    return { layout = layout.Name,
+                        rare = removeRandom({ "PolymorphTauntTalent", "PolymorphBossDamageTalent" }),
+                        epic = removeRandom({ "PolymorphCurseTalent", "PolymorphSandwichTalent" }) }
+                end, _G.SpellData[button.SpellName])
+            end, screen, screen.Components[1])
+        end, item, {})
+        lu.assertEquals(installed, { layout = "Nacelle", rare = "PolymorphBossDamageTalent",
+            epic = "PolymorphSandwichTalent" })
+        lu.assertEquals(completions, 1)
+        lu.assertEquals(diagnostics, {})
+    end)
+    restore()
+    if not ok then error(failure, 0) end
+end
+
 function TestSpellAcquisitions.testCreatedHexTreesDoNotSharePendingScopes()
     local definition = require("mods.spells.hex_tree")
     local first, second = definition.create(), definition.create()

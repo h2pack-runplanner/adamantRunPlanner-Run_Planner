@@ -116,6 +116,43 @@ function TestTravelDealRefills.testWorldShopUsesPublishedSlotAndCompletesAfterNa
     lu.assertEquals(diagnostics, {})
 end
 
+function TestTravelDealRefills.testWorldShopSpellRefillUsesThePublishedResolvedDrop()
+    local callbacks, refill, diagnostics, begins, completions = harness("worldShop")
+    refill.source.offerKey = "Minor"
+    refill.replacement = {
+        slotIndex = 2, groupIndex = 2, optionKey = "SpellDrop",
+        reward = { rewardType = "TalentDrop", producerLifecycleKey = "Shop" },
+    }
+    local spell = { Name = "SpellDrop", ReplaceRequirements = {
+        { PathFalse = { "CurrentRun", "UseRecord", "SpellDrop" } },
+    } }
+    local talent = { Name = "TalentDrop", ReplaceRequirements = {
+        NamedRequirements = { "TalentLegal" },
+    } }
+    local storeData = { GroupsOf = {
+        { OptionsData = { { Name = "RandomLoot" } } },
+        { OptionsData = { { Name = "MaxHealthDrop" } } },
+        { OptionsData = { spell, talent } },
+    } }
+    local generated = callbacks.RestockWorldItem(nil, {}, function()
+        local result = fill(callbacks, storeData, function(args)
+            lu.assertEquals(args.StoreData.GroupsOf, {
+                { Offers = 1, OptionsData = { talent } },
+            })
+        end)
+        lu.assertEquals(completions(), 0)
+        return result
+    end, 3, 91, { Name = "SpellDrop", ScreenName = "SpellMenu" })
+    lu.assertNil(generated.StoreOptions[1])
+    lu.assertEquals(generated.StoreOptions[3].Name, "TalentDrop")
+    lu.assertEquals(generated.StoreOptions[3].__runPlannerGenerationKey, "travelDealRefill")
+    lu.assertEquals(storeData.GroupsOf[3].OptionsData, { spell, talent })
+    lu.assertEquals(refill.replacement.optionKey, "SpellDrop")
+    lu.assertEquals(begins(), 1)
+    lu.assertEquals(completions(), 1)
+    lu.assertEquals(diagnostics, {})
+end
+
 function TestTravelDealRefills.testWorldShopRefillConstructionMissDiagnosesAndCompletesAtNativeTerminal()
     local callbacks, _, diagnostics, begins, completions = harness("worldShop")
     local nativeCalls = 0

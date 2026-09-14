@@ -32,9 +32,16 @@ function primitives.retainAndCount(values, expected)
     return result, matches
 end
 
+local function rawOfferName(offer)
+    local key = offer.optionKey or offer.offerKey
+    local names = nativeBindings.roomFeatures.resolvedShopOptionNames[key]
+    local rewardType = offer.reward and offer.reward.rewardType or offer.rewardType
+    return names and names[rewardType] or key
+end
+
 function primitives.retainRawOffers(values, offers)
     local wanted, seen = {}, {}
-    for _, offer in ipairs(offers or {}) do wanted[offer.optionKey or offer.offerKey] = true end
+    for _, offer in ipairs(offers or {}) do wanted[rawOfferName(offer)] = true end
     local result = {}
     for _, value in pairs(values or {}) do
         local key = type(value) == "table" and (value.Name or value.ItemName) or value
@@ -68,7 +75,7 @@ function primitives.filterGroups(storeData, offers)
 end
 
 local function generatedName(offer)
-    local key = offer.optionKey or offer.offerKey
+    local key = rawOfferName(offer)
     local carrier = nativeBindings.roomFeatures.shopOptionCarriers[key]
     return carrier and carrier.name or key
 end
@@ -160,7 +167,7 @@ function primitives.verify(prepared, store)
         local expectedKey = offer.optionKey or offer.offerKey
         local observedKey = type(option) == "table" and (option.Name or option.ItemName) or nil
         if not primitives.generatedMatches(option, offer) then
-            return nil, { checkpoint = "inventory-generation", expected = expectedKey, observed = observedKey }
+            return nil, { checkpoint = "inventory-generation", expected = rawOfferName(offer), observed = observedKey }
         end
         option.__runPlannerOfferKey = offer.offerKey or offer.sourceOfferKey or expectedKey
         option.__runPlannerWorldShop = prepared.kind == "shop" or nil

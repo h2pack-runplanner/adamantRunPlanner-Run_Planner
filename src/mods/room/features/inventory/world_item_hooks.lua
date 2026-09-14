@@ -13,6 +13,20 @@ local function materializedHandle(state, active, room, root, itemKey)
 end
 
 function hooks.attach(module, session, getState, report, room, route, scope)
+    local creatingItems = setmetatable({}, { __mode = "k" })
+    -- Native item setup can pregenerate outcomes before the spawn returns.
+    -- Bind the concrete item before its own SetupEvents, once per construction.
+    module.hooks.wrap("RunEventsGeneric", "run-planner-bind-world-item-setup", function(_, _, base,
+        events, source, ...)
+        local creating = creatingItems[coroutine.running()]
+        if creating and not creating.bound and events ~= nil and type(source) == "table"
+            and source.Name == creating.gameName and events == source.SetupEvents then
+            creating.bound = true
+            creating.bind(source)
+        end
+        return base(events, source, ...)
+    end)
+
     module.hooks.wrap("RestockWorldItem", "run-planner-travel-deal-refill", function(_, runtime, base, index,
         kitId, args)
         local state = getState(runtime)
@@ -64,12 +78,12 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         itemData, kitId)
         local state = getState(runtime)
         local active = current.resolve(state, room, route)
-        local result = base(itemData, kitId)
-        if active and type(itemData) == "table" and result ~= nil then
+        local bindItem, itemKey
+        if active and type(itemData) == "table" then
             local generationKey = itemData.__runPlannerGenerationKey
             local transactionOwner = itemData.__runPlannerTransactionOwner
             local bindingKey = itemData.__runPlannerOfferKey or itemData.Name or itemData.ItemName
-            local itemKey = itemData.Name or itemData.ItemName or bindingKey
+            itemKey = itemData.Name or itemData.ItemName or bindingKey
             local shrineDelivery = itemData.__runPlannerShrine == true
                 and itemData.__runPlannerShrineSourceKey ~= nil
             local sourceKey = itemData.__runPlannerShrineSourceKey
@@ -91,12 +105,21 @@ function hooks.attach(module, session, getState, report, room, route, scope)
                 handle = room.resolve(state, active, { kind = "offer", offerKey = bindingKey })
             end
             handle = materializedHandle(state, active, room, handle, itemKey)
-            if itemData.__runPlannerWorldShop and type(result) == "table" then
-                result.__runPlannerWorldShop = true
-                result.__runPlannerTransactionOwner = transactionOwner
+            bindItem = function(result)
+                if itemData.__runPlannerWorldShop and type(result) == "table" then
+                    result.__runPlannerWorldShop = true
+                    result.__runPlannerTransactionOwner = transactionOwner
+                end
+                room.bind(state, active, handle, result)
             end
-            room.bind(state, active, handle, result)
         end
+        local thread = coroutine.running()
+        local prior = creatingItems[thread]
+        creatingItems[thread] = bindItem and { gameName = itemKey, bind = bindItem } or nil
+        local ok, result = pcall(base, itemData, kitId)
+        creatingItems[thread] = prior
+        if not ok then error(result, 0) end
+        if bindItem and result ~= nil then bindItem(result) end
         report(runtime)
         return result
     end)

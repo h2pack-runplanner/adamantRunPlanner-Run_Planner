@@ -14,6 +14,61 @@ local fakePayload, attachFeatureHooks = support.fakePayload, support.attachFeatu
 
 TestFeatureInteractionHooks = {}
 
+function TestFeatureInteractionHooks.testWorldItemSetupBindingIsLocalToItsConstruction()
+    local module, _, callbacks = capture()
+    local node = { transaction = { owner = "spell", roles = { { gameName = "SpellDrop" } } } }
+    local active = opaque({ occurrence = {} }, function(contact)
+        if contact.kind == "owner" and contact.owner == "spell" then return node end
+        if contact.kind == "materialized" then return node end
+    end)
+    local session = stub()
+    session.current = function() return active end
+    require("mods.room.features.inventory.world_item_hooks").attach(
+        module, session, function() return {} end, function() end, session, nil, {})
+    local function nativeItem() return { Name = "SpellDrop", SetupEvents = {} } end
+    local function setup(source, base)
+        return callbacks.RunEventsGeneric(nil, {}, base or function() end, source.SetupEvents, source)
+    end
+    local item, unrelated, nested = nativeItem(), nativeItem(), nativeItem()
+    local spawn = coroutine.create(function()
+        return callbacks.SpawnStoreItemInWorld(nil, {}, function()
+            coroutine.yield()
+            callbacks.SpawnStoreItemInWorld(nil, {}, function()
+                setup(nested)
+                return nested
+            end, { Name = "SpellDrop", __runPlannerWorldShop = true }, 2)
+            lu.assertNil(active.bindingFor(nested))
+            lu.assertTrue(nested.__runPlannerWorldShop)
+            setup(item, function()
+                lu.assertNotNil(active.bindingFor(item))
+                local child = nativeItem()
+                setup(child)
+                lu.assertNil(active.bindingFor(child))
+            end)
+            return item
+        end, { Name = "SpellDrop", __runPlannerWorldShop = true,
+            __runPlannerTransactionOwner = "spell" }, 1)
+    end)
+    local ok, errorValue = coroutine.resume(spawn)
+    lu.assertTrue(ok, errorValue)
+    setup(unrelated)
+    lu.assertNil(active.bindingFor(unrelated))
+    ok, errorValue = coroutine.resume(spawn)
+    lu.assertTrue(ok, errorValue)
+    lu.assertEquals(coroutine.status(spawn), "dead")
+    lu.assertEquals(fakePayload(active.bindingFor(item)).transaction.owner, "spell")
+
+    -- A native spawn fault must restore the construction scope before rethrowing.
+    local fault = {}
+    ok, errorValue = pcall(callbacks.SpawnStoreItemInWorld, nil, {}, function() error(fault) end,
+        { Name = "SpellDrop", __runPlannerWorldShop = true, __runPlannerTransactionOwner = "spell" }, 1)
+    lu.assertFalse(ok)
+    lu.assertIs(errorValue, fault)
+    local afterFault = nativeItem()
+    setup(afterFault)
+    lu.assertNil(active.bindingFor(afterFault))
+end
+
 function TestFeatureInteractionHooks.testShrinePublishesAllThreeOffersAndKeepsUnpurchasedRowsVisible()
     local module, _, callbacks = capture()
     local mismatches = {}
