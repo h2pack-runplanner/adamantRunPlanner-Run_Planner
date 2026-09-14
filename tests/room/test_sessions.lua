@@ -176,13 +176,15 @@ function TestRouteRoomSessions.testEveryPublishedLifecycleWindowAndCheckpointIsU
         { kind = "standard", phase = "afterCombat", open = "afterCombat" },
         { kind = "encounterEnd", phaseKey = "one", open = "encounterEnd:one" },
         { kind = "bossDefeated", phaseKey = "one", open = "bossDefeated:one" },
+        { kind = "shipPreCombat", wheelKey = "one", open = "shipPreCombat:one" },
+        { kind = "shipPostCombat", wheelKey = "one", open = "shipPostCombat:one" },
         { kind = "postOutgoing", open = "postOutgoing" },
     }
     for index, row in ipairs(windows) do
         local owner = "window-" .. index
         local entry = occurrence()
         entry.transactionsByOwner = { [owner] = { owner = owner, window = row } }
-        entry.timeline = { dependencies = {}, obligations = {
+        entry.timeline = { transactions = { entry.transactionsByOwner[owner] }, dependencies = {}, obligations = {
             { owner = owner, checkpoint = "roomEntered" },
             { owner = owner, checkpoint = "outgoingGeneration" },
             { owner = owner, checkpoint = "exitUsable" },
@@ -190,7 +192,10 @@ function TestRouteRoomSessions.testEveryPublishedLifecycleWindowAndCheckpointIsU
         } }
         local session = newSession(entry)
         room.openWindow(session, row.open)
-        lu.assertTrue(complete(session, owner))
+        local handle, payload = room.claimReady(session, {}, {}, function() return true end)
+        lu.assertNotNil(handle)
+        lu.assertEquals(payload.transaction.owner, owner)
+        lu.assertTrue(room.complete(session, handle))
         for _, checkpoint in ipairs({ "roomEntered", "outgoingGeneration", "exitUsable", "roomExit" }) do
             lu.assertTrue(room.checkpoint(session, checkpoint))
         end
@@ -238,6 +243,26 @@ function TestRouteRoomSessions.testSparseDependencyDoesNotCreateAnObligationOrOr
         for _, owner in ipairs(order) do lu.assertTrue(complete(session, owner)) end
         lu.assertTrue(room.close(session, function() return true end))
     end
+end
+
+function TestRouteRoomSessions.testBoundOwnersRemainUsableAfterTheirDiscoveryWindowWhileDependenciesStillApply()
+    local blocked = newSession(occurrence())
+    lu.assertTrue(room.openWindow(blocked, "afterCombat"))
+    lu.assertNil(complete(blocked, "dependent"))
+    lu.assertEquals(blocked.firstMismatch.checkpoint, "transaction-prerequisite")
+    lu.assertNil(blocked.firstFault)
+
+    local session = newSession(occurrence())
+    lu.assertTrue(room.openWindow(session, "afterCombat"))
+    lu.assertTrue(complete(session, "optional"))
+    lu.assertTrue(complete(session, "dependent"))
+    lu.assertTrue(complete(session, "required"))
+    lu.assertNil(session.firstFault)
+    lu.assertNil(session.firstMismatch)
+    lu.assertNil(room.close(session, function()
+        return nil, { checkpoint = "room-exit-conformance:traitInventory", expected = "planned", observed = "different" }
+    end))
+    lu.assertEquals(session.firstMismatch.checkpoint, "room-exit-conformance:traitInventory")
 end
 
 function TestRouteRoomSessions.testOptionalOwnerCanRemainIncompleteAndDeadlineOnlyBlocksItsCheckpoint()
@@ -351,7 +376,40 @@ function TestRouteRoomSessions.testPhaseCapabilityIsTransientAndRoomCloseDispose
     lu.assertEquals(room.activePhase(session, "encounterEnd"), "wave2")
     lu.assertTrue(complete(session, "later"))
     lu.assertTrue(room.openWindow(session, "afterCombat"))
+    lu.assertNil(room.activePhase(session, "encounterEnd"))
     lu.assertTrue(room.close(session, function() return true end))
+end
+
+function TestRouteRoomSessions.testEncounterEndPickupDiscoverySurvivesTheCallbackButDoesNotLeakAcrossPhases()
+    local first = { owner = "first", window = { kind = "encounterEnd", phaseKey = "one" } }
+    local second = { owner = "second", window = { kind = "encounterEnd", phaseKey = "two" } }
+    local entry = {
+        transactionsByOwner = { first = first, second = second },
+        timeline = { transactions = { first, second }, dependencies = {}, obligations = {} },
+    }
+    local port = timeline.new(entry)
+    local function claim()
+        return timeline.claimReady(port, {}, {}, function() return true end)
+    end
+    lu.assertNil(claim())
+    lu.assertTrue(timeline.open(port, "encounterEnd:one"))
+    lu.assertEquals(timeline.activePhase(port, "encounterEnd"), "one")
+    lu.assertTrue(timeline.open(port, "afterCombat"))
+    lu.assertNil(timeline.activePhase(port, "encounterEnd"))
+    local handle, payload = claim()
+    lu.assertNotNil(handle)
+    lu.assertEquals(payload.transaction.owner, "first")
+    lu.assertNil(claim())
+
+    local nextPhase = timeline.new(entry)
+    lu.assertTrue(timeline.open(nextPhase, "encounterEnd:one"))
+    lu.assertTrue(timeline.startEncounter(nextPhase))
+    lu.assertNil(timeline.activePhase(nextPhase, "encounterEnd"))
+    lu.assertNil(timeline.claimReady(nextPhase, {}, {}, function() return true end))
+    lu.assertTrue(timeline.open(nextPhase, "encounterEnd:two"))
+    local nextHandle, nextPayload = timeline.claimReady(nextPhase, {}, {}, function() return true end)
+    lu.assertNotNil(nextHandle)
+    lu.assertEquals(nextPayload.transaction.owner, "second")
 end
 
 function TestRouteRoomSessions.testDeclaredInteractionContactResolvesWithoutTransactionKindMatching()

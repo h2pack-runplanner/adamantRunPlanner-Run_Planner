@@ -216,8 +216,8 @@ local function beginOwner(session, owner)
     if terminal(session) ~= nil then return nil, terminal(session) end
     local transaction = session.occurrence.transactionsByOwner[owner]
     if transaction == nil then return fault(session, "transaction-owner", "published owner", owner) end
-    local open, expected = lifecycle.accepts(session.capabilities, transaction.window)
-    if not open then return fault(session, "transaction-window", expected, "closed") end
+    -- Lifecycle windows guide discovery, not permission to steer an exact
+    -- bound owner. Its DAG prerequisites remain the ordering authority.
     for prerequisite in pairs(session.prerequisites[owner] or {}) do
         if not session.completedOwners[prerequisite] then
             return mismatch(session, "transaction-prerequisite", prerequisite, owner)

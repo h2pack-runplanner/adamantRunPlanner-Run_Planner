@@ -1,5 +1,5 @@
--- Closed execution lifecycle windows become explicit local capabilities. The
--- mapping is protocol-shaped, not transaction-kind-shaped.
+-- Published windows guide unbound action discovery. A phase's pickup
+-- availability outlives its automatic-effect callback contact.
 local lifecycle = {}
 
 local checkpoints = {
@@ -36,9 +36,7 @@ function lifecycle.open(capabilities, window)
     if window == "roomEntered" or window == "afterCombat" or window == "postOutgoing" then
         if window == "afterCombat" then
             capabilities.roomEntered = nil
-            for key in pairs(capabilities) do
-                if key:match("^encounterEnd:") or key:match("^bossDefeated:") then capabilities[key] = nil end
-            end
+            capabilities.activePhaseContact = nil
         end
         capabilities[window] = true
         return true
@@ -51,18 +49,20 @@ function lifecycle.open(capabilities, window)
         return true
     end
     if window:match("^encounterEnd:.+") or window:match("^bossDefeated:.+") then
-        -- A phase contact is exact and transient. Starting a new one replaces
-        -- any prior phase seam; no scalar cursor or accumulated phase history.
+        -- New phases replace prior discovery windows. Closing the final
+        -- callback ends its active contact without hiding the spawned pickups.
         for key in pairs(capabilities) do
             if key:match("^encounterEnd:") or key:match("^bossDefeated:") then capabilities[key] = nil end
         end
         capabilities[window] = true
+        capabilities.activePhaseContact = window
         return true
     end
     return nil, { checkpoint = "lifecycle-window", expected = "published lifecycle window", observed = window }
 end
 
 function lifecycle.startEncounter(capabilities)
+    capabilities.activePhaseContact = nil
     for key in pairs(capabilities) do
         if key:match("^encounterEnd:") or key:match("^bossDefeated:") then capabilities[key] = nil end
     end
@@ -76,9 +76,8 @@ end
 
 function lifecycle.activePhase(capabilities, kind)
     local prefix = kind .. ":"
-    for key in pairs(capabilities or {}) do
-        if key:sub(1, #prefix) == prefix then return key:sub(#prefix + 1) end
-    end
+    local contact = capabilities and capabilities.activePhaseContact
+    if contact ~= nil and contact:sub(1, #prefix) == prefix then return contact:sub(#prefix + 1) end
     return nil
 end
 

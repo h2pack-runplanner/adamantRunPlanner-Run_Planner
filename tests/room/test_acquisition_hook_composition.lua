@@ -85,14 +85,15 @@ function TestAcquisitionHookComposition.testChaosScreenInstallationCompletesItsB
     lu.assertEquals(fakePayload(completed[1].row).transaction.owner, "chaos")
 end
 
-function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTraitOffer()
+local function mysteryBoonAcquisition(deliveryBinding)
     local module, _, callbacks = capture()
     local priorRun = _G.CurrentRun
     _G.CurrentRun = { Hero = { Traits = {} } }
     local node = {
         owner = "mystery-boon",
         kind = "acquisition",
-        window = { kind = "standard", phase = "beforeCombat" },
+        window = deliveryBinding and { kind = "encounterEnd", phaseKey = "Encounter" }
+            or { kind = "standard", phase = "beforeCombat" },
         roles = {
             {
                 role = "box", lifecyclePoint = "roomRewardPickup", kind = "consumable",
@@ -113,7 +114,9 @@ function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTr
         },
     }
     local occurrence = {
-        id = "mystery-room", overview = {}, transactionsByOwner = { [node.owner] = node },
+        id = "mystery-room", overview = {
+            encounterPhases = { { slotKey = "Encounter", encounterKey = "BossEris02", kind = "boss" } },
+        }, transactionsByOwner = { [node.owner] = node },
         timeline = { transactions = { node }, dependencies = {}, obligations = {} },
     }
     local plan = { occurrencesById = { [occurrence.id] = occurrence } }
@@ -149,6 +152,22 @@ function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTr
     traitAcquisitions.attach(module, session, function() return state end,
         function() end, roomCoordinatorModule, seaStar)
 
+    if deliveryBinding then
+        encounterHooks.attach(module, session, function() return state end, function() end, roomCoordinatorModule)
+        local nativeEncounter = { Name = "BossEris02" }
+        local nativeRoom = { Name = "O_Boss02", Encounter = nativeEncounter }
+        lu.assertNotNil(roomCoordinatorModule.bindEncounter(state, nativeEncounter, "Encounter"))
+        callbacks.EndEncounterEffects(nil, {}, function()
+            lu.assertEquals(roomCoordinatorModule.activePhase(state, "encounterEnd"), "Encounter")
+            if deliveryBinding == "bound" then
+                local handle = assert(roomCoordinatorModule.resolve(state, active,
+                    { kind = "owner", owner = node.owner }))
+                lu.assertNotNil(roomCoordinatorModule.bind(state, active, handle, box))
+            end
+        end, _G.CurrentRun, nativeRoom, nativeEncounter)
+        lu.assertNil(roomCoordinatorModule.activePhase(state, "encounterEnd"))
+    end
+
     callbacks.UnwrapRandomLoot(nil, {}, function()
         callbacks.GiveLoot(nil, {}, function(args)
             lu.assertEquals(args.ForceLootName, "HeraUpgrade")
@@ -176,6 +195,15 @@ function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTr
     lu.assertEquals(#completions, 1)
     lu.assertEquals(mismatches, {})
     _G.CurrentRun = priorRun
+end
+
+function TestAcquisitionHookComposition.testMysteryBoonBindsItsUnwrappedSourceTraitOffer()
+    mysteryBoonAcquisition()
+end
+
+function TestAcquisitionHookComposition.testDeliveredMysteryBoonCanBeUnwrappedAfterEndEffectsReturn()
+    mysteryBoonAcquisition("bound")
+    mysteryBoonAcquisition("unbound")
 end
 
 function TestAcquisitionHookComposition.testEachNativeNpcChoiceFunctionBindsItsPublishedTraitOffer()
