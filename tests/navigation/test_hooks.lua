@@ -98,19 +98,21 @@ function TestNavigationHooks.testDestinationContractPresenceReplacesNativeCreate
     lu.assertTrue(native.ZagreusContractSuccess)
 end
 
-function TestNavigationHooks.testFixedDoorCarriesDestinationContractPresence()
+function TestNavigationHooks.testFixedDoorCarriesDestinationRewardAndContractPresence()
     local module, _, callbacks = capture()
     local target = { id = "next", gameName = "F_Next" }
     local occurrence = {
         overview = { additional = {} },
         doors = { kind = "fixed", target = target, zagreusContractPresent = true },
     }
-    local state = { state = "synchronized", plan = { occurrencesById = { next = {} } }, route = {} }
+    local state = { state = "synchronized", plan = { occurrencesById = {
+        next = { overview = { incomingReward = { rewardType = "MaxManaDrop" } } },
+    } }, route = {} }
     local room = {
         checkpoint = function() return true end,
         window = function() return true end,
     }
-    navigation.attach(module, stub(), function() return state end, function() end,
+    local scope = navigation.attach(module, stub(), function() return state end, function() end,
         { current = function() return occurrence end }, room)
     local priorMap, priorGame, priorCollapse = _G.MapState, _G.game, _G.CollapseTableOrdered
     local physicalDoor = { ObjectId = 101 }
@@ -119,10 +121,15 @@ function TestNavigationHooks.testFixedDoorCarriesDestinationContractPresence()
     _G.CollapseTableOrdered = function() return { physicalDoor } end
     callbacks.DoUnlockRoomExits(nil, {}, function()
         physicalDoor.Room = callbacks.ChooseNextRoomData(nil, {}, function() return nil end, {}, {}, {})
+        physicalDoor.Room.ChosenRewardType = callbacks.ChooseRoomReward(nil, {}, function()
+            return "MaxManaDrop"
+        end, {}, physicalDoor.Room, "RunProgress", {}, {})
         return true
     end, {}, {})
+    local proved, mismatch = scope.proveOutgoingDoors(state, {})
     _G.MapState, _G.game, _G.CollapseTableOrdered = priorMap, priorGame, priorCollapse
     lu.assertTrue(physicalDoor.Room.__runPlannerExecutionZagreusContractPresent)
+    lu.assertTrue(proved, mismatch)
 end
 
 function TestNavigationHooks.testAnomalyDoorUsesNativeReplacementPresentation()

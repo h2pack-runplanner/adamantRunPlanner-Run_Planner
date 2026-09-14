@@ -277,3 +277,38 @@ function TestRoomNavigationStructure.testDoorRealizationPreservesAndRequiresNati
     realized[1].Room.ChosenRewardType = nil
     lu.assertNil(doors.prove(item, realized, occurrencesById))
 end
+
+function TestRoomNavigationStructure.testFixedReturnsResolveDestinationRewardsAndProviders()
+    for _, case in ipairs({
+        { source = "C_Boss01", destination = "P_Combat09", reward = { rewardType = "MaxManaDrop" } },
+        { source = "B_Combat01", destination = "G_Combat10", reward = { rewardType = "MetaCardPointsCommonBigDrop" } },
+        { source = "B_Combat02", destination = "G_Combat03", reward = { rewardType = "Boon", source = "HeraUpgrade" } },
+    }) do
+        local item = { gameName = case.source, doors = { kind = "fixed", target = {
+            id = "return", gameName = case.destination,
+        } } }
+        local occurrencesById = { ["return"] = { overview = { incomingReward = case.reward } } }
+        local game = { RoomData = { [case.destination] = { Name = case.destination } } }
+        local native = doors.realize(item, { {} }, game, occurrencesById)
+        lu.assertEquals(native[1].Room.RewardType, case.reward.rewardType)
+        lu.assertEquals(native[1].Room.ForceLootName, case.reward.source)
+
+        -- Native reward setup moves the selected reward onto the destination room.
+        native[1].RewardType, native[1].Room.RewardType = nil, nil
+        native[1].Room.ChosenRewardType = case.reward.rewardType
+        lu.assertTrue(doors.prove(item, native, occurrencesById))
+
+        if case.reward.source then
+            native[1].Room.ForceLootName = "ZeusUpgrade"
+            local ok, mismatch = doors.prove(item, native, occurrencesById)
+            lu.assertNil(ok)
+            lu.assertEquals(mismatch.kind, "rewardSource")
+            native[1].Room.ForceLootName = case.reward.source
+        end
+        native[1].Room.ChosenRewardType = "RoomMoneyDrop"
+        local ok, mismatch = doors.prove(item, native, occurrencesById)
+        lu.assertNil(ok)
+        lu.assertEquals(mismatch, { kind = "reward", index = 1,
+            expected = case.reward.rewardType, observed = "RoomMoneyDrop" })
+    end
+end

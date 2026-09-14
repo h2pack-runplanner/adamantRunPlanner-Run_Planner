@@ -55,6 +55,18 @@ local function preservesNativeRequiredReward(target, occurrencesById)
         and targetOccurrence.overview.effectNeutralRequiredReward == true
 end
 
+-- Fixed links reference the destination's reward instead of repeating it inline.
+-- Resolve that same published input for both realization and exit proof.
+local function publishedTargets(expected, occurrencesById)
+    if expected.kind ~= "fixed" then return expected.targets end
+    local destination = occurrencesById[expected.target.id]
+    return { {
+        room = expected.target,
+        reward = destination.overview.incomingReward,
+        zagreusContractPresent = expected.zagreusContractPresent,
+    } }
+end
+
 local function proveCageRewards(target, nativeRoom, index)
     local expected = target.cageRewards
     if expected == nil then return true end
@@ -86,7 +98,7 @@ function doors.prove(occurrence, nativeDoors, occurrencesById)
         end
         return true, {}
     end
-    local targets = expected.kind == "fixed" and { { room = expected.target } } or expected.targets
+    local targets = publishedTargets(expected, occurrencesById)
     if type(nativeDoors) ~= "table" or #nativeDoors ~= #targets then
         return nil, { kind = "count", expected = #targets,
             observed = type(nativeDoors) == "table" and #nativeDoors or nil }
@@ -198,9 +210,7 @@ end
 function doors.realize(occurrence, nativeDoors, game, occurrencesById)
     local expected = occurrence.doors
     if expected.kind == "terminal" then return {} end
-    local targets = expected.kind == "fixed" and {
-        { room = expected.target, zagreusContractPresent = expected.zagreusContractPresent },
-    } or expected.targets
+    local targets = publishedTargets(expected, occurrencesById)
     local rows = {}
     for index, target in ipairs(targets) do
         local row = nativeDoors and nativeDoors[index] or {}
