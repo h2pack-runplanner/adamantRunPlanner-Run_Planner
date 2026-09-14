@@ -1,14 +1,7 @@
 local native = type(import) == "function" and import("mods/loadout/native.lua") or require("mods.loadout.native")
+local proof = type(import) == "function" and import("mods/room/conformance/proof.lua")
+    or require("mods.room.conformance.proof")
 local session = {}
-
-local function same(left, right)
-    if type(left) ~= type(right) then return false end
-    if type(left) == "number" then return math.abs(left - right) < 0.0000001 end
-    if type(left) ~= "table" then return left == right end
-    for key, value in pairs(left) do if not same(value, right[key]) then return false end end
-    for key in pairs(right) do if left[key] == nil then return false end end
-    return true
-end
 
 local function keys(values)
     local result = {}
@@ -50,11 +43,13 @@ function session.verifyCompleted(state, mismatch)
     local observedArcana = native.activeArcana()
     if not sameSet(expected.arcana, observedArcana) then return mismatch(state, "starting-arcana", expected.arcana, observedArcana) end
     local configured = native.configuredFearRanks(expected.fear.configuredRanks)
-    if not same(expected.fear.configuredRanks, configured) then
+    if not proof.compare("starting-fear", expected.fear.configuredRanks, configured) then
         return mismatch(state, "starting-fear", expected.fear.configuredRanks, configured)
     end
     local effective = native.fearRanks(expected.fear.effectiveRanks)
-    if not same(expected.fear.effectiveRanks, effective) then return mismatch(state, "effective-fear", expected.fear.effectiveRanks, effective) end
+    if not proof.compare("effective-fear", expected.fear.effectiveRanks, effective) then
+        return mismatch(state, "effective-fear", expected.fear.effectiveRanks, effective)
+    end
     local startingKeepsake = state.plan.startingKeepsake.keepsakeKey
     local observedKeepsake = (_G.GameState or {}).LastAwardTrait or (_G.GameState or {}).EquippedKeepsake
     if observedKeepsake ~= startingKeepsake then

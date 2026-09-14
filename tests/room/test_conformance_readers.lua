@@ -5,6 +5,7 @@ local proof = require("mods.room.conformance.proof")
 local admission = require("mods.room.conformance.admission")
 local protocolConformance = require("mods.protocol.conformance")
 local json = require("mods.protocol.json")
+local chaos = require("mods.traits.chaos")
 local nativeGame = require("tests.harness.native_game")
 
 TestConformanceReaders = {}
@@ -96,6 +97,78 @@ function TestConformanceReaders.testPostbossAdmissionAcceptsACompleteEntryMatch(
     local ok, errorValue = admission.verify(occurrence, startingLoadout)
     restore()
     lu.assertTrue(ok, errorValue)
+end
+
+function TestConformanceReaders.testNumericProofToleratesOnlyRoundoffAndPreservesStructure()
+    for _, values in ipairs({
+        { 1.2, (1 + 1.2) - 1 },
+        { 0.3, 0.1 + 0.2 },
+        { 0, 1e-9 },
+        { 1e-9, 0 },
+    }) do
+        lu.assertTrue(proof.compare("state", { values = { values[1] } }, { values = { values[2] } }))
+    end
+    for _, values in ipairs({
+        { 0, 1.01e-9 }, { 1.2, 1.2001 }, { 1000000, 1000000.0001 },
+        { 3, 4 }, { 1.2, "1.2" }, { 1, true },
+        { math.huge, math.huge }, { -math.huge, -math.huge }, { 0/0, 0/0 },
+    }) do
+        local ok, mismatch = proof.compare("state", { value = values[1] }, { value = values[2] })
+        lu.assertNil(ok)
+        lu.assertEquals(mismatch.checkpoint, "state")
+    end
+    lu.assertNil(proof.compare("state", { count = 3 }, {}))
+    lu.assertNil(proof.compare("state", {}, { count = 3 }))
+    lu.assertNil(proof.compare("state", { "one", "two" }, { "two", "one" }))
+    lu.assertNil(proof.compare("state", "Epic", "Rare"))
+end
+
+function TestConformanceReaders.testEmbryoOperandRoundTripsAtRoomExitAndPostbossAdmission()
+    for _, row in ipairs({
+        { "ChaosWeaponBlessing", "damageBonus", 1.2 },
+        { "ChaosSpecialBlessing", "damageBonus", 1.2 },
+        { "ChaosCastBlessing", "damageBonus", 1.2 },
+        { "ChaosMoneyBlessing", "moneyBonus", 0.4 },
+        { "ChaosManaCostBlessing", "costReduction", 0.3 },
+    }) do
+        local key, operand, value = row[1], row[2], row[3]
+        local occurrence, startingLoadout, restore = admissionFixture()
+        local expected = occurrence.diagnostics.roomEntered.retainedEffects.keepsakes
+        expected.transcendentEmbryo = {
+            origin = "ordinary", rarity = "Epic", progress = 0,
+            markedBlessingKey = key, markedBlessingValues = { [operand] = value },
+            markedBlessingAcquisitionIdentity = "embryo-acquisition",
+        }
+        local blessing = chaos.applyBlessing({
+            Name = key, Rarity = "Epic", FromChaosKeepsake = true,
+            AddOutgoingDamageModifiers = {}, ManaCostModifiers = {},
+        }, key, { [operand] = value })
+        table.insert(_G.CurrentRun.Hero.Traits, {
+            Name = "RandomBlessingKeepsake", Rarity = "Epic", CurrentRoom = 0,
+        })
+        table.insert(_G.CurrentRun.Hero.Traits, blessing)
+        occurrence.diagnostics.roomEntered.chaos.matured = { { blessingKey = key, rarity = "Epic" } }
+        occurrence.roomExitConformance = { facts = { { kind = "keepsakeEffects" } } }
+        occurrence.conformanceExpected = { keepsakeEffects = expected }
+        local function read(kind, factExpected)
+            return readers.read(kind, _G.CurrentRun, _G.GameState, factExpected)
+        end
+        local observed = read("keepsakeEffects", expected)
+        lu.assertTrue(observed.transcendentEmbryo.markedBlessingValues[operand] ~= value, key)
+        local exitOk = proof.prove(occurrence, read)
+        local admissionOk = admission.verify(occurrence, startingLoadout)
+
+        chaos.applyBlessing(blessing, key, { [operand] = value + 0.01 })
+        local wrongExit, exitMismatch = proof.prove(occurrence, read)
+        local wrongAdmission, admissionMismatch = admission.verify(occurrence, startingLoadout)
+        restore()
+        lu.assertTrue(exitOk, key)
+        lu.assertTrue(admissionOk, key)
+        lu.assertNil(wrongExit, key)
+        lu.assertEquals(exitMismatch.checkpoint, "room-exit-conformance:keepsakeEffects")
+        lu.assertNil(wrongAdmission, key)
+        lu.assertEquals(admissionMismatch.checkpoint, "postboss-admission:keepsakeEffects")
+    end
 end
 
 function TestConformanceReaders.testPostbossAdmissionRejectsWeaponAndAspectIdentityMismatch()

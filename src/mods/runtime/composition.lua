@@ -52,6 +52,7 @@ function composition.bind(root)
 
         local function getState() return executionState end
         local function diagnosticValue(value, ancestors)
+            if type(value) == "number" then return string.format("%.17g", value) end
             if type(value) ~= "table" then return tostring(value) end
             ancestors = ancestors or {}
             if ancestors[value] then return "<cycle>" end

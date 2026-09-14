@@ -95,7 +95,9 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesFullInventoryAndOccu
         state = "desynchronized", reason = "first-mismatch",
         firstMismatch = { checkpoint = "room-entry", expected = "F_Test", observed = "F_Wrong" },
         diagnostics = { {
-            occurrenceId = "one", checkpoint = "run-state", expected = { gold = 1 }, observed = { gold = 2 },
+            occurrenceId = "one", checkpoint = "run-state",
+            expected = { gold = 1, damageBonus = 1.2 },
+            observed = { gold = 2, damageBonus = (1 + 1.2) - 1 },
         } },
     }
     state.firstMismatch.checkpoint = "room-exit-conformance:traitInventory"
@@ -144,6 +146,7 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesFullInventoryAndOccu
     lu.assertStrContains(logs[1], "level=4")
     lu.assertStrContains(logs[1], "diagnostics=")
     lu.assertStrContains(logs[1], "run-state")
+    lu.assertStrContains(logs[1], "damageBonus=1.2000000000000002")
     _G.import, _G.rom = priorImport, priorRom
 end
 
