@@ -300,33 +300,68 @@ function TestTravelDealRefills.testWellRefillWithoutCandidatePassesNativeArgumen
     lu.assertEquals(diagnostics, {})
 end
 
-function TestTravelDealRefills.testShrineRefillUsesPublishedSourceDelayAndEventualAcquisitionOwnership()
-    local callbacks, refill, diagnostics, begins, completions = harness("hermesShrine")
-    local source = {
-        Name = "Source", Purchased = true,
-        __runPlannerGenerationKey = refill.source.generationKey,
-    }
-    local generated, screen
+function TestTravelDealRefills.testShrineInitialAndRefillDelaysStayWithTheirGenerations()
+    local callbacks, refill, diagnostics, begins, completions = harness("hermesShrine", true, {
+        overview = { hermesShrine = { offers = {
+            { generationKey = "initial:first", slotIndex = 1, optionKey = "HealBigDrop" },
+            { generationKey = "initial:secondLeft", slotIndex = 2, optionKey = "MaxManaDrop" },
+            { generationKey = "initial:secondRight", slotIndex = 3, optionKey = "TalentDrop",
+                purchase = { roomDelay = 2, rushed = true } },
+        } } },
+    })
+    refill.source.generationKey, refill.source.slotIndex = "initial:secondRight", 3
+    refill.replacement.slotIndex = 3
+    refill.replacement.optionKey, refill.replacement.rewardType = "BlindBoxLoot", "BlindBoxLoot"
+    refill.replacement.purchase.roomDelay = 8
+    local generated = fill(callbacks, { GroupsOf = {
+        { Offers = 1, OptionsData = { { Name = "HealBigDrop" } } },
+        { Offers = 2, OptionsData = { { Name = "MaxManaDrop" }, { Name = "TalentDrop" } } },
+    } })
+    local options = generated.StoreOptions
+    local screen = { Components = {} }
+    local priorRun = _G.CurrentRun
     local priorSurfaceShopData = _G.SurfaceShopData
     _G.SurfaceShopData = { DelayMin = 2, DelayMax = 8 }
+    _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = options } } }
+    local function nativeButtons(value)
+        for index = 1, 3 do
+            local option = options[index]
+            if not option.Processed then
+                -- Native construction replaces the declaration before calculating
+                -- the delay and price; the wrapper restores its generation binding.
+                option = { Name = option.Name, Processed = true }
+                option.RoomDelay = callbacks.RandomInt(nil, {}, function() return 5 end, 2, 8)
+                options[index] = option
+            end
+            value.Components["PurchaseButton" .. index] = { Data = option }
+        end
+    end
+    callbacks.CreateSurfaceShopButtons(nil, {}, nativeButtons, screen)
+    lu.assertEquals(options[3].RoomDelay, 2)
+    lu.assertEquals(options[3].__runPlannerGenerationKey, "initial:secondRight")
+    lu.assertEquals(options[1].RoomDelay, 5)
+    lu.assertEquals(options[2].RoomDelay, 5)
+    lu.assertEquals(begins(), 0)
+    callbacks.CreateSurfaceShopButtons(nil, {}, nativeButtons, screen)
+    lu.assertEquals(options[3].RoomDelay, 2)
+    local source = options[3]
+    source.Purchased = true
     callbacks.HandleSurfaceShopAction(nil, {}, function()
         generated = fill(callbacks, { GroupsOf = { {
             OptionsData = { { Name = "Other" }, { Name = refill.replacement.optionKey } },
         } } })
-        _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = generated.StoreOptions } } }
-        screen = { Components = {} }
-        callbacks.CreateSurfaceShopButtons(nil, {}, function(value)
-            local option = generated.StoreOptions[2]
-            option.RoomDelay = callbacks.RandomInt(nil, {}, function() return 8 end, 2, 8)
-            value.Components.PurchaseButton2 = { Data = option }
-        end, screen)
+        options[3] = generated.StoreOptions[3]
+        callbacks.CreateSurfaceShopButtons(nil, {}, nativeButtons, screen)
         return true
     end, {}, { Data = source }, {})
-    _G.CurrentRun = nil
+    _G.CurrentRun = priorRun
     _G.SurfaceShopData = priorSurfaceShopData
-    lu.assertEquals(generated.StoreOptions[2].Name, "TalentDrop")
-    lu.assertEquals(generated.StoreOptions[2].RoomDelay, 4)
-    lu.assertEquals(screen.Components.PurchaseButton2.Data.RoomDelay, 4)
+    lu.assertEquals(options[3].Name, "BlindBoxLoot")
+    lu.assertEquals(options[3].__runPlannerGenerationKey, "travelDealRefill")
+    lu.assertEquals(options[3].__runPlannerShrineSourceKey, "shrine-refill-delivery")
+    lu.assertEquals(options[3].RoomDelay, 8)
+    lu.assertEquals(screen.Components.PurchaseButton3.Data.RoomDelay, 8)
+    lu.assertEquals(source.RoomDelay, 2)
     lu.assertEquals(begins(), 1)
     lu.assertEquals(completions(), 1)
     lu.assertEquals(diagnostics, {})

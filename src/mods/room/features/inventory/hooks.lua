@@ -80,7 +80,7 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         if errorValue then
             session.diagnostic(state, errorValue.checkpoint, {
                 expected = errorValue.expected, observed = errorValue.observed,
-            })
+            }, active and active.occurrence)
             local result = base(args)
             completeRefill(session, state, activeRefill)
             report(runtime)
@@ -102,7 +102,7 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         if not ok then
             session.diagnostic(state, verifyError.checkpoint, {
                 expected = verifyError.expected, observed = verifyError.observed,
-            })
+            }, active and active.occurrence)
         end
         completeRefill(session, state, activeRefill)
         report(runtime)

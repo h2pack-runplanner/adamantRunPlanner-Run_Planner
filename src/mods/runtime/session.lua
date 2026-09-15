@@ -237,15 +237,17 @@ function runtime.automatic(state, effect, phaseKey)
     return runtime.complete(state, handle)
 end
 
-function runtime.diagnostic(state, checkpoint, observed)
+function runtime.diagnostic(state, checkpoint, observed, occurrence)
+    if state == nil or state.state ~= "synchronized" then return true end
     local current = room.current(state)
-    if current == nil then return true end
-    local expected = current.occurrence.diagnostics and current.occurrence.diagnostics[checkpoint]
+    occurrence = occurrence or current and current.occurrence
+    if occurrence == nil then return true end
+    local expected = occurrence.diagnostics and occurrence.diagnostics[checkpoint]
     local diagnostics = state.diagnostics or {}
     state.diagnostics = diagnostics
     if #diagnostics >= maxDiagnostics then table.remove(diagnostics, 1) end
     diagnostics[#diagnostics + 1] = {
-        occurrenceId = current.occurrence.id, checkpoint = checkpoint,
+        occurrenceId = occurrence.id, checkpoint = checkpoint,
         expected = expected, observed = observed,
     }
     return true

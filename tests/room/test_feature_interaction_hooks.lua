@@ -1,7 +1,6 @@
 -- luacheck: globals TestFeatureInteractionHooks
 local lu = require("luaunit")
 local roomCoordinatorModule = require("mods.room.coordinator")
-local json = require("mods.protocol.json")
 local mysteryAcquisitions = require("mods.room.timeline.acquisitions.mystery.hooks")
 local traitSeaStar = require("mods.room.timeline.acquisitions.sea_star").create()
 local traitAcquisitions = require("mods.room.timeline.acquisitions.traits.hooks")
@@ -149,7 +148,7 @@ function TestFeatureInteractionHooks.testShrineBuilderFaultRestoresDelayScope()
     local module, _, callbacks = capture()
     local active = opaque({ occurrence = { overview = { hermesShrine = {
         offers = {
-            { slotIndex = 1, purchase = { roomDelay = 2 } },
+            { slotIndex = 1, generationKey = "initial:first", purchase = { roomDelay = 2 } },
         },
     } } } }, function() return nil end)
     local session = stub()
@@ -159,7 +158,7 @@ function TestFeatureInteractionHooks.testShrineBuilderFaultRestoresDelayScope()
     local priorRun = _G.CurrentRun
     local priorSurfaceShopData = _G.SurfaceShopData
     _G.SurfaceShopData = { DelayMin = 2, DelayMax = 8 }
-    local option = { Name = "BoonA" }
+    local option = { Name = "BoonA", __runPlannerGenerationKey = "initial:first" }
     _G.CurrentRun = { CurrentRoom = { Store = { StoreOptions = { option } } } }
     local screen = { Components = {} }
     local ok, failure = pcall(callbacks.CreateSurfaceShopButtons, nil, {}, function(value)
@@ -402,7 +401,8 @@ function TestFeatureInteractionHooks.testDestinationShopInventoryUsesTheNextOccu
         lu.assertEquals(value, shop.occurrence)
         return shop
     end
-    local state = { route = {} }
+    local state = { state = "synchronized", route = {}, diagnostics = {} }
+    session.diagnostic = runtimeSession.diagnostic
     local route = { expected = function() return shop.occurrence end }
     attachFeatureHooks(module, session, function() return state end, function() end, session, route)
 
@@ -413,15 +413,36 @@ function TestFeatureInteractionHooks.testDestinationShopInventoryUsesTheNextOccu
         for _, group in ipairs(args.StoreData.GroupsOf) do options[#options + 1] = group.OptionsData[1] end
         return { StoreOptions = options }
     end, { StoreData = { GroupsOf = {
-        { OptionsData = { { Name = "RandomLoot" }, { Name = "BlindBoxLoot" } } },
-        { OptionsData = { { Name = "ArmorBoost" }, { Name = "MetaCurrencyDrop" } } },
-        { OptionsData = { { Name = "StackUpgrade" }, { Name = "MaxManaDrop" } } },
+        { Offers = 1, OptionsData = { { Name = "RandomLoot" }, { Name = "BlindBoxLoot" } } },
+        { Offers = 1, OptionsData = { { Name = "ArmorBoost" }, { Name = "MetaCurrencyDrop" } } },
+        { Offers = 1, OptionsData = { { Name = "StackUpgrade" }, { Name = "MaxManaDrop" } } },
+    } } })
+    local unavailable = { StoreData = { GroupsOf = {
+        { Offers = 1, OptionsData = { { Name = "RandomLoot" } } },
+    } } }
+    local nativeResult = { StoreOptions = {} }
+    lu.assertIs(callbacks.FillInShopOptions(nil, {}, function(args)
+        lu.assertIs(args, unavailable)
+        return nativeResult
+    end, unavailable), nativeResult)
+    callbacks.FillInShopOptions(nil, {}, function()
+        return { StoreOptions = { { Name = "Other" } } }
+    end, { StoreData = { GroupsOf = {
+        { Offers = 1, OptionsData = { { Name = "BlindBoxLoot" } } },
+        { Offers = 1, OptionsData = { { Name = "ArmorBoost" } } },
+        { Offers = 1, OptionsData = { { Name = "MaxManaDrop" } } },
     } } })
     _G.CurrentRun = priorRun
 
     lu.assertEquals(result.StoreOptions[1].Name, "BlindBoxLoot")
     lu.assertEquals(result.StoreOptions[2].Name, "ArmorBoost")
     lu.assertEquals(result.StoreOptions[3].Name, "MaxManaDrop")
+    lu.assertEquals(#state.diagnostics, 2)
+    lu.assertEquals(state.diagnostics[1].occurrenceId, "shop")
+    lu.assertEquals(state.diagnostics[1].checkpoint, "shop-inventory-offer")
+    lu.assertEquals(state.diagnostics[2].occurrenceId, "shop")
+    lu.assertEquals(state.diagnostics[2].checkpoint, "inventory-generation")
+    lu.assertEquals(state.state, "synchronized")
 end
 
 
@@ -492,15 +513,16 @@ end
 
 
 
-function TestFeatureInteractionHooks.testWorldShopInventoryUsesThePublishedOfferSetAcrossQGroups()
+function TestFeatureInteractionHooks.testWorldShopInventoryKeepsEachPublishedSlotInsideItsNativeQGroup()
     local module, _, callbacks = capture()
     local expected = {
-        { offerKey = "Boon", transactionOwner = "shop:boosted", optionKey = "BoostedRandomLoot" },
-        { offerKey = "Minor", transactionOwner = "shop:minor", optionKey = "MaxManaDrop" },
-        { offerKey = "Major", transactionOwner = "shop:major", optionKey = "ArmorBoost" },
-        { offerKey = "Hammer", transactionOwner = "shop:hammer", optionKey = "WeaponUpgradeDrop" },
-        { offerKey = "Talent", transactionOwner = "shop:talent", optionKey = "TalentDrop" },
-        { offerKey = "Spell", transactionOwner = "shop:spell", optionKey = "SpellDrop" },
+        { offerKey = "MixedProgress1", transactionOwner = "shop:boosted", optionKey = "BoostedRandomLoot",
+            source = "HeraUpgrade" },
+        { offerKey = "MixedProgress2", optionKey = "BlindBoxLoot" },
+        { offerKey = "LargeSurvival", optionKey = "ArmorBigBoost" },
+        { offerKey = "Survival", optionKey = "ArmorBigBoost" },
+        { offerKey = "PremiumProgress", optionKey = "MaxHealthDropBig" },
+        { offerKey = "MetaProgress", optionKey = "CardUpgradePointsDrop" },
     }
     local active = opaque({ occurrence = { overview = { shop = { offers = expected } } } }, function()
         return nil
@@ -512,6 +534,8 @@ function TestFeatureInteractionHooks.testWorldShopInventoryUsesThePublishedOffer
     local generated = callbacks.FillInShopOptions(nil, {}, function(args)
         local options = {}
         for _, group in ipairs(args.StoreData.GroupsOf) do
+            lu.assertEquals(group.Offers, 1)
+            lu.assertEquals(#group.OptionsData, 1)
             for _, option in ipairs(group.OptionsData or {}) do
                 if option.Name == "BoostedRandomLoot" then
                     options[#options + 1] = {
@@ -519,6 +543,9 @@ function TestFeatureInteractionHooks.testWorldShopInventoryUsesThePublishedOffer
                         Args = {
                             AddBoostedAnimation = true,
                             BoonRaritiesOverride = { Rare = 0.9 },
+                            ForceLootName = callbacks.GetEligibleInteractedGod(nil, {}, function()
+                                error("published source was not supplied")
+                            end),
                         },
                     }
                 else
@@ -528,14 +555,16 @@ function TestFeatureInteractionHooks.testWorldShopInventoryUsesThePublishedOffer
         end
         return { StoreOptions = options }
     end, { StoreData = { GroupsOf = {
-        { OptionsData = {
+        { Offers = 2, WeightedList = true, OptionsData = {
             { Name = "BlindBoxLoot" }, { Name = "BoostedRandomLoot" },
             { Name = "MaxHealthDrop" },
         } },
-        { OptionsData = { { Name = "MaxManaDrop" }, { Name = "StackUpgrade" } } },
-        { OptionsData = { { Name = "ArmorBoost" }, { Name = "LastStandDrop" } } },
-        { OptionsData = { { Name = "WeaponUpgradeDrop" }, { Name = "ChaosWeaponUpgrade" } } },
-        { OptionsData = { { Name = "TalentDrop" }, { Name = "SpellDrop" } } },
+        { Offers = 1, OptionsData = { { Name = "HealBigDrop" }, { Name = "ArmorBigBoost" } } },
+        { Offers = 1, OptionsData = { { Name = "ArmorBigBoost" }, { Name = "LastStandDrop" } } },
+        { Offers = 1, WeightedList = true, OptionsData = {
+            { Name = "BoostedRandomLoot" }, { Name = "MaxHealthDropBig" },
+        } },
+        { Offers = 1, OptionsData = { { Name = "CardUpgradePointsDrop" }, { Name = "CharonPointsDrop" } } },
     } } })
 
     lu.assertEquals(#generated.StoreOptions, #expected)
@@ -544,6 +573,7 @@ function TestFeatureInteractionHooks.testWorldShopInventoryUsesThePublishedOffer
             offer.optionKey == "BoostedRandomLoot" and "RandomLoot" or offer.optionKey)
         if offer.optionKey == "BoostedRandomLoot" then
             lu.assertTrue(generated.StoreOptions[index].Args.AddBoostedAnimation)
+            lu.assertEquals(generated.StoreOptions[index].Args.ForceLootName, "HeraUpgrade")
         end
         lu.assertEquals(generated.StoreOptions[index].__runPlannerOfferKey, offer.offerKey)
         lu.assertTrue(generated.StoreOptions[index].__runPlannerWorldShop)
@@ -595,10 +625,10 @@ function TestFeatureInteractionHooks.testWorldShopWorldItemsBindOnlyTheirStamped
             args.StoreData.GroupsOf[1].OptionsData[1],
             {
                 Name = "RandomLoot",
-                Args = args.StoreData.GroupsOf[1].OptionsData[2].Args,
+                Args = args.StoreData.GroupsOf[2].OptionsData[1].Args,
             },
         } }
-    end, { StoreData = { GroupsOf = { { OptionsData = {
+    end, { StoreData = { GroupsOf = { { Offers = 2, OptionsData = {
         { Name = "RandomLoot" },
         { Name = "BoostedRandomLoot", Args = { AddBoostedAnimation = true, BoonRaritiesOverride = { Rare = 1 } } },
     } } } } })
@@ -693,9 +723,9 @@ function TestFeatureInteractionHooks.testBlockedStampedWorldShopOwnerReachesNati
     local generated = callbacks.FillInShopOptions(nil, {}, function(args)
         return { StoreOptions = {
             args.StoreData.GroupsOf[1].OptionsData[1],
-            { Name = "RandomLoot", Args = args.StoreData.GroupsOf[1].OptionsData[2].Args },
+            { Name = "RandomLoot", Args = args.StoreData.GroupsOf[2].OptionsData[1].Args },
         } }
-    end, { StoreData = { GroupsOf = { { OptionsData = {
+    end, { StoreData = { GroupsOf = { { Offers = 2, OptionsData = {
         { Name = "RandomLoot" },
         { Name = "BoostedRandomLoot", Args = { AddBoostedAnimation = true, BoonRaritiesOverride = { Rare = 1 } } },
     } } } } })

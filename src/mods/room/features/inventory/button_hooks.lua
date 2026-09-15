@@ -48,10 +48,10 @@ local function restore(bindings, screen)
 end
 
 local function deliveryDelayChoices(active, options, room, state)
-    local bySlot = {}
+    local byGeneration = {}
     local shrine = active and active.occurrence.overview.hermesShrine
     for _, offer in ipairs(shrine and shrine.offers or {}) do
-        if offer.purchase ~= nil then bySlot[offer.slotIndex] = offer.purchase.roomDelay end
+        if offer.purchase ~= nil then byGeneration[offer.generationKey] = offer.purchase.roomDelay end
     end
     local refillHandle = active and room.resolve(state, active,
         { kind = "travelDealRefill", carrier = "hermesShrine" }) or nil
@@ -59,7 +59,7 @@ local function deliveryDelayChoices(active, options, room, state)
     local refill = refillPayload and refillPayload.transaction and refillPayload.transaction.refill
     local replacement = refill and refill.replacement
     if replacement and replacement.purchase ~= nil then
-        bySlot[replacement.slotIndex] = replacement.purchase.roomDelay
+        byGeneration[replacement.generationKey] = replacement.purchase.roomDelay
     end
 
     local indices = {}
@@ -70,7 +70,9 @@ local function deliveryDelayChoices(active, options, room, state)
     end
     table.sort(indices)
     local choices = {}
-    for _, index in ipairs(indices) do choices[#choices + 1] = { delay = bySlot[index] } end
+    for _, index in ipairs(indices) do
+        choices[#choices + 1] = { delay = byGeneration[options[index].__runPlannerGenerationKey] }
+    end
     return choices
 end
 

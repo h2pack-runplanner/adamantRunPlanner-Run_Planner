@@ -53,12 +53,41 @@ function worldShop.prepare(shop, storeData, args)
     for index, rawOffer in ipairs(shop.offers or {}) do
         expectedOffers[index] = primitives.copy(rawOffer)
     end
-    local matchedCount = primitives.filterGroups(storeData, expectedOffers)
-    if matchedCount < #expectedOffers then
+    -- Native GroupsOf order and Offers counts define the flattened shop slots.
+    -- Narrow each slot inside its own group; a shop-wide item set lets choices
+    -- bleed between groups (notably Q's mixed and premium boosted boons).
+    local slotGroups = {}
+    for _, group in ipairs(storeData.GroupsOf) do
+        for _ = 1, group.Offers do
+            local offer = expectedOffers[#slotGroups + 1]
+            local slotGroup = primitives.copy(group)
+            local matches = 0
+            if offer and slotGroup.OptionsData then
+                local count
+                slotGroup.OptionsData, count = primitives.retainRawOffers(slotGroup.OptionsData, { offer })
+                matches = matches + count
+            end
+            if offer and slotGroup.Options then
+                local count
+                slotGroup.Options, count = primitives.retainRawOffers(slotGroup.Options, { offer })
+                matches = matches + count
+            end
+            if matches == 0 then
+                return nil, {
+                    checkpoint = "shop-inventory-offer", expected = offer and offer.optionKey,
+                    observed = "no matching native slot option",
+                }
+            end
+            slotGroup.Offers = 1
+            slotGroups[#slotGroups + 1] = slotGroup
+        end
+    end
+    if #slotGroups ~= #expectedOffers then
         return nil, {
-            checkpoint = "shop-inventory-offer", expected = #expectedOffers, observed = matchedCount,
+            checkpoint = "shop-inventory-offer", expected = #expectedOffers, observed = #slotGroups,
         }
     end
+    storeData.GroupsOf = slotGroups
     return { kind = "shop", expected = expectedOffers, args = primitives.withStoreData(args, storeData) }
 end
 
