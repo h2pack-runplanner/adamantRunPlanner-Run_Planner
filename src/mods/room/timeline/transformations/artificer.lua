@@ -220,10 +220,13 @@ function artificer.attach(module, session, getState, report, room)
 
     return {
         consumeRewardSelection = function(_run, _nativeRoom, rewardStore, exclusions, args)
+            if not isNativeRewardChoice(rewardStore, exclusions, args) then return nil end
             local selection = rewardSelections[#rewardSelections]
-            if selection == nil or not isNativeRewardChoice(rewardStore, exclusions, args) then return nil end
+            -- This is still an Artificer roll without a published conversion;
+            -- it must not inherit navigation's incoming room reward.
+            if selection == nil then return nil, true end
             table.remove(rewardSelections)
-            return selection.payload
+            return selection.payload, true
         end,
     }
 end

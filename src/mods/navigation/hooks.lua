@@ -102,8 +102,14 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
             and args.Door.ObjectId or nil
         local ephyraSlot = physicalDoorId and ephyraDoorScope
             and ephyraDoorScope.byDoor[physicalDoorId] or nil
-        local pending = transformationScope and transformationScope.consumeRewardSelection(
-            run, nativeRoom, rewardStore, chosen, args)
+        local pending, transformationChoice
+        if transformationScope ~= nil then
+            pending, transformationChoice = transformationScope.consumeRewardSelection(
+                run, nativeRoom, rewardStore, chosen, args)
+        end
+        if transformationChoice and pending == nil then
+            return base(run, nativeRoom, rewardStore, chosen, args)
+        end
         local occurrence = occurrenceForRoom(state, nativeRoom)
         if occurrence == nil and pending == nil and ephyraSlot == nil then
             return base(run, nativeRoom, rewardStore, chosen, args)

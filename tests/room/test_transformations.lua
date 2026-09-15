@@ -100,6 +100,53 @@ function TestTransformations.testArtificerNeverClaimsAnAlreadyBoundNormalCarrier
     lu.assertEquals(completions, 0)
 end
 
+function TestTransformations.testUnplannedArtificerRollsRemainNativeInAnOwnedRoom()
+    for _, hasIncomingReward in ipairs({ true, false }) do
+        local module, callbacks = capture()
+        local normal = sourceRow("normal")
+        local occurrence = { id = "room", overview = {
+            incomingReward = hasIncomingReward and {
+                rewardType = "MetaCurrencyDrop", resolvedStoreKey = "MetaProgress",
+            } or nil,
+        } }
+        local state = { state = "synchronized", plan = { occurrencesById = { room = occurrence } } }
+        local nativeRoom = { __runPlannerExecutionRoomId = occurrence.id }
+        local run = { CurrentRoom = nativeRoom }
+        local room = {
+            current = function() return { occurrence = occurrence } end,
+            bound = function() return hasIncomingReward and normal or nil end,
+            peek = function() return normal end,
+            claimReady = function() return nil end,
+        }
+        local scope = transformations.attach(module, {}, function() return state end, function() end, room)
+        navigation.attach(module, {}, function() return state end, function() end, {}, room, scope)
+        local exclusions = { { RewardType = "Devotion" }, { RewardType = "SpellDrop" } }
+        local args = { IgnoreForcedReward = true }
+        for index, rewardType in ipairs({ "MaxHealthDrop", "WeaponUpgrade" }) do
+            callbacks.ConvertMetaRewardPresentation(nil, {}, function(target) return target end,
+                { ObjectId = index, Name = "MetaCurrencyDrop" })
+            local nativeEligibilityCalls = 0
+            local result = callbacks.ChooseRoomReward(nil, {}, function(receivedRun, receivedRoom, store,
+                receivedExclusions, receivedArgs)
+                lu.assertIs(receivedRun, run)
+                lu.assertIs(receivedRoom, nativeRoom)
+                lu.assertEquals(store, "RunProgress")
+                lu.assertIs(receivedExclusions, exclusions)
+                lu.assertIs(receivedArgs, args)
+                lu.assertTrue(callbacks.IsRoomRewardEligible(nil, {}, function()
+                    nativeEligibilityCalls = nativeEligibilityCalls + 1
+                    return true
+                end, run, nativeRoom, { Name = rewardType }, exclusions, args))
+                return rewardType
+            end, run, nativeRoom, "RunProgress", exclusions, args)
+            lu.assertEquals(result, rewardType)
+            lu.assertEquals(nativeEligibilityCalls, 1)
+        end
+        lu.assertNil(nativeRoom.RewardStoreName)
+        lu.assertEquals(state.state, "synchronized")
+    end
+end
+
 function TestTransformations.testArtificerUsesTheBoundRoleDispositionInsteadOfAnotherTransactionRole()
     local module, callbacks = capture()
     local source = { ObjectId = 14, Name = "MetaCurrencyDrop" }
@@ -258,8 +305,13 @@ function TestTransformations.testArtificerScopesItsPublishedRewardThroughNavigat
     local module, callbacks = capture()
     local source, child = {}, childRow()
     local target = { ObjectId = 18, Name = "MetaCurrencyDrop" }
-    local room = roomHarness(source, child, target)
-    local state = { state = "synchronized" }
+    local room, active = roomHarness(source, child, target)
+    local occurrence = { id = "room", overview = {
+        incomingReward = { rewardType = "MetaCurrencyDrop", resolvedStoreKey = "MetaProgress" },
+    } }
+    active.occurrence = occurrence
+    local state = { state = "synchronized", plan = { occurrencesById = { room = occurrence } } }
+    local incomingRoom = { __runPlannerExecutionRoomId = occurrence.id }
     local scope = transformations.attach(module, {}, function() return state end, function() end, room)
     navigation.attach(module, {}, function() return state end, function() end, {}, room, scope)
 
@@ -279,7 +331,7 @@ function TestTransformations.testArtificerScopesItsPublishedRewardThroughNavigat
             lu.assertFalse(callbacks.IsRoomRewardEligible(nil, {}, function() return true end,
                 {}, nativeRoom, { Name = "WeaponUpgrade" }, {}, {}))
             return "Boon"
-        end, {}, {}, "RunProgress",
+        end, {}, incomingRoom, "RunProgress",
             { { RewardType = "Devotion" }, { RewardType = "SpellDrop" } },
             { IgnoreForcedReward = true })
     lu.assertEquals(selectedStore, "RunProgress")
