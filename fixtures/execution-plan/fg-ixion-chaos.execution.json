@@ -511,11 +511,11 @@
                 "callingCard": null,
                 "timePiece": null,
                 "figLeaf": null,
-                "gorgon": null,
                 "phial": null,
                 "figurine": null,
                 "stone": null,
-                "transcendentEmbryo": null
+                "transcendentEmbryo": null,
+                "gorgon": null
               },
               "steadyGrowth": [],
               "hermesShrineDeliveries": [],
@@ -2289,11 +2289,11 @@
                 "callingCard": null,
                 "timePiece": null,
                 "figLeaf": null,
-                "gorgon": null,
                 "phial": null,
                 "figurine": null,
                 "stone": null,
-                "transcendentEmbryo": null
+                "transcendentEmbryo": null,
+                "gorgon": null
               },
               "steadyGrowth": [],
               "hermesShrineDeliveries": [],
@@ -2317,9 +2317,9 @@
       "gameName": "G_Intro",
       "kind": "EmptyEncounter",
       "overview": {
+        "unmodeledEncounterKeys": ["Empty"],
         "encounterPhases": [],
         "requiredObjects": [],
-        "unmodeledEncounterKeys": ["Empty"],
         "additional": [
           {
             "kind": "chaos",
@@ -2375,11 +2375,11 @@
                 "callingCard": null,
                 "timePiece": null,
                 "figLeaf": null,
-                "gorgon": null,
                 "phial": null,
                 "figurine": null,
                 "stone": null,
-                "transcendentEmbryo": null
+                "transcendentEmbryo": null,
+                "gorgon": null
               },
               "steadyGrowth": [],
               "hermesShrineDeliveries": [],
@@ -3279,9 +3279,20 @@
                   "kind": "traits",
                   "giver": "Hestia",
                   "options": [
+                    {
+                      "key": "HestiaWeaponBoon",
+                      "rarity": "Rare",
+                      "effectiveLevel": 2,
+                      "replacement": {
+                        "slot": "Melee",
+                        "replacedTraitKey": "ApolloWeaponBoon",
+                        "oldRarity": "Common",
+                        "newTraitKey": "HestiaWeaponBoon",
+                        "requiredRarity": "Rare"
+                      }
+                    },
                     { "key": "HestiaSprintBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "HestiaManaBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "CastProjectileBoon", "rarity": "Common", "effectiveLevel": 1 }
+                    { "key": "HestiaManaBoon", "rarity": "Common", "effectiveLevel": 1 }
                   ],
                   "selected": "option1"
                 }
@@ -3373,24 +3384,23 @@
             },
             "traits": {
               "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 2 },
                 { "traitKey": "ZeusSpecialBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "HeraCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "RestockBoon", "rarity": "Epic" },
                 { "traitKey": "SpellPolymorphTrait" },
-                { "traitKey": "HestiaSprintBoon", "rarity": "Common", "level": 1 }
+                { "traitKey": "HestiaWeaponBoon", "rarity": "Rare", "level": 2 }
               ],
               "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
+                { "slot": "Melee", "traitKey": "HestiaWeaponBoon" },
                 { "slot": "Secondary", "traitKey": "ZeusSpecialBoon" },
                 { "slot": "Ranged", "traitKey": "HeraCastBoon" },
-                { "slot": "Rush", "traitKey": "HestiaSprintBoon" },
+                { "slot": "Rush" },
                 { "slot": "Mana" },
                 { "slot": "Spell", "traitKey": "SpellPolymorphTrait" }
               ],
-              "elements": { "Aether": 0, "Earth": 0, "Air": 3, "Fire": 2, "Water": 0 },
-              "godRarityCounts": { "Common": 4, "Epic": 1 },
-              "upgradableCount": 4,
+              "elements": { "Aether": 0, "Earth": 0, "Air": 2, "Fire": 2, "Water": 0 },
+              "godRarityCounts": { "Common": 2, "Epic": 1, "Rare": 1 },
+              "upgradableCount": 3,
               "bannedTraitKeys": []
             }
           }
@@ -3765,5 +3775,5 @@
       }
     }
   ],
-  "planFingerprint": "b64b0919"
+  "planFingerprint": "28507c96"
 }

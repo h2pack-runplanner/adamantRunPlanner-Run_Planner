@@ -2235,7 +2235,7 @@
                   "giver": "Demeter",
                   "options": [
                     { "key": "BoonGrowthBoon", "rarity": "Epic" },
-                    { "key": "ReserveManaHitShieldBoon", "rarity": "Epic" },
+                    { "key": "DemeterManaBoon", "rarity": "Epic", "effectiveLevel": 1 },
                     { "key": "PlantHealthBoon", "rarity": "Epic", "effectiveLevel": 1 }
                   ],
                   "selected": "option1"
@@ -3571,8 +3571,8 @@
                   "giver": "Ares",
                   "options": [
                     { "key": "AresExCastBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "RendBloodDropBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "AresStatusDoubleDamageBoon", "rarity": "Common", "effectiveLevel": 1 }
+                    { "key": "BloodDropRevengeBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "AresManaBoon", "rarity": "Common", "effectiveLevel": 1 }
                   ],
                   "selected": "option1"
                 }
@@ -3620,7 +3620,7 @@
                   "options": [
                     { "key": "AntiArmorBoon", "rarity": "Common", "effectiveLevel": 1 },
                     { "key": "HeavyArmorBoon", "rarity": "Common" },
-                    { "key": "ArmorBoon", "rarity": "Common", "effectiveLevel": 1 }
+                    { "key": "HephaestusManaBoon", "rarity": "Common" }
                   ],
                   "selected": "option1"
                 }
@@ -5393,9 +5393,20 @@
                   "kind": "traits",
                   "giver": "Demeter",
                   "options": [
+                    {
+                      "key": "DemeterSpecialBoon",
+                      "rarity": "Epic",
+                      "effectiveLevel": 1,
+                      "replacement": {
+                        "slot": "Secondary",
+                        "replacedTraitKey": "AresSpecialBoon",
+                        "oldRarity": "Rare",
+                        "newTraitKey": "DemeterSpecialBoon",
+                        "requiredRarity": "Epic"
+                      }
+                    },
                     { "key": "DemeterManaBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "CastNovaBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "PlantHealthBoon", "rarity": "Common", "effectiveLevel": 1 }
+                    { "key": "CastNovaBoon", "rarity": "Common", "effectiveLevel": 1 }
                   ],
                   "selected": "option1"
                 }
@@ -5478,7 +5489,6 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Heroic", "level": 3 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Rare", "level": 1 },
                 { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
@@ -5489,19 +5499,19 @@
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
                 { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "DemeterManaBoon", "rarity": "Common", "level": 1 }
+                { "traitKey": "DemeterSpecialBoon", "rarity": "Epic", "level": 1 }
               ],
               "slots": [
                 { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
+                { "slot": "Secondary", "traitKey": "DemeterSpecialBoon" },
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "DemeterManaBoon" },
+                { "slot": "Mana" },
                 { "slot": "Spell" }
               ],
-              "elements": { "Aether": 3, "Earth": 12, "Air": 4, "Fire": 4, "Water": 3 },
-              "godRarityCounts": { "Heroic": 1, "Rare": 1, "Common": 7, "Epic": 1 },
-              "upgradableCount": 7,
+              "elements": { "Aether": 3, "Earth": 10, "Air": 4, "Fire": 4, "Water": 4 },
+              "godRarityCounts": { "Heroic": 1, "Common": 6, "Epic": 2 },
+              "upgradableCount": 6,
               "bannedTraitKeys": []
             },
             "retainedEffects": {
@@ -5811,7 +5821,6 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Heroic", "level": 3 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Rare", "level": 1 },
                 { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
@@ -5822,20 +5831,20 @@
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
                 { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "DemeterManaBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "DemeterSpecialBoon", "rarity": "Epic", "level": 1 },
                 { "traitKey": "CastLobBoon", "rarity": "Common" }
               ],
               "slots": [
                 { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
+                { "slot": "Secondary", "traitKey": "DemeterSpecialBoon" },
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "DemeterManaBoon" },
+                { "slot": "Mana" },
                 { "slot": "Spell" }
               ],
-              "elements": { "Aether": 3, "Earth": 12, "Air": 4, "Fire": 4, "Water": 4 },
-              "godRarityCounts": { "Heroic": 1, "Rare": 1, "Common": 8, "Epic": 1 },
-              "upgradableCount": 7,
+              "elements": { "Aether": 3, "Earth": 10, "Air": 4, "Fire": 4, "Water": 5 },
+              "godRarityCounts": { "Heroic": 1, "Common": 7, "Epic": 2 },
+              "upgradableCount": 6,
               "bannedTraitKeys": []
             }
           }
@@ -5868,7 +5877,7 @@
             "effect": "steadyGrowth",
             "phaseKey": "Combat",
             "source": "BoonGrowthBoon",
-            "target": "AresSpecialBoon",
+            "target": "HermesWeaponBoon",
             "window": { "kind": "encounterEnd", "phaseKey": "Combat" }
           },
           {
@@ -5893,7 +5902,7 @@
                   "entry": "[\"acquisitionEntry\",\"Surface\",\"P\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"P\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"P\\\\\\\",\\\\\\\"surface-p-8-1-p_combat12\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
                 },
                 "levelResolution": {
-                  "offeredTargets": ["ApolloWeaponBoon", "AresSpecialBoon", "HephaestusCastBoon"],
+                  "offeredTargets": ["ApolloWeaponBoon", "HephaestusCastBoon", "AresSprintBoon"],
                   "selectedTarget": "ApolloWeaponBoon",
                   "levelCount": 1
                 }
@@ -5985,8 +5994,7 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Heroic", "level": 4 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Epic", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Rare" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "BoonGrowthBoon", "rarity": "Epic" },
@@ -5996,20 +6004,20 @@
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
                 { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "DemeterManaBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "DemeterSpecialBoon", "rarity": "Epic", "level": 1 },
                 { "traitKey": "CastLobBoon", "rarity": "Common" }
               ],
               "slots": [
                 { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
+                { "slot": "Secondary", "traitKey": "DemeterSpecialBoon" },
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "DemeterManaBoon" },
+                { "slot": "Mana" },
                 { "slot": "Spell" }
               ],
-              "elements": { "Aether": 3, "Earth": 12, "Air": 4, "Fire": 4, "Water": 4 },
-              "godRarityCounts": { "Heroic": 1, "Epic": 2, "Common": 8 },
-              "upgradableCount": 7,
+              "elements": { "Aether": 3, "Earth": 10, "Air": 4, "Fire": 4, "Water": 5 },
+              "godRarityCounts": { "Heroic": 1, "Rare": 1, "Common": 6, "Epic": 2 },
+              "upgradableCount": 6,
               "bannedTraitKeys": []
             },
             "retainedEffects": {
@@ -6576,7 +6584,7 @@
             "effect": "steadyGrowth",
             "phaseKey": "Encounter",
             "source": "BoonGrowthBoon",
-            "target": "AresSpecialBoon",
+            "target": "HermesWeaponBoon",
             "window": { "kind": "encounterEnd", "phaseKey": "Encounter" }
           },
           {
@@ -6605,8 +6613,19 @@
                   "kind": "traits",
                   "giver": "Ares",
                   "options": [
-                    { "key": "RendBloodDropBoon", "rarity": "Rare", "effectiveLevel": 1 },
-                    { "key": "AresStatusDoubleDamageBoon", "rarity": "Rare", "effectiveLevel": 1 },
+                    {
+                      "key": "AresSpecialBoon",
+                      "rarity": "Heroic",
+                      "effectiveLevel": 1,
+                      "replacement": {
+                        "slot": "Secondary",
+                        "replacedTraitKey": "DemeterSpecialBoon",
+                        "oldRarity": "Epic",
+                        "newTraitKey": "AresSpecialBoon",
+                        "requiredRarity": "Heroic"
+                      }
+                    },
+                    { "key": "AresManaBoon", "rarity": "Rare", "effectiveLevel": 1 },
                     { "key": "BloodDropRevengeBoon", "rarity": "Rare", "effectiveLevel": 1 }
                   ],
                   "selected": "option1"
@@ -6665,8 +6684,7 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Heroic", "level": 4 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Epic" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "BoonGrowthBoon", "rarity": "Epic" },
@@ -6676,21 +6694,20 @@
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
                 { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "DemeterManaBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CastLobBoon", "rarity": "Common" },
-                { "traitKey": "RendBloodDropBoon", "rarity": "Rare", "level": 1 }
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 }
               ],
               "slots": [
                 { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
                 { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "DemeterManaBoon" },
+                { "slot": "Mana" },
                 { "slot": "Spell" }
               ],
-              "elements": { "Aether": 3, "Earth": 13, "Air": 4, "Fire": 4, "Water": 4 },
-              "godRarityCounts": { "Heroic": 2, "Common": 8, "Epic": 1, "Rare": 1 },
-              "upgradableCount": 8,
+              "elements": { "Aether": 3, "Earth": 11, "Air": 4, "Fire": 4, "Water": 4 },
+              "godRarityCounts": { "Heroic": 2, "Epic": 2, "Common": 6 },
+              "upgradableCount": 6,
               "bannedTraitKeys": []
             },
             "retainedEffects": {
@@ -7063,8 +7080,7 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Heroic", "level": 4 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Epic" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "BoonGrowthBoon", "rarity": "Epic" },
@@ -7074,9 +7090,8 @@
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
                 { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "DemeterManaBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CastLobBoon", "rarity": "Common" },
-                { "traitKey": "RendBloodDropBoon", "rarity": "Rare", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
                 { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" }
               ],
               "slots": [
@@ -7084,12 +7099,12 @@
                 { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "DemeterManaBoon" },
+                { "slot": "Mana" },
                 { "slot": "Spell" }
               ],
-              "elements": { "Aether": 3, "Earth": 13, "Air": 4, "Fire": 4, "Water": 4 },
-              "godRarityCounts": { "Heroic": 2, "Common": 8, "Epic": 1, "Rare": 1 },
-              "upgradableCount": 8,
+              "elements": { "Aether": 3, "Earth": 11, "Air": 4, "Fire": 4, "Water": 4 },
+              "godRarityCounts": { "Heroic": 2, "Epic": 2, "Common": 6 },
+              "upgradableCount": 6,
               "bannedTraitKeys": []
             },
             "retainedEffects": {
@@ -7269,8 +7284,7 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Heroic", "level": 4 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Rare" },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Heroic" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "BoonGrowthBoon", "rarity": "Epic" },
@@ -7280,9 +7294,8 @@
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
                 { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "DemeterManaBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CastLobBoon", "rarity": "Common" },
-                { "traitKey": "RendBloodDropBoon", "rarity": "Rare", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
                 { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" }
               ],
               "slots": [
@@ -7290,12 +7303,12 @@
                 { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "DemeterManaBoon" },
+                { "slot": "Mana" },
                 { "slot": "Spell" }
               ],
-              "elements": { "Aether": 3, "Earth": 13, "Air": 4, "Fire": 4, "Water": 4 },
-              "godRarityCounts": { "Heroic": 2, "Rare": 2, "Common": 7, "Epic": 1 },
-              "upgradableCount": 8,
+              "elements": { "Aether": 3, "Earth": 11, "Air": 4, "Fire": 4, "Water": 4 },
+              "godRarityCounts": { "Heroic": 3, "Common": 6, "Epic": 1 },
+              "upgradableCount": 6,
               "bannedTraitKeys": []
             },
             "retainedEffects": {
@@ -7715,5 +7728,5 @@
       }
     }
   ],
-  "planFingerprint": "a7089e07"
+  "planFingerprint": "711c5c5b"
 }

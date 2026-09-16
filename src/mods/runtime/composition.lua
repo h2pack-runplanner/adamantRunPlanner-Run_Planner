@@ -37,9 +37,25 @@ function composition.bind(root)
             activeSlot = inbox.activeSlot,
             select = inbox.select,
             load = inbox.load,
+            plan = inbox.plan,
             status = inbox.status,
         },
     }
+
+    -- Read-only inspection of the admitted session, independent of inbox previews.
+    function bound.sessionInspection()
+        local snapshot = session.status(executionState)
+        local routeState = executionState.route
+        snapshot.plan = executionState.plan
+        snapshot.slot = executionState.planSlot
+        snapshot.index = routeState and routeState.index
+        snapshot.current = routeState and routeState.currentOccurrence
+        snapshot.lastExited = routeState and routeState.lastExitedOccurrence
+        snapshot.restoredRoom = routeState and routeState.transparentNativeRoom
+        snapshot.issue = executionState.firstMismatch or executionState.firstFault or executionState.admissionError
+        snapshot.postbossAdmission = executionState.postbossAdmission
+        return snapshot
+    end
 
     function bound.attach(module)
         local roomHooks = import("mods/room/hooks.lua")

@@ -26,6 +26,11 @@ version of the planner.
 
 ## While playing
 
+Open the in-game inspector's **Plan** tab to preview the selected slot's
+loadout and planned keepsake changes. **Current Run** shows the frozen run
+plan, room progress, resync information, and any failure details. Sync and
+steering status stay visible in either tab.
+
 Follow the rooms and choices you authored in the app. If the run no longer
 matches the plan, the mod reports the mismatch and stops steering. Normal
 gameplay continues—you can keep playing or start a fresh planned run.

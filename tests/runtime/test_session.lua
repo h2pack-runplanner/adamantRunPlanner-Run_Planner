@@ -197,6 +197,7 @@ function TestRuntimeSession.testAdmissionLoadsTheSelectedSlotAndFreezesItsPlan()
     local value = {}
     lu.assertTrue(runtime.start(value, inbox, nil, 3))
     lu.assertEquals(selected, 3)
+    lu.assertEquals(value.planSlot, 3)
     lu.assertTrue(rawequal(value.plan, plans[3]))
 end
 
@@ -215,6 +216,10 @@ function TestRuntimeSession.testInboxSlotSelectionCannotMutateAnAdmittedPlan()
     lu.assertEquals(selected, 6)
     lu.assertTrue(rawequal(value.plan, plan))
     lu.assertEquals(value.plan.occurrences[1].id, "one")
+    lu.assertEquals(value.planSlot, 1)
+    runtime.beginNewRun(value)
+    lu.assertNil(value.plan)
+    lu.assertNil(value.planSlot)
 end
 
 function TestRuntimeSession.testStartingPhaseExposesOnlyTheBoundedStartingOccurrence()
@@ -262,6 +267,7 @@ function TestRuntimeSession.testPostbossAdmissionBuildsFreshRouteAtTheSelectedIn
 
     lu.assertNotNil(recovered)
     lu.assertEquals(loadedSlot, 4)
+    lu.assertEquals(state.planSlot, 4)
     lu.assertTrue(state.initialized)
     lu.assertEquals(state.state, "synchronized")
     lu.assertEquals(route.expected(state.route), postboss)

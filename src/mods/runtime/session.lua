@@ -91,6 +91,7 @@ local function reset(state, admissionAttempted)
     state.initialized = false
     state.state = "inactive"
     state.plan = nil
+    state.planSlot = nil
     state.route = nil
     state.room = nil
     state.firstMismatch = nil
@@ -169,6 +170,7 @@ function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom)
         return runtime.fault(state, routeError)
     end
     state.plan = plan
+    state.planSlot = activeSlot
     state.route = routeState
     state.room = room.new(plan, function(errorValue, expected, observed)
         return runtime.mismatch(state, errorValue, expected, observed)
@@ -208,6 +210,7 @@ function runtime.start(state, inbox, phase, activeSlot)
         end
     end
     state.plan = plan
+    state.planSlot = activeSlot
     state.route = route.new(plan)
     state.room = room.new(plan, function(errorValue, expected, observed)
         return runtime.mismatch(state, errorValue, expected, observed)

@@ -16,7 +16,7 @@ local function initialize()
     import_as_fallback(rom.game)
     local data = import("mods/host/data.lua")
     local runtime = import("mods/runtime/composition.lua").bind(_PLUGIN.config_mod_folder_path)
-    local ui = import("mods/host/status_ui.lua").bind(runtime.inboxInspection)
+    local ui = import("mods/host/status_ui.lua").bind(runtime.inboxInspection, runtime.sessionInspection)
     local module = lib.createModule({
         pluginGuid = _PLUGIN.guid,
         modpack = "run-planner",

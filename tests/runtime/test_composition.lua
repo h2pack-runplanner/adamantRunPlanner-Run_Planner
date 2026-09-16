@@ -353,6 +353,11 @@ end
 function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHooks()
     local priorImport, priorRom = _G.import, _G.rom
     local route, room, conformance = {}, {}, {}
+    local frozen, preview = {}, {}
+    local state = {
+        state = "synchronized", reason = "ready", plan = frozen, planSlot = 3,
+        route = { index = 2, currentOccurrence = { gameName = "N_Combat01" } },
+    }
     local attached
     local function freshImport(path)
         if path == "mods/runtime/composition.lua" then
@@ -367,6 +372,7 @@ function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHo
                     activeSlot = function() return 1 end,
                     select = function() end,
                     load = function() end,
+                    plan = function() return preview end,
                     status = function() return {} end,
                 }
             end }
@@ -376,8 +382,8 @@ function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHo
         if path == "mods/room/conformance/readers.lua" then return conformance end
         if path == "mods/runtime/session.lua" then
             return {
-                create = function() return {} end,
-                status = function() return { state = "inactive", reason = "test" } end,
+                create = function() return state end,
+                status = function() return require("mods.runtime.session").status(state) end,
             }
         end
         if path == "mods/loadout/session.lua" then return {} end
@@ -406,6 +412,21 @@ function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHo
     lu.assertEquals(type(runtime.inboxInspection.status), "function")
     lu.assertEquals(type(runtime.inboxInspection.activeSlot), "function")
     lu.assertEquals(type(runtime.inboxInspection.select), "function")
+    lu.assertIs(runtime.inboxInspection.plan(), preview)
+    local snapshot = runtime.sessionInspection()
+    lu.assertIs(snapshot.plan, frozen)
+    lu.assertEquals(snapshot.slot, 3)
+    lu.assertEquals(snapshot.current.gameName, "N_Combat01")
+    lu.assertEquals(snapshot.index, 2)
+    preview = {}
+    state.state, state.reason = "faulted", "executor-fault"
+    state.firstFault = { checkpoint = "test-contact", expected = "native function", observed = "missing" }
+    snapshot = runtime.sessionInspection()
+    lu.assertIs(runtime.inboxInspection.plan(), preview)
+    lu.assertIs(snapshot.plan, frozen)
+    lu.assertEquals(snapshot.state, "faulted")
+    lu.assertIs(snapshot.issue, state.firstFault)
+    lu.assertEquals(snapshot.checkpoint, "test-contact")
     runtime.attach({})
     lu.assertTrue(rawequal(attached.route, route))
     lu.assertTrue(rawequal(attached.room, room))
