@@ -1,6 +1,7 @@
 -- luacheck: globals TestTravelDealRefills
 local lu = require("luaunit")
 local support = require("tests.harness.hook_composition")
+local nativeGame = require("tests.harness.native_game")
 
 local capture, stub, opaque = support.capture, support.stub, support.opaque
 local attachFeatureHooks = support.attachFeatureHooks
@@ -238,7 +239,52 @@ function TestTravelDealRefills.testWellRefillUsesPublishedSourceAndCompletesAfte
     lu.assertEquals(diagnostics, {})
 end
 
-function TestTravelDealRefills.testWellWrongAndMissingRefillsStayDetectable()
+function TestTravelDealRefills.testWellRefillGeneratesOneItemWithMatchingNativePoolCounts()
+    for _, item in ipairs({
+        { name = "TemporaryImprovedExTrait", type = "Trait", healingCount = 0 },
+        { name = "LimitedSwapTraitDrop", type = "Consumable", healingCount = 0 },
+        { name = "TemporaryDoorHealTrait", type = "Trait", healingCount = 1 },
+        { name = "ArmorBoostStore", type = "Consumable", healingCount = 1 },
+    }) do
+        local callbacks, refill, diagnostics, begins, completions = harness("stygianWell")
+        refill.replacement.offerKey = item.name
+        local nativeStore = {
+            MaxOffers = 3,
+            HealingOffers = { Min = 1, Max = 1, WeightedList = {
+                { Name = "ArmorBoostStore", Type = "Consumable", Weight = 1 },
+                { Name = "TemporaryDoorHealTrait", Type = "Trait", Weight = 1 },
+            } },
+            Traits = { "TemporaryImprovedExTrait", "TemporaryImprovedCastTrait" },
+            Consumables = { "RandomStoreItem", "LimitedSwapTraitDrop" },
+        }
+        -- Like native HandleStorePurchase, generate the refill before spawning
+        -- the purchased Fateful Twist consumable and resolving its own effect.
+        local result = callbacks.HandleStorePurchase(nil, {}, function()
+            return callbacks.FillInShopOptions(nil, {}, function(args)
+                lu.assertEquals(args.StoreData.MaxOffers, 1)
+                lu.assertEquals(args.StoreData.HealingOffers.Amount, item.healingCount)
+                local generated = nativeGame.fillWellInventory(args)
+                lu.assertEquals(#generated.StoreOptions, 1)
+                return generated
+            end, { StoreData = nativeStore })
+        end, {}, { Index = 3, Data = {
+            Name = "RandomStoreItem", __runPlannerGenerationKey = refill.source.generationKey,
+        } }, {})
+        lu.assertNil(result.StoreOptions[1])
+        lu.assertNil(result.StoreOptions[2])
+        lu.assertEquals(result.StoreOptions[3].Name, item.name)
+        lu.assertEquals(result.StoreOptions[3].Type, item.type)
+        lu.assertEquals(result.StoreOptions[3].__runPlannerGenerationKey, "travelDealRefill")
+        lu.assertEquals(begins(), 1)
+        lu.assertEquals(completions(), 1)
+        lu.assertEquals(diagnostics, {})
+        lu.assertEquals(nativeStore.MaxOffers, 3)
+        lu.assertNil(nativeStore.HealingOffers.Amount)
+        lu.assertEquals(#nativeGame.fillWellInventory({ StoreData = nativeStore }).StoreOptions, 3)
+    end
+end
+
+function TestTravelDealRefills.testUnrelatedWellRefillsPassThroughAndUnrealizedRefillsRemainUnclaimed()
     local overview = { stygianWell = { interacted = true, offers = {
         { generationKey = "initial:healing", offerKey = "HealDropRange" },
         { generationKey = "initial:secondLeft", offerKey = "Source" },
@@ -254,7 +300,7 @@ function TestTravelDealRefills.testWellWrongAndMissingRefillsStayDetectable()
     end, {}, {
         Index = 2, Data = { Name = "Other", __runPlannerGenerationKey = "initial:secondRight" },
     }, {})
-    lu.assertEquals(diagnostics[1].checkpoint, "well-refill-source")
+    lu.assertEquals(diagnostics, {})
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
     lu.assertIs(received, nativeStore)
@@ -278,6 +324,44 @@ function TestTravelDealRefills.testWellPurchaseRejectedBeforeFillDoesNotBeginRef
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
     lu.assertEquals(diagnostics, {})
+end
+
+function TestTravelDealRefills.testStoreActionsWithoutRefillDoNotClaimOrDiagnoseUnrelatedSources()
+    for _, carrier in ipairs({ "stygianWell", "hermesShrine" }) do
+        local callbacks, _, diagnostics, begins, completions = harness(carrier)
+        local action = carrier == "stygianWell" and callbacks.HandleStorePurchase
+            or callbacks.HandleSurfaceShopAction
+        for _, accepted in ipairs({ false, true }) do
+            local result = action(nil, {}, function() return accepted end, {}, { Data = {
+                Purchased = true, __runPlannerGenerationKey = "initial:secondRight",
+            } }, {})
+            lu.assertEquals(result, accepted)
+        end
+        lu.assertEquals(diagnostics, {})
+        lu.assertEquals(begins(), 0)
+        lu.assertEquals(completions(), 0)
+    end
+end
+
+function TestTravelDealRefills.testWellMissingSlotIsDiagnosedOnlyWhenPublishedRefillIsConstructed()
+    local callbacks, _, diagnostics, begins, completions = harness("stygianWell")
+    local button = { Data = { __runPlannerGenerationKey = "initial:secondLeft" } }
+    local rejected = callbacks.HandleStorePurchase(nil, {}, function() return false end, {}, button, {})
+    lu.assertFalse(rejected)
+    lu.assertEquals(diagnostics, {})
+    lu.assertEquals(begins(), 0)
+    lu.assertEquals(completions(), 0)
+
+    local nativeStore = { Consumables = { { Name = "NativeRefill" } } }
+    local received
+    callbacks.HandleStorePurchase(nil, {}, function()
+        return fill(callbacks, nativeStore, function(args) received = args.StoreData end)
+    end, {}, button, {})
+    lu.assertIs(received, nativeStore)
+    lu.assertEquals(diagnostics[1].checkpoint, "well-refill-slot")
+    lu.assertEquals(#diagnostics, 1)
+    lu.assertEquals(begins(), 1)
+    lu.assertEquals(completions(), 1)
 end
 
 function TestTravelDealRefills.testWellRefillWithoutCandidatePassesNativeArgumentsWithoutInitialFallback()
@@ -367,7 +451,7 @@ function TestTravelDealRefills.testShrineInitialAndRefillDelaysStayWithTheirGene
     lu.assertEquals(diagnostics, {})
 end
 
-function TestTravelDealRefills.testShrineWrongAndMissingRefillsStayDetectable()
+function TestTravelDealRefills.testUnrelatedShrineRefillsPassThroughAndUnrealizedRefillsRemainUnclaimed()
     local overview = { hermesShrine = { offers = {
         { offerKey = "InitialOffer" }, { offerKey = "Other" }, { offerKey = "Third" },
     } } }
@@ -382,7 +466,7 @@ function TestTravelDealRefills.testShrineWrongAndMissingRefillsStayDetectable()
     end, {}, { Data = {
         Purchased = true, __runPlannerGenerationKey = "initial:secondRight",
     } }, {})
-    lu.assertEquals(diagnostics[1].checkpoint, "shrine-refill-source")
+    lu.assertEquals(diagnostics, {})
     lu.assertEquals(begins(), 0)
     lu.assertEquals(completions(), 0)
     lu.assertIs(received, nativeStore)

@@ -39,6 +39,30 @@ function nativeGame.noShrineUpgrades()
     return 0
 end
 
+-- StoreLogic.FillInShopOptions' Well pool/count contract. All supplied items
+-- are eligible and the first available option is drawn deterministically.
+-- Fail on an exhausted required pool instead of reproducing the native hang.
+function nativeGame.fillWellInventory(args)
+    local data, options, healingOptions = args.StoreData, {}, {}
+    for _, name in ipairs(data.Traits or {}) do
+        options[#options + 1] = { Name = name, Type = "Trait" }
+    end
+    for _, name in ipairs(data.Consumables or {}) do
+        options[#options + 1] = { Name = name, Type = "Consumable" }
+    end
+    local healing = data.HealingOffers
+    local healingCount = healing and (healing.Amount or healing.Min) or 0
+    for index = 1, healingCount do
+        local option = assert(healing.WeightedList[index], "native Well healing draw has no candidate")
+        healingOptions[#healingOptions + 1] = { Name = option.Name, Type = option.Type }
+    end
+    local ordinaryCount = data.MaxOffers - healingCount
+    assert(ordinaryCount >= 0, "native Well count cannot satisfy its required healing offers")
+    while #options > ordinaryCount do table.remove(options) end
+    for _, option in ipairs(options) do healingOptions[#healingOptions + 1] = option end
+    return { StoreOptions = healingOptions }
+end
+
 function nativeGame.randomChance(roll, observed)
     return function(chance)
         if observed ~= nil then observed[#observed + 1] = chance end

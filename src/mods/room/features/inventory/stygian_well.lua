@@ -20,6 +20,9 @@ local function retainOffer(storeData, offer)
         local retained, count = primitives.retainAndCount(storeData.HealingOffers.WeightedList,
             { [offer.offerKey] = true })
         storeData.HealingOffers.WeightedList = retained
+        -- Native generation keeps drawing until this quota is met, even when
+        -- the narrowed pool is empty because the refill is not a healing item.
+        storeData.HealingOffers.Amount = count > 0 and 1 or 0
         matched = matched or count > 0
     end
     local wanted = { [offer.offerKey] = true }
@@ -33,10 +36,14 @@ end
 
 function wellInventory.prepareRefill(storeData, args, scope)
     if scope == nil or scope.kind ~= "well" or scope.refill == nil then return nil end
+    if scope.slotIndex == nil then
+        return nil, { checkpoint = "well-refill-slot", expected = "native store slot", observed = nil }
+    end
     local refill = primitives.copy(scope.refill.replacement)
     if not retainOffer(storeData, refill) then
         return nil, { checkpoint = "well-refill-inventory", expected = refill.offerKey, observed = nil }
     end
+    storeData.MaxOffers = 1
     local expectedRefill = primitives.copy(refill)
     expectedRefill.slotIndex = scope.slotIndex
     return { kind = "travelDealStygianWell", expected = { expectedRefill },

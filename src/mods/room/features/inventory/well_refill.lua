@@ -12,7 +12,7 @@ local function buttonIndex(button, item)
     return nil
 end
 
-function refill.attach(module, session, getState, report, room, refillScopes)
+function refill.attach(module, getState, report, room, refillScopes)
     module.hooks.wrap("HandleStorePurchase", "run-planner-well-refill", function(_, runtime, base,
         screen, button, args)
         local state = getState(runtime)
@@ -24,23 +24,8 @@ function refill.attach(module, session, getState, report, room, refillScopes)
         local item = type(button) == "table" and (button.Data or button) or nil
         local generationKey = type(item) == "table" and item.__runPlannerGenerationKey or nil
         local scope = { nativeOnly = true }
-        if expected ~= nil then
-            if generationKey ~= expected.source.generationKey then
-                session.diagnostic(state, "well-refill-source", {
-                    expected = expected.source.generationKey, observed = generationKey,
-                })
-                scope = { nativeOnly = true }
-            else
-                local slotIndex = buttonIndex(button, item)
-                if slotIndex == nil then
-                    session.diagnostic(state, "well-refill-slot", {
-                        expected = "native store slot", observed = nil,
-                    })
-                    scope = { nativeOnly = true }
-                else
-                    scope = { kind = "well", refill = expected, handle = handle, slotIndex = slotIndex }
-                end
-            end
+        if expected ~= nil and generationKey == expected.source.generationKey then
+            scope = { kind = "well", refill = expected, handle = handle, slotIndex = buttonIndex(button, item) }
         end
         refillScopes.setWell(scope)
         local ok, result = pcall(base, screen, button, args)

@@ -3,7 +3,7 @@
 -- and hand the replacement construction to the shared inventory callback.
 local shrine = {}
 
-function shrine.attach(module, session, getState, report, room, refillScopes)
+function shrine.attach(module, getState, report, room, refillScopes)
     module.hooks.wrap("HandleSurfaceShopAction", "run-planner-shrine-refill", function(_, runtime, base,
         screen, button, args)
         local state = getState(runtime)
@@ -18,12 +18,7 @@ function shrine.attach(module, session, getState, report, room, refillScopes)
         local scope
         if purchased then
             scope = { nativeOnly = true }
-            if refill ~= nil and generationKey ~= refill.source.generationKey then
-                session.diagnostic(state, "shrine-refill-source", {
-                    expected = refill.source.generationKey, observed = generationKey,
-                })
-                scope = { nativeOnly = true }
-            elseif refill ~= nil then
+            if refill ~= nil and generationKey == refill.source.generationKey then
                 scope = { kind = "shrine", refill = refill, handle = handle }
             end
             refillScopes.setShrine(scope)
