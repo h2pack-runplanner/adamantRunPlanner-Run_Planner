@@ -63,6 +63,20 @@ return {
         },
     },
     conformance = {
+        -- Armor depletion is outside the planner's state model. These NPC
+        -- traits can disappear natively without invalidating modeled outcomes.
+        disposableArmorTraits = {
+            AgilityCostume = true,
+            ManaCostume = true,
+            VitalityCostume = true,
+            HighArmorCostume = true,
+            CastDamageCostume = true,
+            IncomeCostume = true,
+            SpellCostume = true,
+            EscalatingCostume = true,
+            BreakInvincibleArmorBoon = true,
+            BreakExplosiveArmorBoon = true,
+        },
         shrineUpgrades = {
             forfeit = "BoonSkipShrineUpgrade",
         },

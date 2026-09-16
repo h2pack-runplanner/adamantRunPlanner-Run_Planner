@@ -3,8 +3,20 @@
 -- module owns only the fact-kind-to-state projection.
 local p = type(import) == "function" and import("mods/protocol/primitives.lua")
     or require("mods.protocol.primitives")
+local nativeBindings = type(import) == "function" and import("mods/native_bindings.lua")
+    or require("mods.native_bindings")
+local disposableArmorTraits = nativeBindings.conformance.disposableArmorTraits
 
 local conformance = {}
+
+local function inventoryTrait(row)
+    if disposableArmorTraits[row.traitKey] then return nil end
+    local projected = { traitKey = row.traitKey }
+    if row.rarity ~= nil then projected.rarity = row.rarity end
+    if row.level ~= nil then projected.level = row.level end
+    if row.hammerRank ~= nil then projected.hammerRank = row.hammerRank end
+    return projected
+end
 
 local function traitInventoryExpected(frames)
     local entry = frames and frames.roomEntered
@@ -23,17 +35,15 @@ local function traitInventoryExpected(frames)
     local present, observed = {}, {}
     for _, row in ipairs(exit.traits.equipped or {}) do
         if type(row) == "table" and modeled[row.traitKey] then
-            local projected = { traitKey = row.traitKey }
-            if row.rarity ~= nil then projected.rarity = row.rarity end
-            if row.level ~= nil then projected.level = row.level end
-            if row.hammerRank ~= nil then projected.hammerRank = row.hammerRank end
-            present[#present + 1] = projected
+            local projected = inventoryTrait(row)
+            if projected ~= nil then present[#present + 1] = projected end
             observed[row.traitKey] = true
         end
     end
     local absent = {}
     for _, row in ipairs(entry.traits.equipped or {}) do
-        if type(row) == "table" and modeled[row.traitKey] and not observed[row.traitKey] then
+        if type(row) == "table" and modeled[row.traitKey] and not observed[row.traitKey]
+            and not disposableArmorTraits[row.traitKey] then
             absent[#absent + 1] = row.traitKey
         end
     end
@@ -65,11 +75,8 @@ local function traitInventoryEntryExpected(entry)
     local present = {}
     for _, row in ipairs(traits.equipped) do
         if type(row) ~= "table" or type(row.traitKey) ~= "string" then return nil end
-        local projected = { traitKey = row.traitKey }
-        if row.rarity ~= nil then projected.rarity = row.rarity end
-        if row.level ~= nil then projected.level = row.level end
-        if row.hammerRank ~= nil then projected.hammerRank = row.hammerRank end
-        present[#present + 1] = projected
+        local projected = inventoryTrait(row)
+        if projected ~= nil then present[#present + 1] = projected end
     end
     table.sort(present, function(left, right) return left.traitKey < right.traitKey end)
     return { present = present, absent = {} }

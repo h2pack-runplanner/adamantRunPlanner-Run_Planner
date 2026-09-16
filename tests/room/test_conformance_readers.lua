@@ -235,6 +235,59 @@ function TestConformanceReaders.testPostbossAdmissionIgnoresExtraTraitsAndDiagno
     lu.assertTrue(ok, errorValue)
 end
 
+function TestConformanceReaders.testDisposableNpcArmorDoesNotRequirePresenceOrAbsenceAtCheckpoints()
+    for _, key in ipairs({
+        "AgilityCostume", "ManaCostume", "VitalityCostume", "HighArmorCostume",
+        "CastDamageCostume", "IncomeCostume", "SpellCostume", "EscalatingCostume",
+        "BreakInvincibleArmorBoon", "BreakExplosiveArmorBoon",
+    }) do
+        local occurrence, startingLoadout, restore = admissionFixture()
+        local entry = occurrence.diagnostics.roomEntered
+        entry.traits.equipped[2] = { traitKey = key }
+        occurrence.diagnostics.beforeRoomExit = { traits = { equipped = entry.traits.equipped } }
+        occurrence.roomExitConformance = assert(json.decode('{"facts":[{"kind":"traitInventory"}]}'))
+        occurrence.conformanceExpected = assert(protocolConformance.resolve(
+            occurrence.roomExitConformance, occurrence.diagnostics, "roomExitConformance"))
+        local function read(kind, expected)
+            return readers.read(kind, _G.CurrentRun, _G.GameState, expected)
+        end
+        for _, armorPresent in ipairs({ false, true }) do
+            _G.CurrentRun.Hero.Traits[2] = armorPresent and { Name = key, CurrentArmor = 30 } or nil
+            lu.assertTrue(proof.prove(occurrence, read), key)
+            lu.assertTrue(admission.verify(occurrence, startingLoadout), key)
+        end
+        -- The native garment may survive even if the retained history no longer
+        -- names it. Neither side of inventory conformance owns armor depletion.
+        occurrence.diagnostics.beforeRoomExit.traits.equipped = { entry.traits.equipped[1] }
+        occurrence.conformanceExpected = assert(protocolConformance.resolve(
+            occurrence.roomExitConformance, occurrence.diagnostics, "roomExitConformance"))
+        lu.assertEquals(occurrence.conformanceExpected.traitInventory.absent, {})
+        lu.assertTrue(proof.prove(occurrence, read), key)
+        lu.assertEquals(entry.traits.equipped[2], { traitKey = key })
+        restore()
+    end
+end
+
+function TestConformanceReaders.testNonArmorNpcTraitsStillRequireInventoryConformance()
+    local occurrence, startingLoadout, restore = admissionFixture()
+    local entry = occurrence.diagnostics.roomEntered
+    entry.traits.equipped[2] = { traitKey = "FocusAttackDamageTrait" }
+    occurrence.diagnostics.beforeRoomExit = entry
+    occurrence.roomExitConformance = assert(json.decode('{"facts":[{"kind":"traitInventory"}]}'))
+    occurrence.conformanceExpected = assert(protocolConformance.resolve(
+        occurrence.roomExitConformance, occurrence.diagnostics, "roomExitConformance"))
+    local function read(kind, expected)
+        return readers.read(kind, _G.CurrentRun, _G.GameState, expected)
+    end
+    local exitOk, exitMismatch = proof.prove(occurrence, read)
+    local admissionOk, admissionMismatch = admission.verify(occurrence, startingLoadout)
+    restore()
+    lu.assertNil(exitOk)
+    lu.assertEquals(exitMismatch.checkpoint, "room-exit-conformance:traitInventory")
+    lu.assertNil(admissionOk)
+    lu.assertEquals(admissionMismatch.checkpoint, "postboss-admission:traitInventory")
+end
+
 function TestConformanceReaders.testTraitInventoryChecksOneAndThreeRemovalsButIgnoresUnmodeledTraits()
     local oneRemoval = {
         present = {
