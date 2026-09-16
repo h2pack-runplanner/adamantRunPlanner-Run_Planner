@@ -42,6 +42,10 @@ end
 
 local function innerFor(session) return session and session._timeline or nil end
 
+function room.describeHandle(session, handle)
+    return timeline.describeHandle(innerFor(session), handle)
+end
+
 local function delegate(session, method, ...)
     if session.closed then return fault(session, "room-session", "open session", "closed") end
     if session.firstMismatch ~= nil then return nil, session.firstMismatch end

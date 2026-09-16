@@ -63,6 +63,7 @@ function runtime.fault(state, errorValue, expected, observed)
             outcome = "fault", checkpoint = errorValue, expected = expected, observed = observed,
         }
         state.firstFault.outcome = "fault"
+        state.firstFault.traceback = debug.traceback("", 2)
     end
     if state.room ~= nil then room.dispose(state) end
     state.state, state.reason = "faulted", "executor-fault"

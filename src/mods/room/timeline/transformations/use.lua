@@ -40,12 +40,13 @@ function use.attach(module, session, getState, report, room)
     module.hooks.wrap("UseConsumableItem", "run-planner-outcome-use", function(_, runtime, base, item, args, user)
         local state = getState(runtime)
         local current = room.current(state)
-        local handle = current and room.bound(state, current, item) or nil
+        if current == nil then return base(item, args, user) end
+        local handle = room.bound(state, current, item)
         local payload = handle and room.peek(state, handle) or nil
         -- Claim transformation readiness at use so its accepted presentation
         -- can begin the same owner. Selector scopes still arm only after that
         -- native acceptance contact.
-        if handle == nil and current ~= nil then
+        if handle == nil then
             handle, payload = room.claimReady(state, current,
                 { kind = "transformation", gameName = name(item) }, item, transformation)
         end

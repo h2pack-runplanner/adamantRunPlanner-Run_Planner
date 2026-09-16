@@ -172,7 +172,11 @@ function composition.bind(root)
                     rom.log.info("[RunPlanner] executor-fault checkpoint="
                         .. tostring(fault.checkpoint) .. " expected="
                         .. diagnosticValue(fault.expected) .. " observed="
-                        .. diagnosticValue(fault.observed))
+                        .. diagnosticValue(fault.observed) .. " context="
+                        .. diagnosticValue(fault.context))
+                    for line in (fault.traceback or ""):gmatch("[^\r\n]+") do
+                        rom.log.info("[RunPlanner] executor-fault trace " .. line)
+                    end
                 end
             end
             if state.admissionError and state.loggedAdmission ~= state.admissionError then

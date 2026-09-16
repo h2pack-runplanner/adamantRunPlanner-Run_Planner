@@ -219,6 +219,8 @@ function levels.attach(module, session, getState, report, room, seaStar)
         item, args, user)
         if not levels.isDirectCarrier(item) then return base(item, args, user) end
         local state = getState(runtime)
+        local current = roomCoordinator.current(state)
+        if current == nil then return base(item, args, user) end
         local handle, payload = carrier(state, roomCoordinator, item)
         if handle ~= nil and not levels.isNormalPayload(payload) then
             return base(item, args, user)
@@ -226,7 +228,7 @@ function levels.attach(module, session, getState, report, room, seaStar)
         if handle ~= nil and resolution(payload) == nil then return base(item, args, user) end
 
         local scope = {
-            state = state, current = room.current(state), handle = handle, payload = payload,
+            state = state, current = current, handle = handle, payload = payload,
             item = item, originalArgs = item.UseFunctionArgs, accepted = false,
             deferred = type(item.UseFunctionArgs) == "table" and item.UseFunctionArgs.Thread == true,
             seaStar = seaStar.scope(state, payload),

@@ -512,6 +512,33 @@ function TestRouteRoomSessions.testAcceptedUnboundPickupClaimCompletesWithoutAnO
     lu.assertEquals(mismatches, {})
 end
 
+function TestRouteRoomSessions.testBindingFaultRetainsExactOwnerBeforeRuntimeDisposesTheRoom()
+    local runtime = require("mods.runtime.session")
+    local entry = occurrence()
+    entry.transactionsByOwner.required.offerKey = "first"
+    entry.transactionsByOwner.dependent.offerKey = "second"
+    local plan = { occurrencesById = { one = entry }, selectedOccurrenceIds = { "one" } }
+    local state = { state = "synchronized", plan = plan }
+    state.room = coordinator.new(plan, nil, {
+        onFault = function(errorValue) return runtime.fault(state, errorValue) end,
+    })
+    local active = assert(coordinator.enter(state, entry))
+    local first = assert(coordinator.resolve(state, active, { kind = "offer", offerKey = "first" }))
+    local second = assert(coordinator.resolve(state, active, { kind = "offer", offerKey = "second" }))
+    local item = { Name = "TestLoot", ObjectId = 78 }
+    assert(coordinator.bind(state, active, first, item))
+
+    lu.assertNil(coordinator.bind(state, active, second, item))
+    lu.assertNil(state.room.current)
+    lu.assertNil(active._timeline)
+    local context = state.firstFault.context
+    lu.assertEquals(context.operation, "bind")
+    lu.assertEquals(context.transaction, { owner = "dependent", kind = "acquisition" })
+    lu.assertEquals(context.activeRoom, { id = "one", gameName = "F_Test" })
+    lu.assertEquals(context.native, { name = "TestLoot", objectId = 78 })
+    lu.assertNil(state.firstMismatch)
+end
+
 function TestRouteRoomSessions.testClaimedOwnerRejectsPreclaimHandleForBeginAndComplete()
     local entry = occurrence()
     local transaction = entry.transactionsByOwner.required

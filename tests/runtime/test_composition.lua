@@ -150,6 +150,57 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesFullInventoryAndOccu
     _G.import, _G.rom = priorImport, priorRom
 end
 
+function TestRuntimeComposition.testFaultLogIncludesBindingContextAndEachStackLineOnce()
+    local priorImport, priorRom = _G.import, _G.rom
+    local logs = {}
+    local state = {
+        state = "faulted", reason = "executor-fault",
+        firstFault = {
+            checkpoint = "timeline-binding", expected = "one native carrier per exact handle",
+            observed = "different binding",
+            context = {
+                operation = "bind", transaction = { owner = "health-pickup", kind = "acquisition" },
+                native = { name = "HealDrop", objectId = 7123 },
+                activeRoom = { id = "opening", gameName = "F_Opening01" },
+            },
+            traceback = "stack traceback:\n\tacquisitions/binding.lua:67: in callback",
+        },
+    }
+    local function freshImport(path)
+        if path == "mods/runtime/composition.lua" then return assert(loadfile("src/" .. path))() end
+        if path == "mods/protocol/json.lua" or path == "mods/protocol/decoder.lua" then
+            return { decode = function(value) return value end }
+        end
+        if path == "mods/host/inbox.lua" then return { create = function() return {} end } end
+        if path == "mods/runtime/session.lua" then
+            return { create = function() return state end,
+                status = function() return { state = state.state, reason = state.reason } end }
+        end
+        if path == "mods/room/timeline/encounters/thessaly.lua" then return { create = shipCombatStub } end
+        if path == "mods/room/hooks.lua" then
+            return { attach = function(_, _, _, report) report({}); report({}) end }
+        end
+        return { create = function() return { attach = function() end } end,
+            attach = function() return {} end }
+    end
+    _G.import = freshImport
+    _G.rom = { path = {}, log = { info = function(message) logs[#logs + 1] = message end } }
+    local ok, errorValue = pcall(function()
+        freshImport("mods/runtime/composition.lua").bind("/tmp/run-planner-test").attach({})
+    end)
+    _G.import, _G.rom = priorImport, priorRom
+
+    lu.assertTrue(ok, errorValue)
+    lu.assertEquals(#logs, 3)
+    lu.assertStrContains(logs[1], "executor-fault checkpoint=timeline-binding")
+    lu.assertStrContains(logs[1], "name=HealDrop")
+    lu.assertStrContains(logs[1], "objectId=7123")
+    lu.assertStrContains(logs[1], "owner=health-pickup")
+    lu.assertStrContains(logs[1], "gameName=F_Opening01")
+    lu.assertStrContains(logs[2], "executor-fault trace stack traceback:")
+    lu.assertStrContains(logs[3], "acquisitions/binding.lua:67")
+end
+
 function TestRuntimeComposition.testFieldsDiagnosticLogsItsCompletedSnapshotWithoutMismatch()
     local priorImport, priorRom = _G.import, _G.rom
     local logs = {}

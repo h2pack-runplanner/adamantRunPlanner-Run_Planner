@@ -267,21 +267,89 @@ local function bindingContext(state, context)
     return nil
 end
 
+local function occurrenceIdentity(occurrence)
+    return occurrence and { id = occurrence.id, gameName = occurrence.gameName } or "none"
+end
+
+local function bindingFailure(state, errorValue, details)
+    if type(errorValue) == "table" and errorValue.outcome == "fault" and errorValue.context == nil then
+        local roomState = stateOf(state)
+        local active = roomState and roomState.current
+        local prepared = roomState and roomState.prepared
+        local context = details.context or active
+        local native = type(details.native) == "table" and details.native or nil
+        local contact = {}
+        for key, value in pairs(details.contact or {}) do
+            if type(value) == "string" or type(value) == "number" or type(value) == "boolean" then
+                contact[key] = value
+            end
+        end
+        local nativeRoom = _G.CurrentRun and _G.CurrentRun.CurrentRoom
+        local route = state and state.route
+        local plan = state and state.plan
+        local expectedId = route and plan and plan.selectedOccurrenceIds and plan.selectedOccurrenceIds[route.index]
+        -- Snapshot identities before the runtime fault disposes room sessions.
+        -- A failed claim can precede transaction selection: do not attribute it
+        -- to the first published owner or to the next room's reward.
+        errorValue.context = {
+            operation = details.operation,
+            state = state and state.state,
+            contact = contact,
+            transaction = session.describeHandle(context, details.handle)
+                or (details.handle == nil and "unclaimed" or "unknown handle"),
+            sourceTransaction = session.describeHandle(context, details.contact and details.contact.source),
+            native = native and {
+                name = native.Name or native.ItemName or native.LootName,
+                objectId = native.ObjectId,
+                useFunction = native.UseFunctionName,
+            } or "none",
+            nativeRoom = nativeRoom and {
+                gameName = nativeRoom.Name,
+                occurrenceId = nativeRoom.__runPlannerExecutionRoomId,
+                leaving = nativeRoom.Leaving,
+            } or "none",
+            requestedRoom = occurrenceIdentity(details.context and details.context.occurrence),
+            activeRoom = occurrenceIdentity(active and active.occurrence),
+            preparedRoom = occurrenceIdentity(prepared and prepared.occurrence),
+            lastExitedRoom = occurrenceIdentity(route and route.lastExitedOccurrence),
+            routeIndex = route and route.index,
+            routeExpectedRoom = occurrenceIdentity(expectedId and plan.occurrencesById[expectedId]),
+        }
+    end
+    return fail(state, errorValue)
+end
+
+local function unboundFailure(state, checkpoint, expected, observed, details)
+    return bindingFailure(state, {
+        outcome = "fault", checkpoint = checkpoint, expected = expected, observed = observed,
+    }, details)
+end
+
 function coordinator.resolve(state, context, contact)
     local owner = bindingContext(state, context)
-    if owner == nil then return fault(state, "timeline-handle", "active or prepared occurrence", "unbound") end
+    -- A native producer can finish after its discovery context has expired.
+    -- Without that context it cannot establish ownership in this or a later room.
+    if owner == nil then return nil end
     local source = contact and contact.source
     local handle, errorValue = session.resolve(owner, timelineBindings.resolve, contact, source)
-    if handle == nil and errorValue ~= nil then return fail(state, errorValue) end
+    if handle == nil and errorValue ~= nil then
+        return bindingFailure(state, errorValue, { operation = "resolve", context = owner, contact = contact })
+    end
     return handle
 end
 
 function coordinator.bind(state, context, handle, nativeObject)
     if handle == nil then return nil end
     local owner = bindingContext(state, context)
-    if owner == nil then return fault(state, "timeline-binding", "active or prepared occurrence", "unbound") end
+    if owner == nil then
+        return unboundFailure(state, "timeline-binding", "active or prepared occurrence", "unbound",
+            { operation = "bind", context = context, handle = handle, native = nativeObject })
+    end
     local bound, errorValue = session.bind(owner, handle, nativeObject)
-    if bound == nil then return fail(state, errorValue) end
+    if bound == nil then
+        return bindingFailure(state, errorValue,
+            { operation = "bind", context = owner, handle = handle, native = nativeObject })
+    end
     return bound
 end
 
@@ -294,7 +362,10 @@ function coordinator.releaseCompletedBinding(state, context, handle, nativeObjec
     local owner = bindingContext(state, context)
     if owner == nil then return nil end
     local ok, errorValue = session.releaseCompletedBinding(owner, handle, nativeObject)
-    if ok == nil and errorValue ~= nil then return fail(state, errorValue) end
+    if ok == nil and errorValue ~= nil then
+        return bindingFailure(state, errorValue,
+            { operation = "releaseCompletedBinding", context = owner, handle = handle, native = nativeObject })
+    end
     return ok
 end
 
@@ -305,26 +376,41 @@ end
 
 function coordinator.claimReady(state, context, contact, native, compatible)
     local owner = bindingContext(state, context)
-    if owner == nil then return fault(state, "timeline-claim", "active or prepared occurrence", "unbound") end
+    -- Discovery does not assert planner ownership. Native callbacks can run
+    -- outside a room or outlive the room in which their use began.
+    if owner == nil then return nil end
     local handle, payload, errorValue = session.claimReady(owner, contact, native, compatible)
-    if handle == nil and errorValue ~= nil then return fail(state, errorValue) end
+    if handle == nil and errorValue ~= nil then
+        return bindingFailure(state, errorValue,
+            { operation = "claimReady", context = owner, contact = contact, native = native })
+    end
     return handle, payload
 end
 
 function coordinator.begin(state, handle)
     local active = coordinator.current(state)
-    if active == nil then return fault(state, "timeline-handle", "active occurrence", "none") end
+    if active == nil then
+        return unboundFailure(state, "timeline-handle", "active occurrence", "none",
+            { operation = "begin", handle = handle })
+    end
     local payload, errorValue = session.begin(active, handle)
     if errorValue == "completed" then return nil, "completed" end
-    if payload == nil then return fail(state, errorValue) end
+    if payload == nil then
+        return bindingFailure(state, errorValue, { operation = "begin", context = active, handle = handle })
+    end
     return payload
 end
 
 function coordinator.peek(state, handle)
     local active = coordinator.current(state)
-    if active == nil then return fault(state, "timeline-handle", "active occurrence", "none") end
+    if active == nil then
+        return unboundFailure(state, "timeline-handle", "active occurrence", "none",
+            { operation = "peek", handle = handle })
+    end
     local payload, errorValue = session.peek(active, handle)
-    if payload == nil and errorValue ~= nil then return fail(state, errorValue) end
+    if payload == nil and errorValue ~= nil then
+        return bindingFailure(state, errorValue, { operation = "peek", context = active, handle = handle })
+    end
     return payload
 end
 
@@ -333,7 +419,9 @@ function coordinator.complete(state, handle)
     local active = coordinator.current(state)
     if active == nil then return nil end
     local ok, errorValue = session.complete(active, handle)
-    if not ok then return fail(state, errorValue) end
+    if not ok then
+        return bindingFailure(state, errorValue, { operation = "complete", context = active, handle = handle })
+    end
     return true
 end
 

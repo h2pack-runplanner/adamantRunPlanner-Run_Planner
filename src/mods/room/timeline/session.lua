@@ -84,6 +84,16 @@ local function handleFor(session, row)
     return handle
 end
 
+-- Diagnostic lookup must not begin an owner or fault an unknown handle.
+function timeline.describeHandle(session, handle)
+    local row = session and session.handles[handle]
+    if row == nil then return nil end
+    return {
+        owner = row.transaction.owner, kind = row.transaction.kind,
+        role = row.detail and row.detail.role,
+    }
+end
+
 function timeline.resolve(session, resolver, contact, sourceHandle)
     if session.closed then return fault(session, "room-session", "open session", "closed") end
     if terminal(session) ~= nil then return nil, terminal(session) end

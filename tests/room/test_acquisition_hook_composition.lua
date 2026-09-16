@@ -28,6 +28,148 @@ function TestAcquisitionHookComposition:tearDown()
     self.restoreNative()
 end
 
+function TestAcquisitionHookComposition.testIncidentalConsumablesPassThroughEverySharedUseAdapter()
+    local room = roomCoordinatorModule
+    local runtime = require("mods.runtime.session")
+    local route = require("mods.route.session")
+    local levels = require("mods.room.timeline.acquisitions.levels.hooks")
+    local outcomes = require("mods.room.timeline.transformations.use")
+    for _, phase in ipairs({ "inactive", "active", "leaving", "closesDuringUse" }) do
+        local node = {
+            owner = "health", kind = "acquisition",
+            window = { kind = "standard", phase = "beforeCombat" },
+            roles = { { role = "self", gameName = "MaxHealthDrop", kind = "consumable", disposition = "normal" } },
+        }
+        local opening = {
+            id = "opening", gameName = "F_Opening01", transactionsByOwner = { health = node },
+            timeline = { transactions = { node }, dependencies = {}, obligations = {} },
+            roomExitConformance = { facts = {} },
+        }
+        local plan = {
+            kind = "ready", selectedOccurrenceIds = { "opening" },
+            occurrences = { opening }, occurrencesById = { opening = opening },
+        }
+        local state = runtime.create()
+        if phase ~= "inactive" then
+            assert(runtime.start(state, { load = function() return true, plan end }))
+            assert(route.enter(state.route, opening.id, opening.gameName))
+            assert(room.enter(state, opening))
+        end
+        local function leave()
+            assert(room.close(state, {}, {}))
+            assert(route.exit(state.route))
+        end
+        if phase == "leaving" then leave() end
+
+        -- Compose all wrappers of the shared native functions, rather than
+        -- letting the last registered adapter replace the others in the test.
+        local callbacks = {}
+        local module = { hooks = { wrap = function(name, _, callback)
+            local prior = callbacks[name]
+            callbacks[name] = function(base, ...)
+                local inner = prior and function(...) return prior(base, ...) end or base
+                return callback(nil, {}, inner, ...)
+            end
+        end } }
+        local function getState() return state end
+        local function report() end
+        directPickups.attach(module, runtime, getState, report, room, seaStar)
+        levels.attach(module, runtime, getState, report, room, seaStar)
+        outcomes.attach(module, runtime, getState, report, room)
+
+        local args, user = {}, {}
+        local function use(item, closeDuringUse)
+            return callbacks.UseConsumableItem(function(actual, actualArgs, actualUser)
+                lu.assertIs(actual, item)
+                lu.assertIs(actualArgs, args)
+                lu.assertIs(actualUser, user)
+                if closeDuringUse then leave() end
+                callbacks.ConsumableUsedPresentation(function() end, {}, actual, actualArgs)
+                return "native-result"
+            end, item, args, user)
+        end
+        for _, item in ipairs({
+            { Name = "LobAmmoPack", ObjectId = 2000228 },
+            { Name = "GiftDrop", UseFunctionName = "UseStoreRewardRandomStack", UseFunctionArgs = { NumStacks = 1 } },
+            { Name = "LastStandShopItem" },
+            { Name = "ChaosWeaponUpgrade", UseFunctionName = "ChaosHammerUpgrade" },
+        }) do
+            lu.assertEquals(use(item), "native-result")
+            lu.assertNil(room.bound(state, room.current(state), item))
+        end
+        local health = { Name = "MaxHealthDrop" }
+        lu.assertEquals(use(health, phase == "closesDuringUse"), "native-result")
+        if phase == "active" then
+            local handle = assert(room.bound(state, room.current(state), health))
+            local _, status = room.begin(state, handle)
+            lu.assertEquals(status, "completed")
+        end
+        lu.assertNil(state.firstFault)
+        lu.assertNil(state.firstMismatch)
+        lu.assertEquals(state.diagnostics, {})
+        lu.assertEquals(state.state, phase == "inactive" and "inactive" or "synchronized")
+    end
+end
+
+function TestAcquisitionHookComposition.testDelayedProducersCannotBindThroughAnExpiredRoomContext()
+    local room = roomCoordinatorModule
+    local runtime = require("mods.runtime.session")
+    local route = require("mods.route.session")
+    local binding = require("mods.room.timeline.acquisitions.binding")
+    for _, nextRoomEntered in ipairs({ false, true }) do
+        for _, carrier in ipairs({
+            { callback = "CreateConsumableItem", native = { Name = "RoomMoneyDrop" } },
+            { callback = "CreateLoot", native = { Name = "HeraUpgrade", GodLoot = true } },
+        }) do
+            local reward = { rewardType = "Boon", producerLifecycleKey = "RoomReward" }
+            local node = {
+                owner = "next-reward", kind = "acquisition", reward = reward,
+                producerLifecycleKey = "RoomReward",
+                window = { kind = "standard", phase = "beforeCombat" },
+                roles = { { role = "self", gameName = carrier.native.Name } },
+            }
+            local opening = {
+                id = "opening", gameName = "F_Opening01", overview = { incomingReward = reward },
+                transactionsByOwner = {},
+                timeline = { transactions = {}, dependencies = {}, obligations = {} },
+                roomExitConformance = { facts = {} },
+            }
+            local following = {
+                id = "following", gameName = "F_Combat01", overview = { incomingReward = reward },
+                transactionsByOwner = { [node.owner] = node },
+                timeline = { transactions = { node }, dependencies = {}, obligations = {} },
+                roomExitConformance = { facts = {} },
+            }
+            local plan = {
+                kind = "ready", selectedOccurrenceIds = { opening.id, following.id },
+                occurrences = { opening, following },
+                occurrencesById = { opening = opening, following = following },
+            }
+            local state = runtime.create()
+            assert(runtime.start(state, { load = function() return true, plan end }))
+            assert(route.enter(state.route, opening.id, opening.gameName))
+            assert(room.enter(state, opening))
+            local module, _, callbacks = capture()
+            binding.attach(module, runtime, function() return state end, function() end, room)
+            local result = callbacks.SpawnRoomReward(nil, {}, function()
+                assert(room.close(state, {}, {}))
+                assert(route.exit(state.route))
+                if nextRoomEntered then
+                    assert(route.enter(state.route, following.id, following.gameName))
+                    assert(room.enter(state, following))
+                end
+                return callbacks[carrier.callback](nil, {}, function() return carrier.native end, {})
+            end, {}, {})
+            lu.assertIs(result, carrier.native)
+            lu.assertNil(room.bound(state, room.current(state), carrier.native))
+            lu.assertEquals(state.state, "synchronized")
+            lu.assertNil(state.firstFault)
+            lu.assertNil(state.firstMismatch)
+            lu.assertEquals(state.diagnostics, {})
+        end
+    end
+end
+
 function TestAcquisitionHookComposition.testChaosScreenInstallationCompletesItsBoundOwner()
     local module, _, callbacks = capture()
     local completed = {}

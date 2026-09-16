@@ -49,7 +49,8 @@ function pickups.attach(module, session, getState, report, room, seaStar)
         item, args, user)
         local state = getState(runtime)
         local current = room.current(state)
-        local handle = current and room.bound(state, current, item) or nil
+        if current == nil then return base(item, args, user) end
+        local handle = room.bound(state, current, item)
         local payload = handle and room.peek(state, handle) or nil
         if handle ~= nil and not pickups.isDirectCarrier(item, payload) then
             return base(item, args, user)
