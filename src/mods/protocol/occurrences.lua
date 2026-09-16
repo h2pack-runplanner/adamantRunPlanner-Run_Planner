@@ -238,8 +238,12 @@ local function doors(value, ids, label)
                 if target.cageRewards == nil then
                     return p.fail(targetLabel .. ".cageRewards is required for FieldsEncounter target")
                 end
-                if #target.cageRewards ~= #targetOccurrence.overview.fields.cagePoints then
-                    return p.fail(targetLabel .. ".cageRewards must match Fields target cagePoints length")
+                local cageCount = 0
+                for _, phase in ipairs(targetOccurrence.overview.encounterPhases) do
+                    if string.match(phase.slotKey, "^Cage%d+$") then cageCount = cageCount + 1 end
+                end
+                if #target.cageRewards ~= cageCount then
+                    return p.fail(targetLabel .. ".cageRewards must match Fields target cage encounter count")
                 end
             elseif target.cageRewards ~= nil then
                 return p.fail(targetLabel .. ".cageRewards is only valid for FieldsEncounter target")
@@ -319,10 +323,8 @@ function occurrences.decode(value, selected, label)
         ids[row.id] = row
         local _, overviewError = overview.decode(row.overview, label .. ".overview")
         if overviewError then return nil, overviewError end
-        if (row.kind == "FieldsEncounter") ~= (row.overview.fields ~= nil) then
-            return p.fail(label .. ".overview.fields is required for FieldsEncounter")
-        end
-        if row.overview.fields ~= nil and row.biomeKey ~= "H" then
+        if (row.kind == "FieldsEncounter" and row.biomeKey ~= "H")
+            or (row.overview.fields ~= nil and row.kind ~= "FieldsEncounter") then
             return p.fail(label .. ".overview.fields is only valid for H FieldsEncounter")
         end
         local fieldsSlotsOk, fieldsSlotsError = validateFieldsCageSlots(
@@ -383,6 +385,9 @@ function occurrences.decode(value, selected, label)
         selectedSeen[id] = true
     end
     for _, row in ipairs(result) do
+        if selectedSeen[row.id] and row.kind == "FieldsEncounter" and row.overview.fields == nil then
+            return p.fail(label .. "[" .. row.id .. "].overview.fields is required for a selected Fields encounter")
+        end
         if row.resumeBoundary ~= nil then
             if not selectedSeen[row.id] then
                 return p.fail(label .. "[" .. row.id .. "] resume boundary must be selected")

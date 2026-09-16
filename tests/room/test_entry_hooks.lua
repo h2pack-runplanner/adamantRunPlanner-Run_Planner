@@ -1,6 +1,7 @@
 -- luacheck: globals TestRoomEntryHooks
 local lu = require("luaunit")
 local navigation = require("mods.navigation.hooks")
+local doors = require("mods.navigation.doors")
 local roomHooks = require("mods.room.hooks")
 local roomCoordinatorModule = require("mods.room.coordinator")
 local routeSessionModule = require("mods.route.session")
@@ -833,6 +834,44 @@ function TestRoomEntryHooks.testEphyraRestoresStayTransparentWhileFreshRoomsAdva
     lu.assertEquals(routeSessionModule.current(cursor), nextRoom)
     lu.assertEquals(cursor.index, 6)
     lu.assertNil(cursor.firstMismatch)
+end
+
+function TestRoomEntryHooks.testFieldsDoorRewardsSurviveRoomCreationWithOrWithoutLayout()
+    for _, hasLayout in ipairs({ true, false }) do
+        local module, _, callbacks = capture()
+        local destination = { id = "fields", gameName = "H_Combat07", biomeKey = "H", overview = {} }
+        if hasLayout then
+            destination.overview.fields = { entryPair = { startPointId = 1, endPointId = 2 } }
+        end
+        local state = { state = "synchronized", plan = { occurrencesById = { fields = destination } } }
+        local navigationEntry = navigation.attach(module, stub(), function() return state end,
+            function() end, routeSessionModule, roomCoordinatorModule)
+        roomHooks.attach(module, stub(), function() return state end, function() end,
+            routeSessionModule, roomCoordinatorModule, nil, navigationEntry, unusedLoadoutScope)
+        local source = { doors = { kind = "batch", targets = { {
+            room = { id = destination.id, gameName = destination.gameName },
+            cageRewards = {
+                { rewardType = "MaxManaDrop" },
+                { rewardType = "Boon", source = "HeraUpgrade" },
+            },
+        } } } }
+        local priorGame = _G.game
+        _G.game = { RoomData = { H_Combat07 = { MaxCageRewards = 2 } } }
+        local offered = doors.realize(source, {}, _G.game)
+        local created = callbacks.CreateRoom(nil, {}, function(roomData)
+            -- Native DoUnlockRoomExits rerolls cage rewards if this survives
+            -- the declaration composition before CreateRoom.
+            lu.assertNil(roomData.MaxCageRewards)
+            return roomData
+        end, offered[1].Room, {})
+        lu.assertNil(created.MaxCageRewards)
+        lu.assertEquals(created.CageRewards, {
+            { RewardType = "MaxManaDrop" },
+            { RewardType = "Boon", ForceLootName = "HeraUpgrade" },
+        })
+        lu.assertEquals(_G.game.RoomData.H_Combat07.MaxCageRewards, 2)
+        _G.game = priorGame
+    end
 end
 
 function TestRoomEntryHooks.testEphyraFinalHandoffIsBoundBeforeNativeRoomCreation()

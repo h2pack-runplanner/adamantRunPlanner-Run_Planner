@@ -138,12 +138,6 @@ function fields.realize(nativeRoom, layout)
     if type(nativeRoom) ~= "table" or type(layout) ~= "table" then return nativeRoom end
     nativeRoom.HeroStartPoint = layout.entryPair.startPointId
     nativeRoom.HeroEndPoint = layout.entryPair.endPointId
-    -- DoUnlockRoomExits normally uses this declaration field to generate a
-    -- fresh random CageRewards array for every Fields target. The planned
-    -- payload is already installed on the door by navigation, so remove only
-    -- this target-local trigger while retaining the native door setup and
-    -- reward-store flow.
-    nativeRoom.MaxCageRewards = nil
     return nativeRoom
 end
 

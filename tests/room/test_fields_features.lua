@@ -27,32 +27,6 @@ local function fixture(layout, occurrenceId)
     return callbacks, state, mismatches, diagnostics, function() return reports end, occurrence
 end
 
-function TestFieldsFeatures.testPlannedDoorPayloadSurvivesNativeCageRebuildBranch()
-    local expected = {
-        { RewardType = "MaxHealthDrop", ForceLootName = "MaxHealthDrop" },
-        { RewardType = "WeaponUpgrade", ForceLootName = "WeaponUpgrade" },
-    }
-    local nativeRoom = { MaxCageRewards = 2, CageRewards = expected }
-    fields.realize(nativeRoom, {
-        entryPair = { startPointId = 1, endPointId = 2 },
-        cagePoints = {
-            { slotKey = "cage1", pointId = 11 },
-            { slotKey = "cage2", pointId = 12 },
-        },
-        optionalRewards = {},
-    })
-
-    -- This is the native DoUnlockRoomExits branch that previously replaced
-    -- the planner payload after navigation had installed it on the door.
-    if nativeRoom.MaxCageRewards ~= nil then
-        nativeRoom.CageRewards = {
-            { RewardType = "native-random-cage-1" },
-            { RewardType = "native-random-cage-2" },
-        }
-    end
-    lu.assertEquals(nativeRoom.CageRewards, expected)
-end
-
 function TestFieldsFeatures.testTwoCagesAndOptionalConsumableUsePublishedPlacements()
     local callbacks, _, mismatches, _, reports = fixture({
         entryPair = { startPointId = 101, endPointId = 102 },

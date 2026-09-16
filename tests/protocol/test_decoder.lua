@@ -197,7 +197,7 @@ local function minimalPlan(transactions)
     end
     local plan = tagged({
         format = "run-planner-execution",
-        protocolVersion = 37,
+        protocolVersion = 38,
         catalogVersion = "0.55.0-anvil-of-fates",
         projectId = "test-project",
         planFingerprint = "00000000",
@@ -992,6 +992,16 @@ end
 
 function TestProtocol.testFieldsFixturePublishesBoundedDistinctPlacementFacts()
     local plan = decode("underworld-fgh")
+    local selected = {}
+    for _, id in ipairs(plan.selectedOccurrenceIds) do selected[id] = true end
+    local unpickedCount = 0
+    for _, occurrence in ipairs(plan.occurrences) do
+        if occurrence.kind == "FieldsEncounter" and not selected[occurrence.id] then
+            lu.assertNil(occurrence.overview.fields)
+            unpickedCount = unpickedCount + 1
+        end
+    end
+    lu.assertTrue(unpickedCount > 0)
     local fieldsOccurrence
     for _, occurrence in ipairs(plan.occurrences) do
         if occurrence.overview.fields ~= nil then
@@ -1006,7 +1016,7 @@ function TestProtocol.testFieldsFixturePublishesBoundedDistinctPlacementFacts()
 
     plan = decode("underworld-fgh")
     for _, occurrence in ipairs(plan.occurrences) do
-        if occurrence.kind == "FieldsEncounter" then
+        if occurrence.kind == "FieldsEncounter" and selected[occurrence.id] then
             occurrence.overview.fields = nil
             break
         end
@@ -1071,10 +1081,12 @@ function TestProtocol.testFieldsFixtureRequiresCanonicalOrderedCageSlots()
 end
 
 function TestProtocol.testDoorCageRewardsMatchTheirReferencedFieldsTarget()
-    local function fieldsTarget(plan)
+    local function fieldsTarget(plan, selected)
+        local selectedIds = {}
+        for _, id in ipairs(plan.selectedOccurrenceIds) do selectedIds[id] = true end
         local fieldsOccurrence
         for _, occurrence in ipairs(plan.occurrences) do
-            if occurrence.kind == "FieldsEncounter" then
+            if occurrence.kind == "FieldsEncounter" and (selectedIds[occurrence.id] == true) == selected then
                 fieldsOccurrence = occurrence
                 break
             end
@@ -1090,16 +1102,18 @@ function TestProtocol.testDoorCageRewardsMatchTheirReferencedFieldsTarget()
         error("fixture lacks a door target for the Fields occurrence")
     end
 
-    local missing = decode("underworld-fgh")
-    fieldsTarget(missing).cageRewards = nil
-    refreshFingerprint(missing)
-    lu.assertNil(protocol.decode(missing))
+    for _, selected in ipairs({ true, false }) do
+        local missing = decode("underworld-fgh")
+        fieldsTarget(missing, selected).cageRewards = nil
+        refreshFingerprint(missing)
+        lu.assertNil(protocol.decode(missing))
 
-    local short = decode("underworld-fgh")
-    local shortTarget = fieldsTarget(short)
-    table.remove(shortTarget.cageRewards)
-    refreshFingerprint(short)
-    lu.assertNil(protocol.decode(short))
+        local short = decode("underworld-fgh")
+        local shortTarget = fieldsTarget(short, selected)
+        table.remove(shortTarget.cageRewards)
+        refreshFingerprint(short)
+        lu.assertNil(protocol.decode(short))
+    end
 
     local illegal = decode("underworld-fgh")
     local occurrencesById = {}
