@@ -167,6 +167,36 @@ function TestEncounters.testBossArcanaAdmitsAnExactEternityOutcome()
     lu.assertEquals(completed, 1)
 end
 
+function TestEncounters.testRewardSetupTrialsBindAtEntryWithoutChooseEncounter()
+    for _, biome in ipairs({ "F", "G", "I" }) do
+        local registry = require("mods.room.timeline.encounters.phases").create()
+        local phase = { slotKey = "Encounter", encounterKey = "DevotionTest" .. biome, kind = "combat" }
+        local occurrence = { id = "trial-" .. biome, overview = { encounterPhases = { phase } } }
+        -- SetupRoomReward creates this encounter directly, outside ChooseEncounter.
+        local native = { Name = phase.encounterKey }
+        lu.assertTrue(registry.prove(occurrence, { Encounter = native }))
+        lu.assertEquals(registry.forNative(native).phase, phase)
+
+        local module, callbacks = capture()
+        local state = { state = "synchronized" }
+        local windows = {}
+        local room = {
+            encounterPhase = function(_, encounter)
+                local bound = registry.forNative(encounter)
+                return bound and bound.phase
+            end,
+            encounterIsFinal = function(_, encounter)
+                return registry.isFinal(occurrence, registry.forNative(encounter).phase)
+            end,
+            window = function(_, key) windows[#windows + 1] = key end,
+        }
+        encounterHooks.attach(module, {}, function() return state end, function() end, room)
+        lu.assertEquals(callbacks.EndEncounterEffects(nil, {}, function() return "native" end,
+            {}, { Encounter = native }, native), "native")
+        lu.assertEquals(windows, { "encounterEnd:Encounter", "afterCombat" })
+    end
+end
+
 function TestEncounters.testPhaseIsNotAStandaloneTimelineContactNamespace()
     local occurrence = {
         overview = { encounterPhases = {} },

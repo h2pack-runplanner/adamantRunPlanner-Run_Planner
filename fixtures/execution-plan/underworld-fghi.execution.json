@@ -7748,7 +7748,7 @@
         "encounterPhases": [
           {
             "slotKey": "Encounter",
-            "encounterKey": "GeneratedI",
+            "encounterKey": "GeneratedI_GoalReward",
             "kind": "combat"
           }
         ],
@@ -7838,7 +7838,7 @@
         "encounterPhases": [
           {
             "slotKey": "Encounter",
-            "encounterKey": "GeneratedI_Small",
+            "encounterKey": "GeneratedI_Small_GoalReward",
             "kind": "combat"
           }
         ],
@@ -8017,7 +8017,7 @@
         "encounterPhases": [
           {
             "slotKey": "Encounter",
-            "encounterKey": "GeneratedI_Small",
+            "encounterKey": "GeneratedI_Small_GoalReward",
             "kind": "combat"
           }
         ],
@@ -8123,7 +8123,7 @@
         "encounterPhases": [
           {
             "slotKey": "Encounter",
-            "encounterKey": "GeneratedI",
+            "encounterKey": "GeneratedI_GoalReward",
             "kind": "combat"
           }
         ],
@@ -8198,7 +8198,7 @@
         "encounterPhases": [
           {
             "slotKey": "Encounter",
-            "encounterKey": "GeneratedI",
+            "encounterKey": "GeneratedI_GoalReward",
             "kind": "combat"
           }
         ],
@@ -8515,5 +8515,5 @@
       }
     }
   ],
-  "planFingerprint": "a6a4893f"
+  "planFingerprint": "733b697e"
 }
