@@ -30,9 +30,6 @@ function overview.realize(occurrence, game, nativeRoom)
     end
     result.__runPlannerExecutionRoomId = occurrence.id
     result.GenusName, result.Name = occurrence.gameName, occurrence.gameName
-    if occurrence.biomeKey == "G" then
-        result.LockExtraExitsChance, result.LockExtraExits = 0, false
-    end
     return result
 end
 

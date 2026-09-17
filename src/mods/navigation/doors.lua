@@ -32,6 +32,10 @@ local function destinationId(door)
         or type(room) == "table" and room.__runPlannerExecutionRoomId
 end
 
+function doors.targets(door, occurrenceId)
+    return occurrenceId ~= nil and destinationId(door) == occurrenceId
+end
+
 local function additionalOwner(door)
     local room = type(door) == "table" and (door.Room or door.RoomData) or nil
     if type(door) == "table" and door.__runPlannerExecutionAdditionalOwner ~= nil then

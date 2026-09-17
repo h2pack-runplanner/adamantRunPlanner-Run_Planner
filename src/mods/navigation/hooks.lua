@@ -5,6 +5,8 @@ local rewards = type(import) == "function" and import("mods/navigation/rewards.l
     or require("mods.navigation.rewards")
 local ephyra = type(import) == "function" and import("mods/navigation/ephyra.lua")
     or require("mods.navigation.ephyra")
+local exitProtection = type(import) == "function" and import("mods/navigation/exit_protection.lua")
+    or require("mods.navigation.exit_protection")
 local hooks = {}
 
 local function orderedDoors(value)
@@ -34,6 +36,7 @@ end
 
 function hooks.attach(module, session, getState, report, routeSession, room, transformationScope,
     nestedRewardContext)
+    exitProtection.attach(module, getState, routeSession)
     local doorScope
     local rewardChoiceScope
     local ephyraDoorScope
