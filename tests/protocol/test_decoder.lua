@@ -4,9 +4,38 @@ local json = require("mods/protocol/json")
 local protocol = require("mods.protocol.decoder")
 local rewards = require("mods.protocol.rewards")
 local conformance = require("mods.protocol.conformance")
+local overview = require("mods.protocol.overview")
 
 TestProtocol = {}
 local root = "fixtures/execution-plan/"
+
+function TestProtocol.testEncounterCustomizationWireIsClosedAndBounded()
+    local value = assert(json.decode([[{
+        "encounterPhases":[{
+            "slotKey":"Encounter","encounterKey":"BossEris01","kind":"boss",
+            "customization":[
+                {"decisionKey":"earlySummons","kind":"orderedPrefix","choices":[
+                    {"choiceKey":"harpy","nativeId":"ErisSummonHarpy"},
+                    {"choiceKey":"swab","nativeId":"ErisSummonSwab"}
+                ]},
+                {"decisionKey":"lateSummons","kind":"single","choiceKey":"fish","nativeId":"ErisSummonFish"}
+            ]
+        }],
+        "requiredObjects":[]
+    }]]))
+    local decoded, errorMessage = overview.decode(value, "overview")
+    lu.assertNotNil(decoded, errorMessage)
+
+    local duplicate = assert(json.decode([[{
+        "encounterPhases":[{"slotKey":"Encounter","encounterKey":"BossEris01","kind":"boss","customization":[
+            {"decisionKey":"early","kind":"orderedPrefix","choices":[
+                {"choiceKey":"harpy","nativeId":"ErisSummonHarpy"},
+                {"choiceKey":"harpy","nativeId":"ErisSummonHarpy"}
+            ]}
+        ]}],"requiredObjects":[]
+    }]]))
+    lu.assertNil(overview.decode(duplicate, "overview"))
+end
 
 function TestProtocol.testConformanceResolverProjectsNamedFactsAndRejectsUnknownOrDuplicateKinds()
     local state = assert(json.decode([[{
@@ -197,7 +226,7 @@ local function minimalPlan(transactions)
     end
     local plan = tagged({
         format = "run-planner-execution",
-        protocolVersion = 38,
+        protocolVersion = 39,
         catalogVersion = "0.55.0-anvil-of-fates",
         projectId = "test-project",
         planFingerprint = "00000000",

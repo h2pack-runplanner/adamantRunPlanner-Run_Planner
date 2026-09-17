@@ -4,6 +4,53 @@ local rewards = type(import) == "function" and import("mods/protocol/rewards.lua
     or require("mods.protocol.rewards")
 
 local overview = {}
+
+local function customization(value, label)
+    local decisions, decisionsError = p.arr(value, label, 16)
+    if not decisions then return nil, decisionsError end
+    if #decisions == 0 then return p.fail(label .. " must be non-empty when present") end
+    local seenDecisions = {}
+    for index, entry in ipairs(decisions) do
+        local decisionLabel = label .. "[" .. index .. "]"
+        local raw, rawError = p.obj(entry, decisionLabel)
+        if not raw then return nil, rawError end
+        local kind = raw.kind
+        local row, rowError
+        if kind == "single" then
+            row, rowError = p.exact(raw, { "decisionKey", "kind", "choiceKey", "nativeId" }, {}, decisionLabel)
+            if not row then return nil, rowError end
+            if not p.str(row.choiceKey, decisionLabel .. ".choiceKey")
+                or not p.str(row.nativeId, decisionLabel .. ".nativeId") then
+                return p.fail(decisionLabel .. " has invalid single choice")
+            end
+        elseif kind == "orderedPrefix" then
+            row, rowError = p.exact(raw, { "decisionKey", "kind", "choices" }, {}, decisionLabel)
+            if not row then return nil, rowError end
+            local choices, choicesError = p.arr(row.choices, decisionLabel .. ".choices", 2)
+            if not choices then return nil, choicesError end
+            if #choices == 0 then return p.fail(decisionLabel .. ".choices must be a non-empty prefix") end
+            local seenChoices = {}
+            for choiceIndex, choiceEntry in ipairs(choices) do
+                local choiceLabel = decisionLabel .. ".choices[" .. choiceIndex .. "]"
+                local choice, choiceError = p.exact(choiceEntry, { "choiceKey", "nativeId" }, {}, choiceLabel)
+                if not choice then return nil, choiceError end
+                if not p.str(choice.choiceKey, choiceLabel .. ".choiceKey")
+                    or not p.str(choice.nativeId, choiceLabel .. ".nativeId")
+                    or seenChoices[choice.choiceKey] then
+                    return p.fail(choiceLabel .. " has invalid or duplicate prefix choice")
+                end
+                seenChoices[choice.choiceKey] = true
+            end
+        else
+            return p.fail(decisionLabel .. ".kind is unsupported")
+        end
+        if not p.str(row.decisionKey, decisionLabel .. ".decisionKey") or seenDecisions[row.decisionKey] then
+            return p.fail(decisionLabel .. " has invalid or duplicate decision key")
+        end
+        seenDecisions[row.decisionKey] = true
+    end
+    return decisions
+end
 local generationKeys = {
     ["initial:healing"] = true,
     ["initial:secondLeft"] = true,
@@ -360,7 +407,7 @@ function overview.decode(value, label)
         local row, rowError = p.exact(
             valueRow,
             { "slotKey", "encounterKey", "kind" },
-            { "figLeafSkip" },
+            { "figLeafSkip", "customization" },
             phaseLabel
         )
         if not row then return nil, rowError end
@@ -372,6 +419,10 @@ function overview.decode(value, label)
         if row.figLeafSkip ~= nil then
             local _, figLeafError = p.bool(row.figLeafSkip, phaseLabel .. ".figLeafSkip")
             if figLeafError then return nil, figLeafError end
+        end
+        if row.customization ~= nil then
+            local _, customizationError = customization(row.customization, phaseLabel .. ".customization")
+            if customizationError then return nil, customizationError end
         end
     end
     if record.incomingReward ~= nil then
