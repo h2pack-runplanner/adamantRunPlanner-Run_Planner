@@ -5544,7 +5544,25 @@
       "overview": {
         "effectNeutralRequiredReward": true,
         "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "BossTyphonHead01", "kind": "boss" }
+          {
+            "slotKey": "Encounter",
+            "encounterKey": "BossTyphonHead01",
+            "kind": "boss",
+            "customization": [
+              {
+                "decisionKey": "firstEggWave",
+                "kind": "single",
+                "choiceKey": "eidolons",
+                "nativeId": "TyphonHeadCastSummon03"
+              },
+              {
+                "decisionKey": "secondEggWave",
+                "kind": "single",
+                "choiceKey": "lurkers",
+                "nativeId": "TyphonHeadCastSummon05"
+              }
+            ]
+          }
         ],
         "requiredObjects": []
       },
@@ -5956,5 +5974,5 @@
       }
     }
   ],
-  "planFingerprint": "f053a3ec"
+  "planFingerprint": "724e3ee8"
 }
