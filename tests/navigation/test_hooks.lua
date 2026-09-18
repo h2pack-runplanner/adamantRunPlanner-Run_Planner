@@ -8,6 +8,45 @@ local capture, stub = support.capture, support.stub
 
 TestNavigationHooks = {}
 
+function TestNavigationHooks.testDevotionRewardSetupCarriesTheStampedDestinationToGeneratedPreparation()
+    local module, _, callbacks = capture()
+    local occurrence = { id = "devotion", overview = { incomingReward = {} } }
+    local phase = { slotKey = "Devotion", encounterKey = "DevotionTestO", customization = {
+        { kind = "generated", decisionKey = "generatedComposition", waveCount = 3 },
+    } }
+    local state = { state = "synchronized", plan = { occurrencesById = { [occurrence.id] = occurrence } } }
+    local destination = { __runPlannerExecutionRoomId = occurrence.id }
+    local received, calls = nil, 0
+    local generated = {
+        withRewardDestination = function(receivedState, room, nativeRoom, action)
+            received = { state = receivedState, room = room, destination = nativeRoom }
+            lu.assertEquals(room.encounterAt(receivedState, 1, nativeRoom), phase)
+            return action()
+        end,
+    }
+    local room = {
+        encounterAt = function(receivedState, index, nativeRoom)
+            lu.assertEquals(receivedState, state)
+            lu.assertEquals(index, 1)
+            lu.assertEquals(nativeRoom, destination)
+            return phase
+        end,
+    }
+    navigation.attach(module, stub(), function() return state end, function() end,
+        { current = function() return nil end }, room, nil, nil, generated)
+
+    local result = callbacks.SetupRoomReward(nil, {}, function(currentRun, nativeRoom, _prior, _args)
+        calls = calls + 1
+        lu.assertEquals(currentRun.CurrentRoom.Name, "predecessor")
+        lu.assertEquals(nativeRoom, destination)
+        return nil
+    end, { CurrentRoom = { Name = "predecessor" } }, destination, nil, {})
+
+    lu.assertNil(result)
+    lu.assertEquals(calls, 1)
+    lu.assertEquals(received, { state = state, room = room, destination = destination })
+end
+
 function TestNavigationHooks.testClockworkGoalUsesTheOrdinaryRewardSelectionWithoutHookingItsNativeLifecycle()
     local module, _, callbacks = capture()
     local occurrence = {

@@ -49,6 +49,14 @@ function probe.loadRoomMultipleBody(scriptsPath)
     chunk()
 end
 
+function probe.loadEliteAttributeBody(scriptsPath)
+    local path = scriptsPath .. "/RoomLogic.lua"
+    local chunk, errorValue = load(body(read(path), "PickEncounterEliteAttributes"),
+        "@" .. path .. ":PickEncounterEliteAttributes")
+    assert(chunk, errorValue)
+    chunk()
+end
+
 function probe.copy(value, seen)
     if type(value) ~= "table" then return value end
     seen = seen or {}

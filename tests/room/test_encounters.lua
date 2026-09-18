@@ -424,6 +424,60 @@ function TestEncounters.testDirectEncounterChoicesAreBoundToOnePublishedSequence
     lu.assertNil(phasesForRoom.forNative(fifth))
 end
 
+function TestEncounters.testGeneratedCompositionUsesTheExistingExactPhaseCarrier()
+    local module, callbacks = capture()
+    local occurrence = { id = "same-generated", overview = { encounterPhases = {
+        { slotKey = "Combat1", encounterKey = "SameGenerated", customization = {
+            { kind = "generated", decisionKey = "generatedComposition", waveCount = 2 },
+        } },
+        { slotKey = "Combat2", encounterKey = "SameGenerated", customization = {
+            { kind = "generated", decisionKey = "generatedComposition", waveCount = 3 },
+        } },
+    } } }
+    local state = { state = "synchronized" }
+    local nativeRoom = { __runPlannerExecutionRoomId = occurrence.id }
+    local scoped, bound = {}, {}
+    local generated = {
+        attach = function() end,
+        withPhase = function(receivedState, roomContact, phase, destination, action)
+            scoped[#scoped + 1] = {
+                state = receivedState, room = roomContact, phase = phase, destination = destination,
+            }
+            return action()
+        end,
+    }
+    local room = {
+        occurrence = function(receivedState, destination)
+            lu.assertEquals(receivedState, state)
+            lu.assertEquals(destination, nativeRoom)
+            return occurrence
+        end,
+        encounterAt = function(_, index) return occurrence.overview.encounterPhases[index] end,
+        bindEncounter = function(_, native, slotKey)
+            bound[#bound + 1] = { native = native, slotKey = slotKey }
+            return true
+        end,
+    }
+    encounterHooks.attach(module, {}, function() return state end, function() end, room, nil, generated)
+    local priorGame = _G.game
+    _G.game = { EncounterData = { SameGenerated = { Name = "SameGenerated" } } }
+    local run = {}
+    local function choose()
+        return callbacks.ChooseEncounter(nil, {}, function(currentRun)
+            return { Name = currentRun.ForceNextEncounterData.Name }
+        end, run, nativeRoom, {})
+    end
+    local first, second = choose(), choose()
+    _G.game = priorGame
+
+    lu.assertEquals(scoped, {
+        { state = state, room = room, phase = occurrence.overview.encounterPhases[1], destination = nativeRoom },
+        { state = state, room = room, phase = occurrence.overview.encounterPhases[2], destination = nativeRoom },
+    })
+    lu.assertEquals(bound, { { native = first, slotKey = "Combat1" }, { native = second, slotKey = "Combat2" } })
+    lu.assertNil(run.ForceNextEncounterData)
+end
+
 function TestEncounters.testPEncounterSequenceLeavesHeraclesNativeSuffixTerminationIntact()
     local module, callbacks = capture()
     local occurrence = {

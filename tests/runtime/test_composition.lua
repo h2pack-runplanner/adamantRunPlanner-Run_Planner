@@ -27,6 +27,13 @@ local function shipCombatStub()
         attach = function() end,
     }
 end
+local function generatedEncounterStub()
+    return {
+        attach = function() end,
+        withPhase = function(_, _, _, _, action) return action() end,
+        withRewardDestination = function(_, _, _, action) return action() end,
+    }
+end
 
 TestRuntimeComposition = {}
 
@@ -65,6 +72,9 @@ function TestRuntimeComposition.testSuccessfulPostbossAdmissionIsLoggedOnce()
         end
         if path == "mods/room/timeline/encounters/thessaly.lua" then
             return { create = shipCombatStub }
+        end
+        if path == "mods/room/timeline/encounters/generated.lua" then
+            return { create = generatedEncounterStub }
         end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report)
@@ -128,6 +138,9 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesFullInventoryAndOccu
         if path == "mods/room/timeline/encounters/thessaly.lua" then
             return { create = shipCombatStub }
         end
+        if path == "mods/room/timeline/encounters/generated.lua" then
+            return { create = generatedEncounterStub }
+        end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report) report({}) end }
         end
@@ -177,6 +190,9 @@ function TestRuntimeComposition.testFaultLogIncludesBindingContextAndEachStackLi
                 status = function() return { state = state.state, reason = state.reason } end }
         end
         if path == "mods/room/timeline/encounters/thessaly.lua" then return { create = shipCombatStub } end
+        if path == "mods/room/timeline/encounters/generated.lua" then
+            return { create = generatedEncounterStub }
+        end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report) report({}); report({}) end }
         end
@@ -248,6 +264,9 @@ function TestRuntimeComposition.testFieldsDiagnosticLogsItsCompletedSnapshotWith
         end
         if path == "mods/room/timeline/encounters/thessaly.lua" then
             return { create = shipCombatStub }
+        end
+        if path == "mods/room/timeline/encounters/generated.lua" then
+            return { create = generatedEncounterStub }
         end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report)
@@ -365,6 +384,9 @@ function TestRuntimeComposition.testRuntimeCompositionSharesOneHexTreeAcrossLoad
         if path == "mods/room/timeline/encounters/thessaly.lua" then
             return { create = shipCombatStub }
         end
+        if path == "mods/room/timeline/encounters/generated.lua" then
+            return { create = generatedEncounterStub }
+        end
         if path == "mods/loadout/hooks.lua" then
             return { attach = function(_, _, _, _, _, sharedTree)
                 loadoutTree = sharedTree
@@ -444,6 +466,9 @@ function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHo
         if path == "mods/room/timeline/encounters/thessaly.lua" then
             return { create = shipCombatStub }
         end
+        if path == "mods/room/timeline/encounters/generated.lua" then
+            return { create = generatedEncounterStub }
+        end
         if path == "mods/loadout/hooks.lua" or path == "mods/room/timeline/acquisitions/hooks.lua" then
             return { attach = function() return {} end }
         end
@@ -509,6 +534,8 @@ function TestRuntimeComposition.testRuntimeCompositionInstallsSupportedHookGroup
     for _, name in ipairs({
         "ChooseStartingRoom", "StartRoom", "DoUnlockRoomExits", "LeaveRoom",
         "StartEncounter", "EndEncounterEffects", "SetupRoomMultipleEncountersData",
+        "SetupEncounter", "GenerateEncounter", "FillEnemyTypes", "FillEnemyCounts", "IsEnemyEligible",
+        "RemoveRandomValue", "RandomNormal",
         "ShipsEncounterSetup", "ChooseNextRewardStore", "CreateDoorRewardPreview", "UseShipWheel",
         "UseConsumableItem", "AddStackToTraits", "HandleLootPickup",
         "ConvertMetaRewardPresentation", "CreateLoot", "UnwrapRandomLoot",

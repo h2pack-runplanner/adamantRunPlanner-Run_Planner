@@ -2,12 +2,14 @@
 -- luacheck: globals TestGeneratedEncounterNative CurrentRun EnemyData EncounterData RewardData
 -- luacheck: globals MetaUpgradeData ConstantsData RoomData WaveDifficultyPatterns SetupEncounter SetupRoomReward
 -- luacheck: globals FillEnemyCounts RandomInt RandomNormal RemoveRandomValue SetupRoomMultipleEncountersData
+-- luacheck: globals PickEncounterEliteAttributes PickEliteAttributes
 local lu = require("luaunit")
 package.path = "./src/?.lua;./src/?/init.lua;./tests/?.lua;./tests/?/init.lua;" .. package.path
 local probe = require("tests.probes.generated_encounter_native")
 local coordinator = require("mods.room.coordinator")
 local runtime = require("mods.runtime.session")
 local encounterHooks = require("mods.room.timeline.encounters.hooks")
+local generatedEncounter = require("mods.room.timeline.encounters.generated")
 local scriptsPath = probe.scriptsPath(arg[1])
 if arg[1] then table.remove(arg, 1) end -- The source path is not a LuaUnit test selector.
 
@@ -91,6 +93,29 @@ local function owner(id, slot, nativeRoom, overrides)
 end
 
 local function close(contacts, restore) contacts.restore(); restore() end
+
+-- Exercise the shipped scoped hooks against the same unmodified native bodies
+-- as Gate A. The production helper is attached alone here so each intercepted
+-- global has its real native base, rather than a probe-only selection adapter.
+local function configuredProduction()
+    local draws = {}
+    local restore = probe.restore(native(draws))
+    probe.loadBodies(scriptsPath)
+    local callbacks, nativeBodies = {}, {}
+    local module = { hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } }
+    local instance = generatedEncounter.create()
+    instance.attach(module, runtime)
+    for _, name in ipairs({
+        "SetupEncounter", "GenerateEncounter", "FillEnemyTypes", "FillEnemyCounts", "IsEnemyEligible",
+        "RemoveRandomValue", "RandomNormal",
+    }) do
+        nativeBodies[name] = _G[name]
+        _G[name] = function(...)
+            return callbacks[name](nil, {}, nativeBodies[name], ...)
+        end
+    end
+    return draws, instance, restore
+end
 
 TestGeneratedEncounterNative = {}
 
@@ -387,6 +412,137 @@ function TestGeneratedEncounterNative.testNpcAndHardCapNativeShapedContacts()
     end)
     lu.assertEquals(capped.SpawnWaves[1].TypeCount, 1)
     close(contacts, restore)
+end
+
+function TestGeneratedEncounterNative.testProductionScopedHooksKeepDefaultsAndSteerPublishedOperands()
+    local rawDraws, _, rawRestore = configuredProduction()
+    local raw = SetupEncounter(declaration({ MinWaves = 1, MaxWaves = 1, MinTypes = 1 }), { Name = "raw" })
+    local rawRoster = same(raw.SpawnWaves)
+    rawRestore()
+
+    local defaultDraws, defaultGenerated, defaultRestore = configuredProduction()
+    local defaultOccurrence = { id = "production-default" }
+    local defaultDestination = { Name = "default", __runPlannerExecutionRoomId = defaultOccurrence.id }
+    local defaultState = { state = "synchronized" }
+    local default = defaultGenerated.withPhase(defaultState, {}, {
+        slotKey = "Combat1", encounterKey = "ProbeGenerated",
+    }, defaultDestination, function()
+        return SetupEncounter(declaration({ MinWaves = 1, MaxWaves = 1, MinTypes = 1 }), defaultDestination)
+    end)
+    lu.assertEquals(same(default.SpawnWaves), rawRoster)
+    lu.assertEquals(same(defaultDraws), same(rawDraws))
+    defaultRestore()
+
+    local draws, generated, restore = configuredProduction()
+    local occurrence = { id = "production", diagnostics = { ["encounter-composition"] = "published" } }
+    local destination = { Name = "destination", __runPlannerExecutionRoomId = occurrence.id }
+    local state = { state = "synchronized", diagnostics = {} }
+    local phase = {
+        slotKey = "Combat2", encounterKey = "ProbeGenerated",
+        customization = { {
+            kind = "generated", decisionKey = "generatedComposition", waveCount = 3,
+            highlight = { choiceKey = "Brine", nativeId = "Brine" },
+            waves = {
+                { waveIndex = 1, types = { { choiceKey = "Brine", nativeId = "Brine" } } },
+                { waveIndex = 2, types = {
+                    { choiceKey = "Brine", nativeId = "Brine" }, { choiceKey = "Cinder", nativeId = "Cinder" },
+                }, shares = { .75, .25 } },
+            },
+        } },
+    }
+    local roomContact = {
+        occurrence = function(receivedState, receivedRoom)
+            lu.assertEquals(receivedState, state)
+            lu.assertEquals(receivedRoom, destination)
+            return occurrence
+        end,
+    }
+    local source = declaration({ MinWaves = 1, MaxWaves = 1, MinTypes = 1, MaxTypes = 2, MaxTypesCap = 2 })
+    source.WaveTemplate = { Spawns = {}, MinTypes = 1, MaxTypes = 2 }
+    local realized = generated.withPhase(state, roomContact, phase, destination, function()
+        return SetupEncounter(source, destination)
+    end)
+    lu.assertEquals(source.MinWaves, 1) -- native declaration remains shared/default.
+    lu.assertEquals(realized.WaveCount, 3)
+    lu.assertEquals(realized.SpawnWaves[1].Spawns[1].Name, "Brine")
+    lu.assertEquals(realized.SpawnWaves[2].Spawns[1].Name, "Brine")
+    lu.assertEquals(realized.SpawnWaves[2].Spawns[2].Name, "Cinder")
+    lu.assertNotEquals(same(realized.SpawnWaves), rawRoster)
+    -- The requested unequal shares steer the native sample; native rounding,
+    -- caps and final remainder still decide the realized counts.
+    lu.assertNotEquals(realized.SpawnWaves[2].Spawns[1].TotalCount,
+        realized.SpawnWaves[2].Spawns[2].TotalCount)
+    lu.assertTrue(#draws > 0)
+    lu.assertTrue(#rawDraws > 0)
+    restore()
+end
+
+function TestGeneratedEncounterNative.testProductionHooksRetainFixedEntriesAndNativeHordesCaps()
+    local _, generated, restore = configuredProduction()
+    local occurrence = { id = "production-fixed" }
+    local destination = { Name = "fixed", __runPlannerExecutionRoomId = occurrence.id }
+    local state = { state = "synchronized" }
+    local phase = {
+        slotKey = "Cage", encounterKey = "ProbeGenerated",
+        customization = { { kind = "generated", decisionKey = "generatedComposition", waves = {
+            { waveIndex = 1, types = {
+                { choiceKey = "Brine", nativeId = "Brine" },
+                { choiceKey = "Cinder", nativeId = "Cinder" },
+                { choiceKey = "Elite", nativeId = "Elite" },
+            }, shares = { .2, .4, .4 } },
+        } } },
+    }
+    local source = declaration({
+        BlockHighlightEncounter = true, MinWaves = 1, MaxWaves = 1, MinTypes = 3, MaxTypes = 4, MaxTypesCap = 4,
+        EnemySet = { "Ash", "Brine", "Cinder", "Elite", "Dawn" },
+    })
+    source.WaveTemplate = { MinTypes = 3, MaxTypes = 4, Spawns = {
+        { Name = "Ash", TotalCount = 2 }, { Name = "Brine" }, { Name = "Cinder" }, { Name = "Elite" },
+    } }
+    _G.MetaUpgradeData.EnemyCountShrineUpgrade.ChangeValue = 1.6
+    local realized = generated.withPhase(state, { occurrence = function() return occurrence end }, phase, destination,
+        function() return SetupEncounter(source, destination) end)
+    local wave = realized.SpawnWaves[1]
+    lu.assertEquals(wave.Spawns[1].TotalCount, 2)
+    lu.assertTrue(realized.DifficultyRating > 40) -- Hordes remains native input to the copied encounter.
+    lu.assertEquals(wave.Spawns[2].TotalCount, 5)
+    lu.assertEquals(wave.Spawns[3].TotalCount, 9) -- full-index native remainder branch.
+    lu.assertEquals(wave.Spawns[4].TotalCount, 1)
+
+    probe.loadEliteAttributeBody(scriptsPath)
+    local priorPick, picked = _G.PickEliteAttributes, nil
+    _G.PickEliteAttributes = function(_, name) picked = name end
+    PickEncounterEliteAttributes(realized)
+    _G.PickEliteAttributes = priorPick
+    lu.assertEquals(picked, "Elite") -- Fangs remains a later native contact, after scoped generation.
+    restore()
+end
+
+function TestGeneratedEncounterNative.testProductionHooksKeepNativeEliteCountCap()
+    local _, generated, restore = configuredProduction()
+    local occurrence = { id = "production-cap" }
+    local destination = { Name = "cap", __runPlannerExecutionRoomId = occurrence.id }
+    local state = { state = "synchronized" }
+    local phase = {
+        slotKey = "CageCap", encounterKey = "ProbeGenerated",
+        customization = { { kind = "generated", decisionKey = "generatedComposition", waves = {
+            { waveIndex = 1, types = {
+                { choiceKey = "Elite", nativeId = "Elite" },
+                { choiceKey = "Brine", nativeId = "Brine" },
+                { choiceKey = "Dawn", nativeId = "Dawn" },
+            }, shares = { .85, .1, .05 } },
+        } } },
+    }
+    local source = declaration({
+        BlockHighlightEncounter = true, MinWaves = 1, MaxWaves = 1, MinTypes = 3, MaxTypes = 3, MaxTypesCap = 3,
+        EnemySet = { "Elite", "Brine", "Dawn" },
+    })
+    source.WaveTemplate = { MinTypes = 3, MaxTypes = 3, Spawns = {} }
+    _G.MetaUpgradeData.EnemyCountShrineUpgrade.ChangeValue = 1.6
+    local capped = generated.withPhase(state, { occurrence = function() return occurrence end }, phase, destination,
+        function() return SetupEncounter(source, destination) end)
+    lu.assertEquals(capped.SpawnWaves[1].Spawns[1].TotalCount, 2) -- native Elite MaxCount.
+    restore()
 end
 
 os.exit(lu.LuaUnit.run())

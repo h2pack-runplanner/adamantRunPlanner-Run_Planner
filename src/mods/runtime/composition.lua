@@ -21,6 +21,7 @@ function composition.bind(root)
     -- both owners that participate in Hex-tree realization.
     local hexTree = import("mods/spells/hex_tree.lua").create()
     local shipCombat = import("mods/room/timeline/encounters/thessaly.lua").create()
+    local generatedEncounter = import("mods/room/timeline/encounters/generated.lua").create()
     local loadoutHooks = import("mods/loadout/hooks.lua")
     local acquisitionHooks = import("mods/room/timeline/acquisitions/hooks.lua")
     local loadoutRuntime = {
@@ -211,13 +212,13 @@ function composition.bind(root)
         local transformationScope = transformationHooks.attach(module, session, getState, report, room)
         local featureScope = roomFeatureHooks.attach(module, session, getState, report, room)
         local navigation = navigationHooks.attach(module, session, getState, report, route, room,
-            transformationScope, shipCombat.rewardContext)
+            transformationScope, shipCombat.rewardContext, generatedEncounter)
         roomHooks.attach(module, session, getState, report, route, room, featureScope, navigation,
             loadoutScope, {
                 inbox = inbox,
                 activePlanSlot = loadoutRuntime.activePlanSlot,
             })
-        encounterHooks.attach(module, session, getState, report, room, shipCombat)
+        encounterHooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter)
         featureInventory.attach(module, session, getState, report, room, route)
         interactionHooks.attach(module, session, getState, report, room)
     end

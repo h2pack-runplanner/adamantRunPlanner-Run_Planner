@@ -35,7 +35,7 @@ local function withForcedAnomaly(base, currentRun, args, otherDoors, anomaly)
 end
 
 function hooks.attach(module, session, getState, report, routeSession, room, transformationScope,
-    nestedRewardContext)
+    nestedRewardContext, generatedEncounter)
     exitProtection.attach(module, getState, routeSession)
     local doorScope
     local rewardChoiceScope
@@ -62,7 +62,18 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
         end
         local occurrence = occurrenceForRoom(state, nativeRoom)
         local reward = occurrence and occurrence.overview.incomingReward
-        local result = base(currentRun, nativeRoom, prior, args)
+        local function setup()
+            return base(currentRun, nativeRoom, prior, args)
+        end
+        -- SetupRoomReward can prepare Devotion from the predecessor room. The
+        -- destination's existing execution stamp provides its phase identity;
+        -- it is deliberately not inferred from the active predecessor session.
+        local result
+        if generatedEncounter ~= nil then
+            result = generatedEncounter.withRewardDestination(state, room, nativeRoom, setup)
+        else
+            result = setup()
+        end
         if reward and type(nativeRoom) == "table" then
             if reward.source ~= nil then nativeRoom.ForceLootName = reward.source end
             if reward.spurnedSource and type(nativeRoom.Encounter) == "table" then

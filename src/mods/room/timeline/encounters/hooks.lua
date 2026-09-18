@@ -21,6 +21,8 @@ local gorgon = type(import) == "function" and import("mods/keepsakes/gorgon.lua"
     or require("mods.keepsakes.gorgon")
 local thessaly = type(import) == "function" and import("mods/room/timeline/encounters/thessaly.lua")
     or require("mods.room.timeline.encounters.thessaly")
+local generated = type(import) == "function" and import("mods/room/timeline/encounters/generated.lua")
+    or require("mods.room.timeline.encounters.generated")
 
 local hooks = {}
 
@@ -37,8 +39,10 @@ local function chooseForcedEncounter(base, currentRun, nativeRoom, args, declara
     return result
 end
 
-function hooks.attach(module, session, getState, report, room, shipCombat)
+function hooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter)
     shipCombat = shipCombat or thessaly.create()
+    generatedEncounter = generatedEncounter or generated.create()
+    generatedEncounter.attach(module, session)
     local encounterIndex
     local directEncounterSequences = setmetatable({}, { __mode = "k" })
 
@@ -90,9 +94,14 @@ function hooks.attach(module, session, getState, report, room, shipCombat)
             declaration = gameValue and gameValue.EncounterData
                 and gameValue.EncounterData[phase.encounterKey] or nil
         end
-        local result = declaration ~= nil
-            and chooseForcedEncounter(base, currentRun, nativeRoom, args, declaration)
-            or base(currentRun, nativeRoom, args)
+        local function choose()
+            return declaration ~= nil
+                and chooseForcedEncounter(base, currentRun, nativeRoom, args, declaration)
+                or base(currentRun, nativeRoom, args)
+        end
+        -- withPhase also installs a neutral scope for nil/unsupported phases,
+        -- so nested native setup cannot inherit an outer same-name override.
+        local result = generatedEncounter.withPhase(state, room, phase, nativeRoom, choose)
         if phase ~= nil and type(result) == "table" then
             room.bindEncounter(state, result, phase.slotKey, nativeRoom)
         end
