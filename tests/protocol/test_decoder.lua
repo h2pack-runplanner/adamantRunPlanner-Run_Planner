@@ -5,9 +5,39 @@ local protocol = require("mods.protocol.decoder")
 local rewards = require("mods.protocol.rewards")
 local conformance = require("mods.protocol.conformance")
 local overview = require("mods.protocol.overview")
+local generated = require("mods.protocol.generated_encounter")
 
 TestProtocol = {}
 local root = "fixtures/execution-plan/"
+
+function TestProtocol.testGeneratedEncounterSparseOperands()
+    local function value()
+        return assert(json.decode([[{
+            "kind":"generated","decisionKey":"generatedComposition","waveCount":3,
+            "highlight":{"choiceKey":"Guard","nativeId":"Guard"},
+            "waves":[{"waveIndex":3,"types":[
+                {"choiceKey":"Guard","nativeId":"Guard"},
+                {"choiceKey":"Mage","nativeId":"Mage"}
+            ],"shares":[0.4,0.6]}]
+        }]]))
+    end
+    lu.assertNotNil(generated.decode(value(), "generated"))
+    for _, mutate in ipairs({
+        function(row) row.waveCount = 6 end,
+        function(row) row.waveCount = 1 end,
+        function(row) row.unknown = true end,
+        function(row) row.waves[2] = row.waves[1] end,
+        function(row) row.waves[1].waveIndex = 4 end,
+        function(row) row.waves[1].shares[1] = 0 end,
+        function(row) row.waves[1].shares[1] = 0.2 end,
+        function(row) row.waves[1].types[2] = row.waves[1].types[1] end,
+        function(row) row.waves[1].types[1], row.waves[1].types[2] = row.waves[1].types[2], row.waves[1].types[1] end,
+    }) do
+        local row = value()
+        mutate(row)
+        lu.assertNil(generated.decode(row, "generated"))
+    end
+end
 
 function TestProtocol.testEncounterCustomizationWireIsClosedAndBounded()
     local value = assert(json.decode([[{
@@ -226,7 +256,7 @@ local function minimalPlan(transactions)
     end
     local plan = tagged({
         format = "run-planner-execution",
-        protocolVersion = 39,
+        protocolVersion = protocol.VERSION,
         catalogVersion = "0.55.0-anvil-of-fates",
         projectId = "test-project",
         planFingerprint = "00000000",

@@ -4,6 +4,8 @@ local rewards = type(import) == "function" and import("mods/protocol/rewards.lua
     or require("mods.protocol.rewards")
 
 local overview = {}
+local generatedEncounter = type(import) == "function" and import("mods/protocol/generated_encounter.lua")
+    or require("mods.protocol.generated_encounter")
 
 local function customization(value, label)
     local decisions, decisionsError = p.arr(value, label, 16)
@@ -16,7 +18,10 @@ local function customization(value, label)
         if not raw then return nil, rawError end
         local kind = raw.kind
         local row, rowError
-        if kind == "single" then
+        if kind == "generated" then
+            row, rowError = generatedEncounter.decode(raw, decisionLabel)
+            if not row then return nil, rowError end
+        elseif kind == "single" then
             row, rowError = p.exact(raw, { "decisionKey", "kind", "choiceKey", "nativeId" }, {}, decisionLabel)
             if not row then return nil, rowError end
             if not p.str(row.choiceKey, decisionLabel .. ".choiceKey")
