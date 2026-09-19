@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-19
+
+### Added
+
+- branding: replace companion package icon (
+8375db)
+- navigation: steer published Dream routes through native transitions (
+37acc9)
+- protocol: align route foundation execution plans (
+26c2fe)
+- npc: steer ordered Latest Model upgrades (
+1631e1)
+- npc: steer plural Circe outcomes (
+f169a5)
+- encounters: steer Chronos summons and Typhon eggs (
+95c479)
+- encounters: steer optional generated composition (
+a37e38)
+- protocol: admit generated encounter customization (
+6f9a29)
+- encounters: realize Eris summon prefixes (
+91a1c6)
+- encounters: realize Cerberus howl and burrow choices (
+130acc)
+- encounters: realize Hecate and Scylla choices (
+86319c)
+- protocol: decode encounter customization (
+9f0851)
+- inspector: show plan loadout and live execution status (
+f2353e)
+
+### Fixed
+
+- navigation: protect the authored exit from native blocking (
+c3e241)
+- conformance: ignore disposable NPC armor traits (
+d1f3bd)
+- commerce: scope refill checks and generation (
+88e387)
+- timeline: pass through unowned native contacts (
+3b3045)
+- fields: preserve door rewards without unpicked room layouts (
+1ae8c4)
+- artificer: preserve native unplanned conversions (
+61b775)
+
 ## [0.4.0] - 2026-09-16
 
 ### Added
