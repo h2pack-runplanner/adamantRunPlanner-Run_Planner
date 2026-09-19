@@ -6,6 +6,125 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-16
+
+### Added
+
+- shop: bind exact timeline transactions (
+9a3b90)
+- executor: settle store outcomes by result (
+cffa2f)
+- executor: resynchronize at postboss entry (
+010e50)
+- executor: verify postboss admission state (
+a165d7)
+- protocol: decode postboss recovery boundaries (
+aa0526)
+- executor: select active plan slot (
+5cf1cb)
+- execution: complete surface route (
+27a228)
+- execution: realize thessaly ship combat (
+628c11)
+- execution: realize ephyra hub navigation (
+fc0cc3)
+- execution: complete underworld route (
+98350f)
+- execution: realize mourning fields navigation (
+1ef527)
+
+### Fixed
+
+- commerce: preserve shop slots and shrine generation delays (3a144e4)
+- conformance: traverse sparse native Hex talent positions (
+65a76d)
+- commerce: bind spell setup and resolve Travel Deal drops (
+dd8d84)
+- navigation: resolve rewards on fixed return doors (
+9742b3)
+- tolerate numeric roundoff in conformance checks (
+fd133c)
+- keep delivered acquisitions available after encounter callbacks (
+b693f9)
+- log complete mismatch inventory diagnostics (
+567076)
+- accept Timepieced wheel rewards without acquisitions (
+51b0f6)
+- release completed ship wheel bindings before reuse (
+39b84f)
+- timeline: resolve shared acquisition sources by material identity (
+1d2ed1)
+- navigation: apply contract presence before door previews (
+d442ba)
+- nemesis: bind event completion to native owners (
+0d2ac6)
+- inventory: scope refills to native construction (
+d5fdcf)
+- wheels: publish selection before native encounter resume (
+a8d9eb)
+- hex: bind tree construction to its selected spell (
+2f981b)
+- mystery: retire unwrap context after provider construction (
+9355a8)
+- echo: bind deferred boon rows to the native replay menu (
+ee1b31)
+- room: check exit obligations at room closure (
+ab7fcb)
+- executor: gate outcome scopes and restore shrine context (
+cd46cf)
+- nemesis: steer native trait trade selection (
+46e7a7)
+- keepsakes: isolate the native Fig Leaf skip roll (
+dc08c5)
+- levels: route Pom Slice through direct acquisition (
+543324)
+- fields: restore steering and report placement diagnostics (
+789c42)
+- executor: log successful postboss resynchronization (
+325222)
+- runtime: keep execution session process-local (
+20f6fa)
+- executor: settle shrine outcomes at native contacts (
+a2afe8)
+- executor: bind acquisition outcomes by published roles (
+0f0599)
+- timeline: steer encounter trait offers (
+fc433e)
+- navigation: preserve Ephyra revisit bindings (
+abb367)
+- executor: stabilize room feature realization (
+bec16d)
+- executor: align room feature conformance (
+86d1ed)
+- executor: stabilize Ephyra room lifecycle (
+911844)
+
+### Changed
+
+- rename game companion to Run Planner (
+a51369)
+- hex: leave God Sent construction native (
+7a6a7e)
+- sea-star: insert planned chance at native trait read (
+bffd8a)
+- acquisitions: remove dead markers and NPC preflight (
+e6e166)
+- executor: defer actuator result checks (
+05c7c8)
+- acquisitions: defer result checks to conformance (
+3a0a41)
+- runtime: separate mismatches from executor faults (
+18925b)
+- acquisitions: settle steering at native intervention (
+097017)
+- execution: separate acquisition steering from obligations (
+3617e9)
+
+### Documentation
+
+- execution: close fixed-route expansion (
+7d4a2b)
+
 ## [0.3.0] - 2026-09-07
 
 ### Added
