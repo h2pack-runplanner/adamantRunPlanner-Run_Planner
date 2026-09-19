@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-19
+
+### Documentation
+
+- add illustrated planner and game walkthrough (4e90a8b)
+
 ## [0.5.0] - 2026-09-19
 
 ### Added
