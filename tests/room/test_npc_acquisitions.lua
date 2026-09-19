@@ -37,7 +37,7 @@ local function capture()
     return module, callbacks
 end
 
-local function offer(giver, selected, circeResolution, icarusHammerTarget)
+local function offer(giver, selected, circeResolution, icarusHammerTargets)
     local value = {
         kind = "traits", giver = giver, selected = "option2",
         options = {
@@ -45,9 +45,7 @@ local function offer(giver, selected, circeResolution, icarusHammerTarget)
         },
     }
     if circeResolution ~= nil then value.options[2].circeResolution = circeResolution end
-    if icarusHammerTarget ~= nil then
-        value.options[2].icarusHammerTarget = icarusHammerTarget
-    end
+    if icarusHammerTargets ~= nil then value.options[2].icarusHammerTargets = icarusHammerTargets end
     return value
 end
 
@@ -425,7 +423,7 @@ function TestNpcAcquisitions.testIcarusLatestModelUsesExactPublishedHammerThroug
     local selected = "UpgradeHammerBoon"
     local target = "StaffDoubleAttackTrait"
     local callbacks, source, _, _, _, _, _, _, mismatches, completions, finish = harness(
-        "Icarus", selected, { offer = offer("Icarus", selected, nil, target) })
+        "Icarus", selected, { offer = offer("Icarus", selected, nil, { target }) })
     local args = { UpgradeOptions = {
         { ItemName = "IcarusOne" }, { ItemName = selected }, { ItemName = "IcarusThree" },
     } }
@@ -446,11 +444,41 @@ function TestNpcAcquisitions.testIcarusLatestModelUsesExactPublishedHammerThroug
     lu.assertEquals(#completions, 1)
 end
 
+function TestNpcAcquisitions.testIcarusTwoTargetsIgnoreNestedRaritySelections()
+    local selected = "UpgradeHammerBoon"
+    local targets = { "StaffFastSpecialTrait", "StaffDoubleAttackTrait" }
+    local callbacks, source, _, _, _, _, _, _, diagnostics, _, finish = harness(
+        "Icarus", selected, { offer = offer("Icarus", selected, nil, targets) })
+    local upgraded = {}
+    local args = { UpgradeOptions = {
+        { ItemName = "IcarusOne" }, { ItemName = selected }, { ItemName = "IcarusThree" },
+    } }
+    runMenu(callbacks, "IcarusBenefitChoice", source, args, selected, nil, function()
+        callbacks.UpgradeHammers(nil, {}, function()
+            local pool = { { Name = targets[2] }, { Name = targets[1] } }
+            for _ = 1, 2 do
+                local picked = callbacks.RemoveRandomValue(nil, {}, function(values)
+                    return table.remove(values, 1)
+                end, pool)
+                callbacks.AddRarityToTraits(nil, {}, function()
+                    local nested = callbacks.RemoveRandomValue(nil, {}, function(values)
+                        return table.remove(values, 1)
+                    end, { picked })
+                    table.insert(upgraded, nested.Name)
+                end)
+            end
+        end, { Count = 2 })
+    end)
+    finish()
+    lu.assertEquals(upgraded, targets)
+    lu.assertEquals(diagnostics, {})
+end
+
 function TestNpcAcquisitions.testUnavailableIcarusHammerDiagnosesAndLeavesNativeMutationRunning()
     local selected = "UpgradeHammerBoon"
     local callbacks, source, _, _, _, _, _, _, mismatches, _, finish = harness(
         "Icarus", selected, {
-            offer = offer("Icarus", selected, nil, "StaffDoubleAttackTrait"),
+            offer = offer("Icarus", selected, nil, { "StaffDoubleAttackTrait" }),
         })
     local args = { UpgradeOptions = {
         { ItemName = "IcarusOne" }, { ItemName = selected }, { ItemName = "IcarusThree" },
@@ -467,6 +495,34 @@ function TestNpcAcquisitions.testUnavailableIcarusHammerDiagnosesAndLeavesNative
     lu.assertEquals(upgraded, "AxeSpinSpeedTrait")
     lu.assertEquals(mismatches[1], { checkpoint = "icarus-hammer-selection",
         observed = { expected = "StaffDoubleAttackTrait", observed = "missing native candidate" } })
+end
+
+function TestNpcAcquisitions.testIcarusReportsMissingOrExtraOuterDrawsWithoutBlockingNative()
+    for _, count in ipairs({ 1, 3 }) do
+        local selected = "UpgradeHammerBoon"
+        local targets = { "StaffDoubleAttackTrait", "StaffFastSpecialTrait" }
+        local callbacks, source, _, _, _, _, _, _, diagnostics, _, finish = harness(
+            "Icarus", selected, { offer = offer("Icarus", selected, nil, targets) })
+        local args = { UpgradeOptions = {
+            { ItemName = "IcarusOne" }, { ItemName = selected }, { ItemName = "IcarusThree" },
+        } }
+        local draws = 0
+        runMenu(callbacks, "IcarusBenefitChoice", source, args, selected, nil, function()
+            callbacks.UpgradeHammers(nil, {}, function()
+                local pool = { { Name = targets[1] }, { Name = targets[2] }, { Name = "Extra" } }
+                for _ = 1, count do
+                    callbacks.RemoveRandomValue(nil, {}, function(values)
+                        return table.remove(values, 1)
+                    end, pool)
+                    draws = draws + 1
+                end
+            end, { Count = count })
+        end)
+        finish()
+        lu.assertEquals(draws, count)
+        lu.assertEquals(#diagnostics, 1)
+        lu.assertEquals(diagnostics[1].checkpoint, "icarus-hammer-selection")
+    end
 end
 
 function TestNpcAcquisitions.testOrdinaryIcarusTraitKeepsItsNativeSelectedEffect()

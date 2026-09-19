@@ -284,7 +284,7 @@ function rewards.traitOffer(value, label)
             {
                 "baseRarity", "rarity", "effectiveLevel", "allTogetherResult",
                 "naturalSelectionTargets", "targetTraitKey", "concaveStoneResult", "circeResolution",
-                "icarusHammerTarget", "echoPomTarget", "echoLastRunBoon", "replacement",
+                "icarusHammerTargets", "echoPomTarget", "echoLastRunBoon", "replacement",
             },
             label .. ".options[" .. index .. "]"
         )
@@ -352,16 +352,22 @@ function rewards.traitOffer(value, label)
                 return p.fail(label .. ".options[" .. index .. "].circeResolution must belong to selected option")
             end
         end
-        if option.icarusHammerTarget ~= nil then
-            if not p.str(option.icarusHammerTarget,
-                label .. ".options[" .. index .. "].icarusHammerTarget") then
+        if option.icarusHammerTargets ~= nil then
+            local targets = p.strings(option.icarusHammerTargets,
+                label .. ".options[" .. index .. "].icarusHammerTargets", 2)
+            if not targets or #targets == 0 then
                 return p.fail(label .. ".options[" .. index .. "] has invalid Icarus Hammer target")
             end
+            local seen = {}
+            for _, target in ipairs(targets) do
+                if seen[target] then return p.fail(label .. ".options[" .. index .. "].icarusHammerTargets must be distinct") end
+                seen[target] = true
+            end
             if row.giver ~= "Icarus" or option.key ~= "UpgradeHammerBoon" then
-                return p.fail(label .. ".options[" .. index .. "].icarusHammerTarget requires Icarus Latest Model")
+                return p.fail(label .. ".options[" .. index .. "].icarusHammerTargets requires Icarus Latest Model")
             end
             if index ~= optionIndex[row.selected] then
-                return p.fail(label .. ".options[" .. index .. "].icarusHammerTarget must belong to selected option")
+                return p.fail(label .. ".options[" .. index .. "].icarusHammerTargets must belong to selected option")
             end
         end
         if option.echoPomTarget ~= nil then

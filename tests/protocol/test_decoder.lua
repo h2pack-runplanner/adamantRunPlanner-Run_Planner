@@ -527,20 +527,24 @@ function TestProtocol.testIcarusHammerTargetBelongsOnlyToSelectedLatestModel()
     local offer = traitOffer()
     offer.giver = "Icarus"
     offer.options[1].key = "UpgradeHammerBoon"
-    offer.options[1].icarusHammerTarget = "StaffDoubleAttackTrait"
+    offer.options[1].icarusHammerTargets = { "StaffDoubleAttackTrait", "StaffFastSpecialTrait" }
     lu.assertNotNil(rewards.traitOffer(tagged(offer), "offer"))
 
-    offer.options[1].icarusHammerTarget = 3
+    offer.options[1].icarusHammerTargets = 3
     lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
-    offer.options[1].icarusHammerTarget = "StaffDoubleAttackTrait"
+    offer.options[1].icarusHammerTargets = { "StaffDoubleAttackTrait", "StaffDoubleAttackTrait" }
+    lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
+    offer.options[1].icarusHammerTargets = {}
+    lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
+    offer.options[1].icarusHammerTargets = { "StaffDoubleAttackTrait" }
     offer.options[1].key = "IcarusUpgradeBoon"
     lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
     offer.options[1].key = "UpgradeHammerBoon"
     offer.giver = "Circe"
     lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
     offer.giver = "Icarus"
-    offer.options[1].icarusHammerTarget = nil
-    offer.options[2].icarusHammerTarget = "StaffDoubleAttackTrait"
+    offer.options[1].icarusHammerTargets = nil
+    offer.options[2].icarusHammerTargets = { "StaffDoubleAttackTrait" }
     lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
 end
 
