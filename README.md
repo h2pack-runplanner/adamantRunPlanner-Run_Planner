@@ -1,14 +1,22 @@
 # Run Planner
 
-Plan your Hades II run, then play it in-game.
+Design a Hades II run, then play it.
 
-Run Planner is the game companion to the
-[Run Planner application](https://github.com/maybe-adamant/RunPlanner).
-Build your route in the app, choose your rewards and upgrades, and send the
-plan to the mod. It then guides the game's rooms, rewards, and offers to match
-what you planned. You still play the run and make the planned choices.
+Have a build you want to try? Want to recreate the build and route from the world-record run?
+Plan the rooms you'll visit, the boons you'll be offered, and the rewards
+you'll pick up along the way. Choose an Underworld or Surface run, or put
+together your own biome order in a Dream Dive. You can even choose enemy
+lineups and certain boss attacks.
+
+The plan has to work within the game's rules. Run Planner checks your choices
+as you build. Every completed plan is checked against the game's rules.
+Once it's ready, this mod makes the game follow your plan. You still do the
+fighting and make the choices you planned.
 
 ## How to use
+
+You'll use two pieces: the Run Planner app to create your plan, and this mod
+to play it in Hades II.
 
 1. Download Run Planner from the
    [planner releases](https://github.com/maybe-adamant/RunPlanner/releases),
@@ -50,7 +58,9 @@ Open **Edit Trait** to configure the offered boons and the one you intend to pic
 
 ### Publish to the game
 
-Once your plan is ready, open **File → Publish to Game**.
+You can leave choices unfinished or conflicting while editing. Before
+publishing, fix the issues the planner points out so the plan passes its
+game-rule checks. Then open **File → Publish to Game**.
 
 ![File menu with Publish to Game highlighted](https://raw.githubusercontent.com/h2pack-runplanner/adamantRunPlanner-Run_Planner/main/docs/images/planner-publish-menu.webp)
 
@@ -67,7 +77,7 @@ loadout. **Inactive | Steering: off** is expected before starting a run.
 
 ![Plan inspection before a run, showing the selected slot, weapon, keepsake, and Arcana](https://raw.githubusercontent.com/h2pack-runplanner/adamantRunPlanner-Run_Planner/main/docs/images/plan-inspection.webp)
 
-## While playing
+### While playing
 
 Open the in-game inspector's **Plan** tab to preview the selected slot's
 loadout and planned keepsake changes. **Current Run** shows the plan being
