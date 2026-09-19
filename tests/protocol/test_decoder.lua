@@ -802,7 +802,7 @@ function TestProtocol.testShipWheelRequiresOneCompletePickedCohortAndMatchingLif
     lu.assertNil(protocol.decode(plan))
 end
 
-function TestProtocol.testProtocolAcceptsOnlyTheExactUnderworldAndSurfacePrefixes()
+function TestProtocol.testProtocolAcceptsClosedOrdinaryPrefixesAndBoundedDreamExtents()
     local plan = minimalPlan({})
     plan.extent = tagged({ kind = "configuredPrefix", biomeKeys = { "F", "G", "H", "I" }, terminalBiomeKey = "I" }, "extent", false)
     refreshFingerprint(plan)
@@ -837,6 +837,16 @@ function TestProtocol.testProtocolAcceptsOnlyTheExactUnderworldAndSurfacePrefixe
 
     plan = minimalPlan({})
     plan.routeKey = "Surface"
+    refreshFingerprint(plan)
+    lu.assertNil(protocol.decode(plan))
+
+    plan = minimalPlan({})
+    plan.routeKey = "Dream"
+    plan.extent = tagged({ kind = "configuredPrefix", biomeKeys = { "Q", "F", "N", "H" }, terminalBiomeKey = "H" }, "extent", false)
+    refreshFingerprint(plan)
+    lu.assertNotNil(protocol.decode(plan))
+
+    plan.extent = tagged({ kind = "configuredPrefix", biomeKeys = { "Q", "F", "F" }, terminalBiomeKey = "F" }, "extent", false)
     refreshFingerprint(plan)
     lu.assertNil(protocol.decode(plan))
 end

@@ -268,6 +268,68 @@ function TestRoomEntryHooks.testOpeningLoadoutMismatchReturnsToUnblockedNativeSe
     lu.assertEquals(state.state, "desynchronized")
 end
 
+function TestRoomEntryHooks.testLaterDreamStartingRoomForcesTheCursorSuccessorBeforePostbossExit()
+    local module, _, callbacks = capture()
+    local occurrence = { id = "dream-next", gameName = "F_Opening01", overview = {} }
+    local state = {
+        state = "synchronized", plan = { routeKey = "Dream" }, route = { currentOccurrence = { id = "postboss" } },
+    }
+    local prepared = false
+    local room = {
+        prepare = function(_, selected)
+            lu.assertEquals(selected, occurrence)
+            prepared = true
+            return {}
+        end,
+        realize = function(_, selected)
+            lu.assertTrue(prepared)
+            lu.assertEquals(selected, occurrence)
+            return { Name = selected.gameName }
+        end,
+    }
+    local priorGame = _G.game
+    _G.game = {
+        CreateRoom = function(data)
+            data.created = true
+            return data
+        end,
+    }
+    roomHooks.attach(module, stub(), function() return state end, function() end,
+        {
+            expected = function() error("later Dream entry must not use the current Postboss") end,
+            next = function(route)
+                lu.assertEquals(route, state.route)
+                return occurrence
+            end,
+        }, room, nil, {
+            realizeIncomingReward = function(_, data) return data end,
+        }, {
+            synchronizeStartingRoom = function()
+                error("later Dream entry must not re-run startup synchronization")
+            end,
+        })
+    local fallback = false
+    local result = callbacks.ChooseStartingRoom(nil, {}, function()
+        fallback = true
+    end, { IsDreamRun = true }, { StartingBiome = "F" })
+    _G.game = priorGame
+    lu.assertFalse(fallback)
+    lu.assertTrue(result.created)
+    lu.assertEquals(result.Name, "F_Opening01")
+end
+
+function TestRoomEntryHooks.testDreamIntroLeavesTheFirstPublishedCursorUntouched()
+    local first = { id = "dream-first", gameName = "Q_Intro" }
+    local cursor = routeSessionModule.new({
+        routeKey = "Dream", selectedOccurrenceIds = { first.id }, occurrencesById = { [first.id] = first },
+    })
+    lu.assertTrue(routeSessionModule.enterTransparent(cursor, "Dream_Intro"))
+    lu.assertTrue(routeSessionModule.leaveTransparent(cursor, "Dream_Intro"))
+    lu.assertEquals(cursor.index, 1)
+    lu.assertNil(routeSessionModule.current(cursor))
+    lu.assertEquals(routeSessionModule.expected(cursor), first)
+end
+
 function TestRoomEntryHooks.testRoomSessionAndEncounterBindingStartBeforeNativeLifecycle()
     local module, _, callbacks = capture()
     local entered, bound, proved = false, false, false

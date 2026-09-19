@@ -1,0 +1,4617 @@
+{
+  "format": "run-planner-execution",
+  "protocolVersion": 42,
+  "catalogVersion": "0.55.0-anvil-of-fates",
+  "projectId": "execution-dream-q-f-n-h",
+  "routeKey": "Dream",
+  "startingLoadout": {
+    "weaponKey": "WeaponStaffSwing",
+    "aspectKey": "BaseStaffAspect",
+    "arcana": [],
+    "fear": {
+      "configuredRanks": {
+        "HealingReductionShrineUpgrade": 0,
+        "ShopPricesShrineUpgrade": 0,
+        "EnemyHealthShrineUpgrade": 0,
+        "EnemyDamageShrineUpgrade": 0,
+        "EnemySpeedShrineUpgrade": 0,
+        "EnemyShieldShrineUpgrade": 0,
+        "EnemyCountShrineUpgrade": 0,
+        "EnemyRespawnShrineUpgrade": 0,
+        "NextBiomeEnemyShrineUpgrade": 0,
+        "BiomeSpeedShrineUpgrade": 0,
+        "MinibossCountShrineUpgrade": 0,
+        "BossDifficultyShrineUpgrade": 0,
+        "BoonSkipShrineUpgrade": 0,
+        "BoonManaReserveShrineUpgrade": 0,
+        "BanUnpickedBoonsShrineUpgrade": 0,
+        "LimitGraspShrineUpgrade": 0,
+        "EnemyEliteShrineUpgrade": 0
+      },
+      "effectiveRanks": {
+        "HealingReductionShrineUpgrade": 0,
+        "ShopPricesShrineUpgrade": 0,
+        "EnemyHealthShrineUpgrade": 0,
+        "EnemyDamageShrineUpgrade": 0,
+        "EnemySpeedShrineUpgrade": 0,
+        "EnemyShieldShrineUpgrade": 0,
+        "EnemyCountShrineUpgrade": 0,
+        "EnemyRespawnShrineUpgrade": 0,
+        "NextBiomeEnemyShrineUpgrade": 0,
+        "BiomeSpeedShrineUpgrade": 0,
+        "MinibossCountShrineUpgrade": 0,
+        "BossDifficultyShrineUpgrade": 0,
+        "BoonSkipShrineUpgrade": 0,
+        "BoonManaReserveShrineUpgrade": 0,
+        "BanUnpickedBoonsShrineUpgrade": 0,
+        "LimitGraspShrineUpgrade": 0,
+        "EnemyEliteShrineUpgrade": 0
+      }
+    }
+  },
+  "startingKeepsake": { "keepsakeKey": "ManaOverTimeRefundKeepsake" },
+  "extent": { "kind": "configuredPrefix", "biomeKeys": ["Q", "F", "N"], "terminalBiomeKey": "N" },
+  "selectedOccurrenceIds": [
+    "Q:start",
+    "dream-q-foyer",
+    "dream-q-first-fork",
+    "dream-q-first-miniboss",
+    "dream-q-ordinary",
+    "dream-q-second-fork",
+    "dream-q-second-miniboss",
+    "dream-q-preboss",
+    "dream-q-preboss:boss",
+    "dream-q-preboss:postboss",
+    "dream-f-start",
+    "dream-f-1-1",
+    "dream-f-2-1",
+    "dream-f-3-1",
+    "dream-f-4-1",
+    "dream-f-5-1",
+    "dream-f-6-1",
+    "dream-f-7-1",
+    "dream-f-8-1",
+    "dream-f-9-1",
+    "dream-f-10-1",
+    "dream-f-free",
+    "dream-f-free:boss",
+    "dream-f-free:postboss",
+    "N:start",
+    "dream-n-prehub",
+    "surface-n-combat05",
+    "surface-n-miniBoss01",
+    "surface-n-combat02",
+    "surface-n-combat11",
+    "surface-n-combat23",
+    "surface-n-combat01",
+    "dream-n-preboss",
+    "dream-n-preboss:boss",
+    "dream-n-preboss:postboss"
+  ],
+  "resources": {
+    "occurrences": [
+      {
+        "occurrenceId": "Q:start",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-foyer",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-first-fork",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-first-miniboss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-ordinary",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-second-fork",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-second-miniboss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-preboss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-preboss:boss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-q-preboss:postboss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-start",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-1-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-2-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-3-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-4-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-5-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-6-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-7-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-8-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-9-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-10-1",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-free",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-free:boss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-f-free:postboss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "N:start",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-n-prehub",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "surface-n-combat05",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "surface-n-miniBoss01",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "surface-n-combat02",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "surface-n-combat11",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "surface-n-combat23",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "surface-n-combat01",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-n-preboss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-n-preboss:boss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      },
+      {
+        "occurrenceId": "dream-n-preboss:postboss",
+        "pointDispositions": {
+          "Pickaxe": "native",
+          "Exorcism": "native",
+          "Shovel": "native",
+          "Fishing": "native"
+        }
+      }
+    ]
+  },
+  "occurrences": [
+    {
+      "id": "Q:start",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"Q:start\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_Intro",
+      "kind": "EmptyEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress",
+          "source": "ApolloUpgrade"
+        },
+        "unmodeledEncounterKeys": ["Empty"],
+        "encounterPhases": [],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"Q\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"Q\\\",\\\"Q:start\\\"]\",\"source\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"Q\",\"Q:start\"]",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ApolloUpgrade"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "source",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "ApolloUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"Q\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"Q\\\",\\\"Q:start\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"Q\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"Q\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"Q\\\\\\\",\\\\\\\"Q:start\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Apollo",
+                  "options": [
+                    { "key": "ApolloWeaponBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "ApolloSpecialBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "ApolloCastBoon", "rarity": "Common", "effectiveLevel": 1 }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"Q:start\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-q-foyer", "biomeKey": "Q", "gameName": "Q_Combat10" },
+            "zagreusContractPresent": false
+          }
+        ]
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 0,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"Q:start\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 1,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 1,
+              "roomHistoryOrdinal": 0
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 17 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 13 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+            ],
+            "godPool": {
+              "acquiredSourceKeys": [],
+              "effectiveSourceKeys": [
+                "AphroditeUpgrade",
+                "ApolloUpgrade",
+                "AresUpgrade",
+                "DemeterUpgrade",
+                "HephaestusUpgrade",
+                "HeraUpgrade",
+                "HestiaUpgrade",
+                "PoseidonUpgrade",
+                "ZeusUpgrade"
+              ],
+              "capNarrowed": false
+            },
+            "traits": {
+              "equipped": [],
+              "slots": [
+                { "slot": "Melee" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 0, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": {},
+              "upgradableCount": 0,
+              "bannedTraitKeys": []
+            },
+            "arcana": { "active": [] },
+            "vows": {
+              "configuredRanks": {
+                "HealingReductionShrineUpgrade": 0,
+                "ShopPricesShrineUpgrade": 0,
+                "EnemyHealthShrineUpgrade": 0,
+                "EnemyDamageShrineUpgrade": 0,
+                "EnemySpeedShrineUpgrade": 0,
+                "EnemyShieldShrineUpgrade": 0,
+                "EnemyCountShrineUpgrade": 0,
+                "EnemyRespawnShrineUpgrade": 0,
+                "NextBiomeEnemyShrineUpgrade": 0,
+                "BiomeSpeedShrineUpgrade": 0,
+                "MinibossCountShrineUpgrade": 0,
+                "BossDifficultyShrineUpgrade": 0,
+                "BoonSkipShrineUpgrade": 0,
+                "BoonManaReserveShrineUpgrade": 0,
+                "BanUnpickedBoonsShrineUpgrade": 0,
+                "LimitGraspShrineUpgrade": 0,
+                "EnemyEliteShrineUpgrade": 0
+              },
+              "effectiveRanks": {
+                "HealingReductionShrineUpgrade": 0,
+                "ShopPricesShrineUpgrade": 0,
+                "EnemyHealthShrineUpgrade": 0,
+                "EnemyDamageShrineUpgrade": 0,
+                "EnemySpeedShrineUpgrade": 0,
+                "EnemyShieldShrineUpgrade": 0,
+                "EnemyCountShrineUpgrade": 0,
+                "EnemyRespawnShrineUpgrade": 0,
+                "NextBiomeEnemyShrineUpgrade": 0,
+                "BiomeSpeedShrineUpgrade": 0,
+                "MinibossCountShrineUpgrade": 0,
+                "BossDifficultyShrineUpgrade": 0,
+                "BoonSkipShrineUpgrade": 0,
+                "BoonManaReserveShrineUpgrade": 0,
+                "BanUnpickedBoonsShrineUpgrade": 0,
+                "LimitGraspShrineUpgrade": 0,
+                "EnemyEliteShrineUpgrade": 0
+              },
+              "disabledKeys": []
+            },
+            "forfeit": "inactive",
+            "chaos": { "active": [], "matured": [] },
+            "keepsakes": {
+              "currentKey": "ManaOverTimeRefundKeepsake",
+              "usedKeys": ["ManaOverTimeRefundKeepsake"],
+              "blockedKeys": [],
+              "fatedStatus": "Unknown"
+            },
+            "rewardPriorities": [],
+            "hexProgress": {
+              "talentKeys": [],
+              "closed": false,
+              "bankedPathPoints": 0,
+              "investedPathPoints": 0
+            },
+            "artificer": null,
+            "retainedEffects": {
+              "echoShopDuplicateStatus": null,
+              "keepsakes": {
+                "olympianSources": [],
+                "jeweledPom": null,
+                "experimentalHammers": [],
+                "callingCard": null,
+                "timePiece": null,
+                "figLeaf": null,
+                "phial": null,
+                "figurine": null,
+                "stone": null,
+                "transcendentEmbryo": null,
+                "gorgon": null
+              },
+              "steadyGrowth": [],
+              "hermesShrineDeliveries": [],
+              "stygianWell": {
+                "sparkUses": 0,
+                "yarnUses": 0,
+                "hymnUses": 0,
+                "discountUses": [],
+                "emptySlotUses": [],
+                "extendedUses": 0
+              }
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 1,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"Q:start\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 2,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 1,
+              "roomHistoryOrdinal": 1
+            },
+            "godPool": {
+              "acquiredSourceKeys": ["ApolloUpgrade"],
+              "effectiveSourceKeys": [
+                "AphroditeUpgrade",
+                "ApolloUpgrade",
+                "AresUpgrade",
+                "DemeterUpgrade",
+                "HephaestusUpgrade",
+                "HeraUpgrade",
+                "HestiaUpgrade",
+                "PoseidonUpgrade",
+                "ZeusUpgrade"
+              ],
+              "capNarrowed": false
+            },
+            "traits": {
+              "equipped": [{ "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 }],
+              "slots": [
+                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 0, "Air": 1, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Common": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-foyer",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-foyer\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_Combat10",
+      "kind": "SingleEncounter",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedQ_Large", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-q-foyer\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-q-first-fork", "biomeKey": "Q", "gameName": "Q_Combat03" },
+            "zagreusContractPresent": false
+          }
+        ]
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 2,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-foyer\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 3,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-foyer\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 3,
+              "biomeEncounterDepth": 2,
+              "routeEncounterDepth": 2,
+              "roomHistoryOrdinal": 2
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-first-fork",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-first-fork\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_Combat03",
+      "kind": "SingleEncounter",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedQ_Islands", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-q-first-fork\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-q-first-miniboss", "biomeKey": "Q", "gameName": "Q_MiniBoss02" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards",
+              "source": "AresUpgrade"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": {
+              "id": "dream-q-first-miniboss-peer",
+              "biomeKey": "Q",
+              "gameName": "Q_MiniBoss05"
+            },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards",
+              "source": "ApolloUpgrade"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "TyphonBossRewards"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 4,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-first-fork\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 5,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-first-fork\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 4,
+              "biomeEncounterDepth": 3,
+              "routeEncounterDepth": 3,
+              "roomHistoryOrdinal": 3
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 17 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 13 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 4 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-first-miniboss",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-first-miniboss\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_MiniBoss02",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "TyphonBossRewards",
+          "source": "AresUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "MiniBossBrute", "kind": "miniboss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"Q\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"Q\\\",\\\"dream-q-first-miniboss\\\"]\",\"source\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"Q\",\"dream-q-first-miniboss\"]",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards",
+              "source": "AresUpgrade"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "source",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "AresUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"Q\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"Q\\\",\\\"dream-q-first-miniboss\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"Q\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"Q\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"Q\\\\\\\",\\\\\\\"dream-q-first-miniboss\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Ares",
+                  "options": [
+                    {
+                      "key": "AresWeaponBoon",
+                      "rarity": "Rare",
+                      "effectiveLevel": 1,
+                      "replacement": {
+                        "slot": "Melee",
+                        "replacedTraitKey": "ApolloWeaponBoon",
+                        "oldRarity": "Common",
+                        "newTraitKey": "AresWeaponBoon",
+                        "requiredRarity": "Rare"
+                      }
+                    },
+                    { "key": "AresSpecialBoon", "rarity": "Rare", "effectiveLevel": 1 },
+                    { "key": "AresManaBoon", "rarity": "Rare", "effectiveLevel": 1 }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-q-first-miniboss\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-q-ordinary", "biomeKey": "Q", "gameName": "Q_Combat01" },
+            "zagreusContractPresent": false
+          }
+        ]
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 6,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-first-miniboss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 7,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-first-miniboss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 5,
+              "biomeEncounterDepth": 4,
+              "routeEncounterDepth": 4,
+              "roomHistoryOrdinal": 4
+            },
+            "godPool": {
+              "acquiredSourceKeys": ["ApolloUpgrade", "AresUpgrade"],
+              "effectiveSourceKeys": [
+                "AphroditeUpgrade",
+                "ApolloUpgrade",
+                "AresUpgrade",
+                "DemeterUpgrade",
+                "HephaestusUpgrade",
+                "HeraUpgrade",
+                "HestiaUpgrade",
+                "PoseidonUpgrade",
+                "ZeusUpgrade"
+              ],
+              "capNarrowed": false
+            },
+            "traits": {
+              "equipped": [{ "traitKey": "AresWeaponBoon", "rarity": "Rare", "level": 1 }],
+              "slots": [
+                { "slot": "Melee", "traitKey": "AresWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 1, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Rare": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-ordinary",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-ordinary\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_Combat01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedQ", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-q-ordinary\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-q-second-fork", "biomeKey": "Q", "gameName": "Q_Combat12" },
+            "zagreusContractPresent": false
+          }
+        ]
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 8,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-ordinary\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 9,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-ordinary\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 6,
+              "biomeEncounterDepth": 5,
+              "routeEncounterDepth": 5,
+              "roomHistoryOrdinal": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-second-fork",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-second-fork\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_Combat12",
+      "kind": "SingleEncounter",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedQ", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-q-second-fork\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": {
+              "id": "dream-q-second-miniboss",
+              "biomeKey": "Q",
+              "gameName": "Q_MiniBoss03"
+            },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "WeaponUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": {
+              "id": "dream-q-second-miniboss-peer",
+              "biomeKey": "Q",
+              "gameName": "Q_MiniBoss04"
+            },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "StackUpgradeTriple",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "TyphonBossRewards"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 10,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-second-fork\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 11,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-second-fork\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 7,
+              "biomeEncounterDepth": 6,
+              "routeEncounterDepth": 6,
+              "roomHistoryOrdinal": 6
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 17 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 13 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-second-miniboss",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-second-miniboss\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_MiniBoss03",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "WeaponUpgrade",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "TyphonBossRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "BossTyphonTail01", "kind": "miniboss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"Q\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"Q\\\",\\\"dream-q-second-miniboss\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"Q\",\"dream-q-second-miniboss\"]",
+            "reward": {
+              "rewardType": "WeaponUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "WeaponUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"Q\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"Q\\\",\\\"dream-q-second-miniboss\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"Q\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"Q\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"Q\\\\\\\",\\\\\\\"dream-q-second-miniboss\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "WeaponUpgrade",
+                  "options": [
+                    { "key": "StaffDoubleAttackTrait" },
+                    { "key": "StaffLongAttackTrait" },
+                    { "key": "StaffDashAttackTrait" }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-q-second-miniboss\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-q-preboss", "biomeKey": "Q", "gameName": "Q_PreBoss01" },
+            "zagreusContractPresent": false,
+            "reward": { "rewardType": "Shop", "producerLifecycleKey": "RoomReward" }
+          }
+        ]
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 12,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-second-miniboss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 13,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-second-miniboss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 8,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 7,
+              "roomHistoryOrdinal": 7
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "AresWeaponBoon", "rarity": "Rare", "level": 1 },
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "AresWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 1, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Rare": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-preboss",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-preboss\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_PreBoss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": { "rewardType": "Shop", "producerLifecycleKey": "RoomReward" },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "TyphonShop", "kind": "nonCombat" }
+        ],
+        "requiredObjects": [],
+        "shop": {
+          "profileKey": "Q_WorldShop",
+          "offers": [
+            {
+              "offerKey": "MixedProgress1",
+              "optionKey": "MaxHealthDrop",
+              "rewardType": "MaxHealthDrop"
+            },
+            {
+              "offerKey": "MixedProgress2",
+              "optionKey": "MaxManaDrop",
+              "rewardType": "MaxManaDrop"
+            },
+            {
+              "offerKey": "LargeSurvival",
+              "optionKey": "RandomLoot",
+              "rewardType": "RandomLoot",
+              "source": "ApolloUpgrade"
+            },
+            {
+              "offerKey": "Survival",
+              "optionKey": "RoomRewardHealDrop",
+              "rewardType": "RoomRewardHealDrop"
+            },
+            {
+              "offerKey": "PremiumProgress",
+              "optionKey": "RandomLoot",
+              "rewardType": "RandomLoot",
+              "source": "ZeusUpgrade"
+            },
+            {
+              "offerKey": "MetaProgress",
+              "optionKey": "ElementalBoost",
+              "rewardType": "ElementalBoost"
+            }
+          ]
+        }
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-preboss\"]",
+        "kind": "fixed",
+        "target": { "id": "dream-q-preboss:boss", "biomeKey": "Q", "gameName": "Q_Boss01" },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 14,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-preboss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 15,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-preboss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 8,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 7,
+              "roomHistoryOrdinal": 8
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-preboss:boss",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-preboss:boss\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_Boss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "effectNeutralRequiredReward": true,
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "BossTyphonHead01", "kind": "boss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-preboss:boss\"]",
+        "kind": "fixed",
+        "target": {
+          "id": "dream-q-preboss:postboss",
+          "biomeKey": "Q",
+          "gameName": "Dream_PostBoss01"
+        },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 16,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-preboss:boss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 17,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-preboss:boss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 9,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 7,
+              "roomHistoryOrdinal": 9
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-preboss:postboss",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-preboss:postboss\"]",
+      "biomeKey": "Q",
+      "gameName": "Dream_PostBoss01",
+      "kind": "SingleEncounter",
+      "resumeBoundary": "postbossEntry",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "Empty", "kind": "nonCombat" }
+        ],
+        "requiredObjects": [],
+        "stygianWell": { "interacted": false },
+        "keepsakeRack": {},
+        "fountain": {}
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "fountainUse",
+            "owner": "[\"roomAction\",\"Dream\",\"Q\",\"dream-q-preboss:postboss\",\"[\\\"useFountain\\\"]\"]",
+            "interactionKey": "fountain",
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": [
+          {
+            "owner": "[\"roomAction\",\"Dream\",\"Q\",\"dream-q-preboss:postboss\",\"[\\\"useFountain\\\"]\"]",
+            "checkpoint": "exitUsable"
+          }
+        ]
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-preboss:postboss\"]",
+        "kind": "fixed",
+        "target": { "id": "dream-f-start", "biomeKey": "F", "gameName": "F_Opening02" },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 18,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-preboss:postboss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 19,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"Q\",\"dream-q-preboss:postboss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 10,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 7,
+              "roomHistoryOrdinal": 10
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-start",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-start\"]",
+      "biomeKey": "F",
+      "gameName": "F_Opening02",
+      "kind": "SingleEncounter",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "OpeningEmpty", "kind": "nonCombat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-start\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-1-1", "biomeKey": "F", "gameName": "F_Combat02" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MetaCurrencyBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "MetaProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 20,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-start\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 1,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 7,
+              "roomHistoryOrdinal": 10
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 21,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-start\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 2,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 7,
+              "roomHistoryOrdinal": 11
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 17 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-1-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-1-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat02",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MetaCurrencyBigDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "MetaProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-1-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-1-1\"]",
+            "reward": {
+              "rewardType": "MetaCurrencyBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "resource",
+                "gameName": "MetaCurrencyBigDrop",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-1-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-1-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-1-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-2-1", "biomeKey": "F", "gameName": "F_Combat03" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ZeusUpgrade"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-2-2", "biomeKey": "F", "gameName": "F_Combat03" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 22,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-1-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 23,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-1-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 3,
+              "biomeEncounterDepth": 2,
+              "routeEncounterDepth": 8,
+              "roomHistoryOrdinal": 12
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 15 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-2-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-2-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat03",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress",
+          "source": "ZeusUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-2-1\\\"]\",\"source\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-2-1\"]",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ZeusUpgrade"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "source",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "ZeusUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-2-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-2-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Zeus",
+                  "options": [
+                    {
+                      "key": "ZeusWeaponBoon",
+                      "rarity": "Epic",
+                      "effectiveLevel": 1,
+                      "replacement": {
+                        "slot": "Melee",
+                        "replacedTraitKey": "AresWeaponBoon",
+                        "oldRarity": "Rare",
+                        "newTraitKey": "ZeusWeaponBoon",
+                        "requiredRarity": "Epic"
+                      }
+                    },
+                    { "key": "ZeusSpecialBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "ZeusCastBoon", "rarity": "Common", "effectiveLevel": 1 }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-2-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-3-1", "biomeKey": "F", "gameName": "F_Combat04" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-3-2", "biomeKey": "F", "gameName": "F_Combat04" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 24,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-2-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 25,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-2-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 4,
+              "biomeEncounterDepth": 3,
+              "routeEncounterDepth": 9,
+              "roomHistoryOrdinal": 13
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 13 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ],
+            "godPool": {
+              "acquiredSourceKeys": ["ApolloUpgrade", "AresUpgrade", "ZeusUpgrade"],
+              "effectiveSourceKeys": [
+                "AphroditeUpgrade",
+                "ApolloUpgrade",
+                "AresUpgrade",
+                "DemeterUpgrade",
+                "HephaestusUpgrade",
+                "HeraUpgrade",
+                "HestiaUpgrade",
+                "PoseidonUpgrade",
+                "ZeusUpgrade"
+              ],
+              "capNarrowed": false
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "ZeusWeaponBoon", "rarity": "Epic", "level": 1 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "ZeusWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 0, "Air": 1, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Epic": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-3-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-3-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat04",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxHealthDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-3-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-3-1\"]",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "consumable",
+                "gameName": "MaxHealthDrop",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-3-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-3-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-3-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-4-1", "biomeKey": "F", "gameName": "F_Combat07" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-4-2", "biomeKey": "F", "gameName": "F_Combat08" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "RoomMoneyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 26,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-3-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 27,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-3-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 5,
+              "biomeEncounterDepth": 4,
+              "routeEncounterDepth": 10,
+              "roomHistoryOrdinal": 14
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 11 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-4-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-4-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat07",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "StackUpgrade",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-4-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-4-1\"]",
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "StackUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-4-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-4-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                },
+                "levelResolution": {
+                  "offeredTargets": ["ZeusWeaponBoon"],
+                  "selectedTarget": "ZeusWeaponBoon",
+                  "levelCount": 1
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-4-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-5-1", "biomeKey": "F", "gameName": "F_MiniBoss01" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HeraUpgrade"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-5-2", "biomeKey": "F", "gameName": "F_MiniBoss02" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ApolloUpgrade"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 28,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-4-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 29,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-4-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 6,
+              "biomeEncounterDepth": 5,
+              "routeEncounterDepth": 11,
+              "roomHistoryOrdinal": 15
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ],
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "ZeusWeaponBoon", "rarity": "Epic", "level": 2 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "ZeusWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 0, "Air": 1, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Epic": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-5-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-5-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_MiniBoss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress",
+          "source": "HeraUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "MiniBossTreant", "kind": "miniboss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-5-1\\\"]\",\"source\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-5-1\"]",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HeraUpgrade"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "source",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "HeraUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-5-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-5-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Hera",
+                  "options": [
+                    {
+                      "key": "HeraWeaponBoon",
+                      "rarity": "Heroic",
+                      "effectiveLevel": 2,
+                      "replacement": {
+                        "slot": "Melee",
+                        "replacedTraitKey": "ZeusWeaponBoon",
+                        "oldRarity": "Epic",
+                        "newTraitKey": "HeraWeaponBoon",
+                        "requiredRarity": "Heroic"
+                      }
+                    },
+                    { "key": "HeraSpecialBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "HeraCastBoon", "rarity": "Common", "effectiveLevel": 1 }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-5-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-6-1", "biomeKey": "F", "gameName": "F_Combat06" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MetaCardPointsCommonBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "MetaProgress"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 30,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-5-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 31,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-5-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 7,
+              "biomeEncounterDepth": 6,
+              "routeEncounterDepth": 12,
+              "roomHistoryOrdinal": 16
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 11 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ],
+            "godPool": {
+              "acquiredSourceKeys": ["ApolloUpgrade", "AresUpgrade", "HeraUpgrade", "ZeusUpgrade"],
+              "effectiveSourceKeys": ["ApolloUpgrade", "AresUpgrade", "HeraUpgrade", "ZeusUpgrade"],
+              "capNarrowed": true
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "HeraWeaponBoon", "rarity": "Heroic", "level": 2 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "HeraWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 1, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Heroic": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-6-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-6-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat06",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MetaCardPointsCommonBigDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "MetaProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-6-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-6-1\"]",
+            "reward": {
+              "rewardType": "MetaCardPointsCommonBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "resource",
+                "gameName": "MetaCardPointsCommonBigDrop",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-6-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-6-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-6-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-7-1", "biomeKey": "F", "gameName": "F_Combat11" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-7-2", "biomeKey": "F", "gameName": "F_Combat11" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 32,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-6-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 33,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-6-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 8,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 13,
+              "roomHistoryOrdinal": 17
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 11 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-7-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-7-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat11",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxManaDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-7-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-7-1\"]",
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "consumable",
+                "gameName": "MaxManaDrop",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-7-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-7-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-7-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-8-1", "biomeKey": "F", "gameName": "F_Combat12" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-8-2", "biomeKey": "F", "gameName": "F_Combat12" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "SpellDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 34,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-7-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 35,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-7-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 9,
+              "biomeEncounterDepth": 8,
+              "routeEncounterDepth": 14,
+              "roomHistoryOrdinal": 18
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 5 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 11 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-8-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-8-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat12",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "HermesUpgrade",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-8-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-8-1\"]",
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "HermesUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-8-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-8-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Hermes",
+                  "options": [
+                    { "key": "HermesWeaponBoon", "rarity": "Common" },
+                    { "key": "HermesSpecialBoon", "rarity": "Common" },
+                    { "key": "HermesCastDiscountBoon", "rarity": "Common" }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-8-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-9-1", "biomeKey": "F", "gameName": "F_Combat14" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MetaCardPointsCommonBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-9-2", "biomeKey": "F", "gameName": "F_Combat14" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "GiftDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "MetaProgress"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 36,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-8-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 37,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-8-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 10,
+              "biomeEncounterDepth": 9,
+              "routeEncounterDepth": 15,
+              "roomHistoryOrdinal": 19
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 5 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ],
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "HeraWeaponBoon", "rarity": "Heroic", "level": 2 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "HeraWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 2, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Heroic": 1, "Common": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-9-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-9-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat14",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MetaCardPointsCommonBigDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "MetaProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-9-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-9-1\"]",
+            "reward": {
+              "rewardType": "MetaCardPointsCommonBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "resource",
+                "gameName": "MetaCardPointsCommonBigDrop",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-9-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-9-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-9-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-10-1", "biomeKey": "F", "gameName": "F_Combat15" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MetaCurrencyBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-10-2", "biomeKey": "F", "gameName": "F_Combat15" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MetaCardPointsCommonBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "MetaProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 38,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-9-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 39,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-9-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 11,
+              "biomeEncounterDepth": 10,
+              "routeEncounterDepth": 16,
+              "roomHistoryOrdinal": 20
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 5 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-10-1",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-10-1\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat15",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MetaCurrencyBigDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "MetaProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-10-1\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-10-1\"]",
+            "reward": {
+              "rewardType": "MetaCurrencyBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "resource",
+                "gameName": "MetaCurrencyBigDrop",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-10-1\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-10-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"dream-f-10-1\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "exit1",
+            "index": 1,
+            "room": { "id": "dream-f-shop", "biomeKey": "F", "gameName": "F_PreBoss01" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "Shop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          {
+            "exitKey": "exit2",
+            "index": 2,
+            "room": { "id": "dream-f-free", "biomeKey": "F", "gameName": "F_PreBoss01" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 40,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-10-1\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 41,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-10-1\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 12,
+              "biomeEncounterDepth": 11,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 21
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 22 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-free",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-free\"]",
+      "biomeKey": "F",
+      "gameName": "F_PreBoss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxHealthDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "Shop", "kind": "nonCombat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"F\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-free\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"F\",\"dream-f-free\"]",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "consumable",
+                "gameName": "MaxHealthDrop",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"F\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"F\\\",\\\"dream-f-free\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"F\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"F\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"F\\\\\\\",\\\\\\\"dream-f-free\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-free\"]",
+        "kind": "fixed",
+        "target": { "id": "dream-f-free:boss", "biomeKey": "F", "gameName": "F_Boss01" },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 42,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-free\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 43,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-free\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 12,
+              "biomeEncounterDepth": 11,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 22
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-free:boss",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-free:boss\"]",
+      "biomeKey": "F",
+      "gameName": "F_Boss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "effectNeutralRequiredReward": true,
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "BossHecate01", "kind": "boss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-free:boss\"]",
+        "kind": "fixed",
+        "target": {
+          "id": "dream-f-free:postboss",
+          "biomeKey": "F",
+          "gameName": "Dream_PostBoss02"
+        },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 44,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-free:boss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 45,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-free:boss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 13,
+              "biomeEncounterDepth": 11,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 23
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-f-free:postboss",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-free:postboss\"]",
+      "biomeKey": "F",
+      "gameName": "Dream_PostBoss02",
+      "kind": "SingleEncounter",
+      "resumeBoundary": "postbossEntry",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "Empty", "kind": "nonCombat" }
+        ],
+        "requiredObjects": [],
+        "stygianWell": { "interacted": false },
+        "keepsakeRack": {},
+        "fountain": {}
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "fountainUse",
+            "owner": "[\"roomAction\",\"Dream\",\"F\",\"dream-f-free:postboss\",\"[\\\"useFountain\\\"]\"]",
+            "interactionKey": "fountain",
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": [
+          {
+            "owner": "[\"roomAction\",\"Dream\",\"F\",\"dream-f-free:postboss\",\"[\\\"useFountain\\\"]\"]",
+            "checkpoint": "exitUsable"
+          }
+        ]
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-free:postboss\"]",
+        "kind": "fixed",
+        "target": { "id": "N:start", "biomeKey": "N", "gameName": "N_Opening01" },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 46,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-free:postboss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 47,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"F\",\"dream-f-free:postboss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 14,
+              "biomeEncounterDepth": 11,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 24
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "N:start",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"N:start\"]",
+      "biomeKey": "N",
+      "gameName": "N_Opening01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "OpeningEmpty", "kind": "nonCombat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"exitDecision\",\"Dream\",\"N\",{\"kind\":\"occurrence\",\"occurrenceId\":\"N:start\"}]",
+        "kind": "batch",
+        "targets": [
+          {
+            "exitKey": "prehub",
+            "index": 1,
+            "room": { "id": "dream-n-prehub", "biomeKey": "N", "gameName": "N_PreHub01" },
+            "zagreusContractPresent": false,
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
+        ],
+        "resolvedSharedRewardStoreKey": "RunProgress"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 48,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"N:start\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 1,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 24
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 49,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"N:start\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 2,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 25
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 21 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-n-prehub",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-prehub\"]",
+      "biomeKey": "N",
+      "gameName": "N_PreHub01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "StackUpgrade",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "PreHubGeneratedN", "kind": "combat" }
+        ],
+        "requiredObjects": [],
+        "hub": {
+          "room": { "gameName": "N_Hub" },
+          "slots": [
+            {
+              "slotKey": "combat01",
+              "physicalDoorId": 617113,
+              "room": { "id": "surface-n-combat01", "biomeKey": "N", "gameName": "N_Combat01" },
+              "reward": {
+                "rewardType": "MaxHealthDropBig",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards"
+              }
+            },
+            {
+              "slotKey": "combat02",
+              "physicalDoorId": 560725,
+              "room": { "id": "surface-n-combat02", "biomeKey": "N", "gameName": "N_Combat02" },
+              "reward": {
+                "rewardType": "MaxManaDropBig",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards"
+              }
+            },
+            {
+              "slotKey": "combat03",
+              "physicalDoorId": 560702,
+              "room": { "id": "surface-n-combat03", "biomeKey": "N", "gameName": "N_Combat03" },
+              "reward": {
+                "rewardType": "Boon",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards",
+                "source": "ZeusUpgrade"
+              }
+            },
+            {
+              "slotKey": "combat05",
+              "physicalDoorId": 561337,
+              "room": { "id": "surface-n-combat05", "biomeKey": "N", "gameName": "N_Combat05" },
+              "reward": {
+                "rewardType": "HermesUpgrade",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards"
+              }
+            },
+            {
+              "slotKey": "combat09",
+              "physicalDoorId": 617012,
+              "room": { "id": "surface-n-combat09", "biomeKey": "N", "gameName": "N_Combat09" },
+              "reward": {
+                "rewardType": "SpellDrop",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards"
+              }
+            },
+            {
+              "slotKey": "combat10",
+              "physicalDoorId": 617151,
+              "room": { "id": "surface-n-combat10", "biomeKey": "N", "gameName": "N_Combat10" },
+              "reward": {
+                "rewardType": "Boon",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards",
+                "source": "ZeusUpgrade"
+              }
+            },
+            {
+              "slotKey": "combat11",
+              "physicalDoorId": 561449,
+              "room": { "id": "surface-n-combat11", "biomeKey": "N", "gameName": "N_Combat11" },
+              "reward": {
+                "rewardType": "Boon",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards",
+                "source": "AresUpgrade"
+              }
+            },
+            {
+              "slotKey": "combat23",
+              "physicalDoorId": 561368,
+              "room": { "id": "surface-n-combat23", "biomeKey": "N", "gameName": "N_Combat23" },
+              "reward": {
+                "rewardType": "Boon",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "HubRewards",
+                "source": "ApolloUpgrade"
+              }
+            },
+            {
+              "slotKey": "miniBoss01",
+              "physicalDoorId": 617043,
+              "room": { "id": "surface-n-miniBoss01", "biomeKey": "N", "gameName": "N_MiniBoss01" },
+              "reward": {
+                "rewardType": "Boon",
+                "producerLifecycleKey": "RoomReward",
+                "resolvedStoreKey": "RunProgress",
+                "source": "HeraUpgrade"
+              }
+            }
+          ],
+          "finalHandoff": { "id": "dream-n-preboss", "biomeKey": "N", "gameName": "N_PreBoss01" }
+        }
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"N\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"N\\\",\\\"dream-n-prehub\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"N\",\"dream-n-prehub\"]",
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "StackUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"N\",\"[\\\"occurrence\\\",\\\"Dream\\\",\\\"N\\\",\\\"dream-n-prehub\\\"]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"N\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"dream-n-prehub\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                },
+                "levelResolution": {
+                  "offeredTargets": ["HeraWeaponBoon"],
+                  "selectedTarget": "HeraWeaponBoon",
+                  "levelCount": 1
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-prehub\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 50,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-prehub\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 51,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-prehub\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 3,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 26
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "HeraWeaponBoon", "rarity": "Heroic", "level": 3 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "HeraWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 2, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Heroic": 1, "Common": 1 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "surface-n-combat05",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat05",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "HermesUpgrade",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"],
+        "localSlots": [
+          {
+            "slotKey": "sideDoor1",
+            "physicalDoorId": 558354,
+            "generation": "generated",
+            "room": {
+              "id": "surface-n-combat05-sideDoor1",
+              "biomeKey": "N",
+              "gameName": "N_Sub02"
+            },
+            "reward": {
+              "rewardType": "MaxManaDropSmall",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          {
+            "slotKey": "sideDoor2",
+            "physicalDoorId": 558378,
+            "generation": "generated",
+            "room": {
+              "id": "surface-n-combat05-sideDoor2",
+              "biomeKey": "N",
+              "gameName": "N_Sub07"
+            },
+            "reward": {
+              "rewardType": "MaxHealthDropSmall",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          {
+            "slotKey": "sideDoor3",
+            "physicalDoorId": 558379,
+            "generation": "generated",
+            "room": {
+              "id": "surface-n-combat05-sideDoor3",
+              "biomeKey": "N",
+              "gameName": "N_Sub03"
+            },
+            "reward": {
+              "rewardType": "EmptyMaxHealthSmallDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          }
+        ]
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"N\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"N\\\",\\\"surface-n-combat05\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"N\",\"surface-n-combat05\"]",
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "HermesUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"N\",\"[\\\"hubVisit\\\",\\\"Dream\\\",\\\"N\\\",\\\"hub\\\",1]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"N\\\",\\\"[\\\\\\\"hubVisit\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"hub\\\\\\\",1]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Hermes",
+                  "options": [
+                    { "key": "HermesSpecialBoon", "rarity": "Common" },
+                    { "key": "HermesCastDiscountBoon", "rarity": "Common" },
+                    { "key": "SprintShieldBoon", "rarity": "Common" }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 52,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat05\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 4,
+              "biomeEncounterDepth": 1,
+              "routeEncounterDepth": 17,
+              "roomHistoryOrdinal": 27
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 20 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 53,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat05\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 5,
+              "biomeEncounterDepth": 2,
+              "routeEncounterDepth": 18,
+              "roomHistoryOrdinal": 28
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 20 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 20 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ],
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "HeraWeaponBoon", "rarity": "Heroic", "level": 3 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HermesSpecialBoon", "rarity": "Common" }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "HeraWeaponBoon" },
+                { "slot": "Secondary" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 3, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Heroic": 1, "Common": 2 },
+              "upgradableCount": 1,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "surface-n-miniBoss01",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-miniBoss01\"]",
+      "biomeKey": "N",
+      "gameName": "N_MiniBoss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress",
+          "source": "HeraUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "MiniBossSatyrCrossbow", "kind": "miniboss" }
+        ],
+        "requiredObjects": ["SoulPylon"],
+        "localSlots": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"N\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"N\\\",\\\"surface-n-miniBoss01\\\"]\",\"source\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"N\",\"surface-n-miniBoss01\"]",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HeraUpgrade"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "source",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "HeraUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"N\",\"[\\\"hubVisit\\\",\\\"Dream\\\",\\\"N\\\",\\\"hub\\\",2]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"N\\\",\\\"[\\\\\\\"hubVisit\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"hub\\\\\\\",2]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Hera",
+                  "options": [
+                    { "key": "HeraSpecialBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "HeraCastBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "HeraSprintBoon", "rarity": "Common", "effectiveLevel": 1 }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-miniBoss01\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 54,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-miniBoss01\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 6,
+              "biomeEncounterDepth": 2,
+              "routeEncounterDepth": 18,
+              "roomHistoryOrdinal": 29
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 55,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-miniBoss01\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 7,
+              "biomeEncounterDepth": 3,
+              "routeEncounterDepth": 19,
+              "roomHistoryOrdinal": 30
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "HeraWeaponBoon", "rarity": "Heroic", "level": 3 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                { "traitKey": "HeraSpecialBoon", "rarity": "Common", "level": 1 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "HeraWeaponBoon" },
+                { "slot": "Secondary", "traitKey": "HeraSpecialBoon" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 4, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Heroic": 1, "Common": 3 },
+              "upgradableCount": 2,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "surface-n-combat02",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat02\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat02",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxManaDropBig",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"],
+        "localSlots": [
+          {
+            "slotKey": "sideDoor1",
+            "physicalDoorId": 558353,
+            "generation": "generated",
+            "room": {
+              "id": "surface-n-combat02-sideDoor1",
+              "biomeKey": "N",
+              "gameName": "N_Sub01"
+            },
+            "reward": {
+              "rewardType": "RoomMoneyTinyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          {
+            "slotKey": "sideDoor2",
+            "physicalDoorId": 558352,
+            "generation": "generated",
+            "room": {
+              "id": "surface-n-combat02-sideDoor2",
+              "biomeKey": "N",
+              "gameName": "N_Sub03"
+            },
+            "reward": {
+              "rewardType": "AirBoost",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          }
+        ]
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"N\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"N\\\",\\\"surface-n-combat02\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"N\",\"surface-n-combat02\"]",
+            "reward": {
+              "rewardType": "MaxManaDropBig",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "consumable",
+                "gameName": "MaxManaDropBig",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"N\",\"[\\\"hubVisit\\\",\\\"Dream\\\",\\\"N\\\",\\\"hub\\\",3]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"N\\\",\\\"[\\\\\\\"hubVisit\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"hub\\\\\\\",3]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat02\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 56,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat02\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 8,
+              "biomeEncounterDepth": 3,
+              "routeEncounterDepth": 19,
+              "roomHistoryOrdinal": 31
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 57,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat02\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 9,
+              "biomeEncounterDepth": 4,
+              "routeEncounterDepth": 20,
+              "roomHistoryOrdinal": 32
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 20 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 18 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "surface-n-combat11",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat11\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat11",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards",
+          "source": "AresUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN_Bigger", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"],
+        "localSlots": [
+          {
+            "slotKey": "sideDoor1",
+            "physicalDoorId": 558352,
+            "generation": "generated",
+            "room": {
+              "id": "surface-n-combat11-sideDoor1",
+              "biomeKey": "N",
+              "gameName": "N_Sub01"
+            },
+            "reward": {
+              "rewardType": "EarthBoost",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          }
+        ]
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"N\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"N\\\",\\\"surface-n-combat11\\\"]\",\"source\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"N\",\"surface-n-combat11\"]",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards",
+              "source": "AresUpgrade"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "source",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "AresUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"N\",\"[\\\"hubVisit\\\",\\\"Dream\\\",\\\"N\\\",\\\"hub\\\",4]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"N\\\",\\\"[\\\\\\\"hubVisit\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"hub\\\\\\\",4]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Ares",
+                  "options": [
+                    {
+                      "key": "AresSpecialBoon",
+                      "rarity": "Rare",
+                      "effectiveLevel": 1,
+                      "replacement": {
+                        "slot": "Secondary",
+                        "replacedTraitKey": "HeraSpecialBoon",
+                        "oldRarity": "Common",
+                        "newTraitKey": "AresSpecialBoon",
+                        "requiredRarity": "Rare"
+                      }
+                    },
+                    { "key": "AresCastBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "AresSprintBoon", "rarity": "Common", "effectiveLevel": 1 }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat11\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 58,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat11\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 10,
+              "biomeEncounterDepth": 4,
+              "routeEncounterDepth": 20,
+              "roomHistoryOrdinal": 33
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 59,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat11\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 11,
+              "biomeEncounterDepth": 5,
+              "routeEncounterDepth": 21,
+              "roomHistoryOrdinal": 34
+            },
+            "bags": [
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 20 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
+              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
+              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 17 } },
+              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
+              {
+                "storeKey": "FieldsOptionalRewards",
+                "remaining": { "kind": "exact", "count": 19 }
+              },
+              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } }
+            ],
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "HeraWeaponBoon", "rarity": "Heroic", "level": 3 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                { "traitKey": "AresSpecialBoon", "rarity": "Rare", "level": 1 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "HeraWeaponBoon" },
+                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 4, "Air": 0, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Heroic": 1, "Common": 2, "Rare": 1 },
+              "upgradableCount": 2,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "surface-n-combat23",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat23\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat23",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards",
+          "source": "ApolloUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"],
+        "localSlots": [
+          { "slotKey": "sideDoor1", "physicalDoorId": 755971, "generation": "notGenerated" },
+          { "slotKey": "sideDoor2", "physicalDoorId": 755184, "generation": "notGenerated" },
+          { "slotKey": "sideDoor3", "physicalDoorId": 755185, "generation": "notGenerated" }
+        ]
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"N\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"N\\\",\\\"surface-n-combat23\\\"]\",\"source\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"N\",\"surface-n-combat23\"]",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards",
+              "source": "ApolloUpgrade"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "source",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "loot",
+                "gameName": "ApolloUpgrade",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"N\",\"[\\\"hubVisit\\\",\\\"Dream\\\",\\\"N\\\",\\\"hub\\\",5]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"N\\\",\\\"[\\\\\\\"hubVisit\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"hub\\\\\\\",5]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
+                },
+                "traitOffer": {
+                  "kind": "traits",
+                  "giver": "Apollo",
+                  "options": [
+                    {
+                      "key": "ApolloSpecialBoon",
+                      "rarity": "Epic",
+                      "effectiveLevel": 1,
+                      "replacement": {
+                        "slot": "Secondary",
+                        "replacedTraitKey": "AresSpecialBoon",
+                        "oldRarity": "Rare",
+                        "newTraitKey": "ApolloSpecialBoon",
+                        "requiredRarity": "Epic"
+                      }
+                    },
+                    { "key": "ApolloCastBoon", "rarity": "Common", "effectiveLevel": 1 },
+                    { "key": "ApolloSprintBoon", "rarity": "Common", "effectiveLevel": 1 }
+                  ],
+                  "selected": "option1"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat23\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": {
+        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+      },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 60,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat23\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 12,
+              "biomeEncounterDepth": 5,
+              "routeEncounterDepth": 21,
+              "roomHistoryOrdinal": 35
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 61,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat23\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 13,
+              "biomeEncounterDepth": 6,
+              "routeEncounterDepth": 22,
+              "roomHistoryOrdinal": 36
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                { "traitKey": "HeraWeaponBoon", "rarity": "Heroic", "level": 3 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                { "traitKey": "ApolloSpecialBoon", "rarity": "Epic", "level": 1 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "HeraWeaponBoon" },
+                { "slot": "Secondary", "traitKey": "ApolloSpecialBoon" },
+                { "slot": "Ranged" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 3, "Air": 1, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Heroic": 1, "Common": 2, "Epic": 1 },
+              "upgradableCount": 2,
+              "bannedTraitKeys": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "surface-n-combat01",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat01\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxHealthDropBig",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN_Bigger", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"],
+        "localSlots": []
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "acquisition",
+            "owner": "[\"acquisitionRole\",\"Dream\",\"N\",\"[\\\"incomingReward\\\",\\\"Dream\\\",\\\"N\\\",\\\"surface-n-combat01\\\"]\",\"self\"]",
+            "sourceOwner": "[\"incomingReward\",\"Dream\",\"N\",\"surface-n-combat01\"]",
+            "reward": {
+              "rewardType": "MaxHealthDropBig",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            },
+            "producerLifecycleKey": "RoomReward",
+            "roles": [
+              {
+                "role": "self",
+                "disposition": "normal",
+                "lifecyclePoint": "roomRewardPickup",
+                "kind": "consumable",
+                "gameName": "MaxHealthDropBig",
+                "settlement": {
+                  "site": "[\"acquisitionSite\",\"Dream\",\"N\",\"[\\\"hubVisit\\\",\\\"Dream\\\",\\\"N\\\",\\\"hub\\\",6]\",\"roomRewardPickup\"]",
+                  "entry": "[\"acquisitionEntry\",\"Dream\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Dream\\\",\\\"N\\\",\\\"[\\\\\\\"hubVisit\\\\\\\",\\\\\\\"Dream\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"hub\\\\\\\",6]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
+                }
+              }
+            ],
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": []
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat01\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 62,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat01\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 14,
+              "biomeEncounterDepth": 6,
+              "routeEncounterDepth": 22,
+              "roomHistoryOrdinal": 37
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 63,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"surface-n-combat01\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 15,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 23,
+              "roomHistoryOrdinal": 38
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-n-preboss",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-preboss\"]",
+      "biomeKey": "N",
+      "gameName": "N_PreBoss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": { "rewardType": "Shop", "producerLifecycleKey": "RoomReward" },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "Shop", "kind": "nonCombat" }
+        ],
+        "requiredObjects": [],
+        "shop": {
+          "profileKey": "WorldShop",
+          "offers": [
+            {
+              "offerKey": "Boon",
+              "optionKey": "RandomLoot",
+              "rewardType": "RandomLoot",
+              "source": "ApolloUpgrade"
+            },
+            {
+              "offerKey": "MajorNonBoon",
+              "optionKey": "MaxHealthDrop",
+              "rewardType": "MaxHealthDrop"
+            },
+            { "offerKey": "Minor", "optionKey": "MaxManaDrop", "rewardType": "MaxManaDrop" }
+          ]
+        }
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-preboss\"]",
+        "kind": "fixed",
+        "target": { "id": "dream-n-preboss:boss", "biomeKey": "N", "gameName": "N_Boss01" },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 64,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-preboss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 16,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 23,
+              "roomHistoryOrdinal": 39
+            }
+          }
+        },
+        "beforeRoomExit": {
+          "frame": 65,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-preboss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 16,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 23,
+              "roomHistoryOrdinal": 40
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-n-preboss:boss",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-preboss:boss\"]",
+      "biomeKey": "N",
+      "gameName": "N_Boss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "effectNeutralRequiredReward": true,
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "BossPolyphemus01", "kind": "boss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-preboss:boss\"]",
+        "kind": "fixed",
+        "target": {
+          "id": "dream-n-preboss:postboss",
+          "biomeKey": "N",
+          "gameName": "Dream_PostBoss03"
+        },
+        "zagreusContractPresent": false
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 66,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-preboss:boss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 67,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-preboss:boss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 17,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 23,
+              "roomHistoryOrdinal": 41
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-n-preboss:postboss",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-preboss:postboss\"]",
+      "biomeKey": "N",
+      "gameName": "Dream_PostBoss03",
+      "kind": "SingleEncounter",
+      "resumeBoundary": "postbossEntry",
+      "overview": {
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "Empty", "kind": "nonCombat" }
+        ],
+        "requiredObjects": [],
+        "stygianWell": { "interacted": false },
+        "keepsakeRack": {},
+        "fountain": {}
+      },
+      "timeline": {
+        "transactions": [
+          {
+            "kind": "fountainUse",
+            "owner": "[\"roomAction\",\"Dream\",\"N\",\"dream-n-preboss:postboss\",\"[\\\"useFountain\\\"]\"]",
+            "interactionKey": "fountain",
+            "window": { "kind": "standard", "phase": "afterCombat" }
+          }
+        ],
+        "dependencies": [],
+        "obligations": [
+          {
+            "owner": "[\"roomAction\",\"Dream\",\"N\",\"dream-n-preboss:postboss\",\"[\\\"useFountain\\\"]\"]",
+            "checkpoint": "exitUsable"
+          }
+        ]
+      },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"dream-n-preboss:postboss\"]",
+        "kind": "terminal"
+      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
+      "diagnostics": {
+        "roomEntered": {
+          "frame": 68,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-preboss:postboss\",\"roomEntered\"]",
+          "checkpoint": "roomEntered",
+          "replace": {}
+        },
+        "beforeRoomExit": {
+          "frame": 69,
+          "owner": "[\"roomRunStateCheckpoint\",\"Dream\",\"N\",\"dream-n-preboss:postboss\",\"beforeRoomExit\"]",
+          "checkpoint": "beforeRoomExit",
+          "replace": {
+            "counters": {
+              "biomeDepthCache": 18,
+              "biomeEncounterDepth": 7,
+              "routeEncounterDepth": 23,
+              "roomHistoryOrdinal": 42
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "dream-q-first-miniboss-peer",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-first-miniboss-peer\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_MiniBoss05",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "TyphonBossRewards",
+          "source": "ApolloUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "MiniBossStalker", "kind": "miniboss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-first-miniboss-peer\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "dream-q-second-miniboss-peer",
+      "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-second-miniboss-peer\"]",
+      "biomeKey": "Q",
+      "gameName": "Q_MiniBoss04",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "StackUpgradeTriple",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "TyphonBossRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "BossTyphonEye01", "kind": "miniboss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"Q\",\"dream-q-second-miniboss-peer\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "dream-f-2-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-2-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat03",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxHealthDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-2-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-3-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-3-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat04",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxManaDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-3-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-4-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-4-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat08",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "RoomMoneyDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-4-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-5-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-5-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_MiniBoss02",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress",
+          "source": "ApolloUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "MiniBossFogEmitter", "kind": "miniboss" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-5-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-7-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-7-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat11",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "StackUpgrade",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-7-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-8-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-8-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat12",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "SpellDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-8-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-9-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-9-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat14",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "GiftDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "MetaProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-9-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-10-2",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-10-2\"]",
+      "biomeKey": "F",
+      "gameName": "F_Combat15",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MetaCardPointsCommonBigDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "MetaProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedF", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-10-2\"]", "kind": "terminal" }
+    },
+    {
+      "id": "dream-f-shop",
+      "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-shop\"]",
+      "biomeKey": "F",
+      "gameName": "F_PreBoss01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Shop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "RunProgress"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "Shop", "kind": "nonCombat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": { "owner": "[\"occurrence\",\"Dream\",\"F\",\"dream-f-shop\"]", "kind": "terminal" }
+    },
+    {
+      "id": "surface-n-combat03",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat03\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat03",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards",
+          "source": "ZeusUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"]
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat03\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat09",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat09\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat09",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "SpellDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN_Bigger", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"]
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat09\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat10",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat10\"]",
+      "biomeKey": "N",
+      "gameName": "N_Combat10",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "Boon",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "HubRewards",
+          "source": "ZeusUpgrade"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedN_Bigger", "kind": "combat" }
+        ],
+        "requiredObjects": ["SoulPylon"]
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat10\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat05-sideDoor1",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05-sideDoor1\"]",
+      "biomeKey": "N",
+      "gameName": "N_Sub02",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxManaDropSmall",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "SubRoomRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedNSubRoom", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05-sideDoor1\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat05-sideDoor2",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05-sideDoor2\"]",
+      "biomeKey": "N",
+      "gameName": "N_Sub07",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "MaxHealthDropSmall",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "SubRoomRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedNSubRoom", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05-sideDoor2\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat05-sideDoor3",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05-sideDoor3\"]",
+      "biomeKey": "N",
+      "gameName": "N_Sub03",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "EmptyMaxHealthSmallDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "SubRoomRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedNSubRoom", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat05-sideDoor3\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat02-sideDoor1",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat02-sideDoor1\"]",
+      "biomeKey": "N",
+      "gameName": "N_Sub01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "RoomMoneyTinyDrop",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "SubRoomRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedNSubRoom", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat02-sideDoor1\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat02-sideDoor2",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat02-sideDoor2\"]",
+      "biomeKey": "N",
+      "gameName": "N_Sub03",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "AirBoost",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "SubRoomRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedNSubRoom", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat02-sideDoor2\"]",
+        "kind": "terminal"
+      }
+    },
+    {
+      "id": "surface-n-combat11-sideDoor1",
+      "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat11-sideDoor1\"]",
+      "biomeKey": "N",
+      "gameName": "N_Sub01",
+      "kind": "SingleEncounter",
+      "overview": {
+        "incomingReward": {
+          "rewardType": "EarthBoost",
+          "producerLifecycleKey": "RoomReward",
+          "resolvedStoreKey": "SubRoomRewards"
+        },
+        "encounterPhases": [
+          { "slotKey": "Encounter", "encounterKey": "GeneratedNSubRoom", "kind": "combat" }
+        ],
+        "requiredObjects": []
+      },
+      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "doors": {
+        "owner": "[\"occurrence\",\"Dream\",\"N\",\"surface-n-combat11-sideDoor1\"]",
+        "kind": "terminal"
+      }
+    }
+  ],
+  "planFingerprint": "dc5b06e2"
+}

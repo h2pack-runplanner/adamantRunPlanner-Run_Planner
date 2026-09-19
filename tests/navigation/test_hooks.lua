@@ -8,6 +8,141 @@ local capture, stub = support.capture, support.stub
 
 TestNavigationHooks = {}
 
+function TestNavigationHooks.testPublishedDreamPostbossRecoverySteersTheNextBiomeAndReleasesThePrefixEnd()
+    local file = assert(io.open("fixtures/execution-plan/dream-mixed-prefix.execution.json", "rb"))
+    local source = file:read("*a")
+    file:close()
+    local plan = assert(require("mods.protocol.decoder").decode(assert(require("mods.protocol.json").decode(source))))
+    local module, _, callbacks = capture()
+    local state = { state = "synchronized", plan = plan }
+    navigation.attach(module, stub(), function() return state end, function() end, routeSession, {})
+    local priorRun, priorGameState, priorRemove = _G.CurrentRun, _G.GameState, _G.RemoveValue
+    _G.GameState = {}
+    local function remove(values, value)
+        for index, candidate in pairs(values) do
+            if candidate == value then values[index] = nil; return candidate end
+        end
+    end
+    _G.RemoveValue = function(values, value) return callbacks.RemoveValue(nil, {}, remove, values, value) end
+    local checked = 0
+    for index, id in ipairs(plan.selectedOccurrenceIds) do
+        local occurrence = plan.occurrencesById[id]
+        if occurrence.resumeBoundary == "postbossEntry" then
+            checked = checked + 1
+            state.route = assert(routeSession.newAt(plan, index))
+            assert(routeSession.enter(state.route, id, occurrence.gameName))
+            _G.CurrentRun = { IsDreamRun = true, CurrentRoom = {}, DreamBiomePool = { "H", "F", "N" } }
+            local expected = ({ "F", "N", "H" })[checked]
+            local nativeDraws = 0
+            callbacks.SelectNextDreamBiome(nil, {}, function()
+                local selected = callbacks.RemoveRandomValue(nil, {}, function(values)
+                    nativeDraws = nativeDraws + 1
+                    return remove(values, "H")
+                end, _G.CurrentRun.DreamBiomePool)
+                _G.CurrentRun.CurrentRoom.NextRoomSet = { selected }
+            end, {}, {})
+            lu.assertEquals(_G.CurrentRun.CurrentRoom.NextRoomSet, { expected })
+            lu.assertEquals(nativeDraws, checked == 3 and 1 or 0)
+        end
+    end
+    lu.assertEquals(checked, 3)
+    _G.CurrentRun, _G.GameState, _G.RemoveValue = priorRun, priorGameState, priorRemove
+end
+
+function TestNavigationHooks.testDreamSelectorUsesThePublishedFirstAndPostbossSuccessorThroughNativePoolRemoval()
+    local module, _, callbacks = capture()
+    local first = { id = "first", gameName = "Q_Opening01", biomeKey = "Q" }
+    local postboss = { id = "postboss", gameName = "Dream_PostBoss01", biomeKey = "Q",
+        resumeBoundary = "postbossEntry" }
+    local following = { id = "next", gameName = "N_Opening01", biomeKey = "N" }
+    local plan = { routeKey = "Dream", selectedOccurrenceIds = { "first", "postboss", "next" },
+        occurrencesById = { first = first, postboss = postboss, next = following } }
+    local cursor = routeSession.new(plan)
+    local state = { state = "starting", plan = plan, route = cursor }
+    navigation.attach(module, stub(), function() return state end, function() end, routeSession, {})
+
+    local priorRun, priorState, priorRemove = _G.CurrentRun, _G.GameState, _G.RemoveValue
+    _G.CurrentRun = { IsDreamRun = true, DreamBiomePool = {}, CurrentRoom = {} }
+    _G.GameState = { LastDreamStartingBiome = "Q" }
+    local function nativeRemove(values, key)
+        for index, value in pairs(values) do
+            if value == key then values[index] = nil; return value end
+        end
+    end
+    _G.RemoveValue = function(values, key)
+        return callbacks.RemoveValue(nil, {}, nativeRemove, values, key)
+    end
+    local function nativeSelect(source)
+        if next(_G.CurrentRun.DreamBiomePool) == nil then
+            _G.CurrentRun.DreamBiomePool = { "G", "H", "I", "O", "P", "Q" }
+            local selected
+            if source and source.forceH then
+                selected = callbacks.RemoveValue(nil, {}, nativeRemove,
+                    _G.CurrentRun.DreamBiomePool, "H")
+            else
+                selected = callbacks.RemoveRandomValue(nil, {}, function() error("random selector used") end,
+                    _G.CurrentRun.DreamBiomePool)
+            end
+            if selected == _G.GameState.LastDreamStartingBiome then
+                selected = callbacks.RemoveRandomValue(nil, {}, function() error("reroll selector used") end,
+                    _G.CurrentRun.DreamBiomePool)
+                table.insert(_G.CurrentRun.DreamBiomePool, _G.GameState.LastDreamStartingBiome)
+            end
+            _G.GameState.LastDreamStartingBiome = selected
+            table.insert(_G.CurrentRun.DreamBiomePool, "F")
+            table.insert(_G.CurrentRun.DreamBiomePool, "N")
+            _G.CurrentRun.CurrentRoom.NextRoomSet = { selected }
+            return
+        end
+        _G.CurrentRun.CurrentRoom.NextRoomSet = {
+            callbacks.RemoveRandomValue(nil, {}, function() error("random selector used") end,
+                _G.CurrentRun.DreamBiomePool),
+        }
+    end
+    callbacks.SelectNextDreamBiome(nil, {}, nativeSelect, {}, {})
+    lu.assertEquals(_G.CurrentRun.CurrentRoom.NextRoomSet, { "Q" })
+    lu.assertEquals(_G.GameState.LastDreamStartingBiome, "Q")
+    lu.assertFalse(table.concat(_G.CurrentRun.DreamBiomePool, ","):find("Q") ~= nil)
+
+    state.state = "synchronized"
+    assert(routeSession.enter(cursor, "first", "Q_Opening01"))
+    assert(routeSession.exit(cursor))
+    assert(routeSession.enter(cursor, "postboss", "Dream_PostBoss01"))
+    callbacks.SelectNextDreamBiome(nil, {}, nativeSelect, {}, {})
+    lu.assertEquals(_G.CurrentRun.CurrentRoom.NextRoomSet, { "N" })
+    for _, biomeKey in pairs(_G.CurrentRun.DreamBiomePool) do lu.assertNotEquals(biomeKey, "N") end
+
+    state.state, state.route = "starting", routeSession.new(plan)
+    _G.CurrentRun.DreamBiomePool = {}
+    _G.GameState.LastDreamStartingBiome = "H"
+    callbacks.SelectNextDreamBiome(nil, {}, nativeSelect, { forceH = true }, {})
+    lu.assertEquals(_G.CurrentRun.CurrentRoom.NextRoomSet, { "Q" })
+    local containsH, containsQ = false, false
+    for _, biomeKey in pairs(_G.CurrentRun.DreamBiomePool) do
+        containsH = containsH or biomeKey == "H"
+        containsQ = containsQ or biomeKey == "Q"
+    end
+    lu.assertTrue(containsH)
+    lu.assertFalse(containsQ)
+    _G.CurrentRun, _G.GameState, _G.RemoveValue = priorRun, priorState, priorRemove
+end
+
+function TestNavigationHooks.testDreamSelectorPassesThroughOutsideNativeDreamMode()
+    local module, _, callbacks = capture()
+    local state = { state = "synchronized", plan = { routeKey = "Dream" }, route = {} }
+    navigation.attach(module, stub(), function() return state end, function() end,
+        { next = function() error("cursor must not be read outside Dream mode") end }, {})
+    local prior = _G.CurrentRun
+    _G.CurrentRun = { IsDreamRun = false }
+    local called = false
+    callbacks.SelectNextDreamBiome(nil, {}, function()
+        called = true
+        return "native"
+    end, {}, {})
+    lu.assertTrue(called)
+    _G.CurrentRun = prior
+end
+
 function TestNavigationHooks.testDevotionRewardSetupCarriesTheStampedDestinationToGeneratedPreparation()
     local module, _, callbacks = capture()
     local occurrence = { id = "devotion", overview = { incomingReward = {} } }

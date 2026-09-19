@@ -40,6 +40,52 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
     local doorScope
     local rewardChoiceScope
     local ephyraDoorScope
+    local dreamBiomeScope
+
+    local function dreamNextBiome(state)
+        if state == nil or (state.state ~= "starting" and state.state ~= "synchronized")
+            or state.plan.routeKey ~= "Dream" or not (_G.CurrentRun and _G.CurrentRun.IsDreamRun == true)
+            then return nil end
+        local occurrence = routeSession.next(state.route)
+        return occurrence and occurrence.biomeKey or nil
+    end
+
+    -- SelectNextDreamBiome owns all native pool mutation. Feed the published
+    -- answer through its removal contacts so it updates the pool, starting
+    -- biome record, and NextRoomSet as one native decision.
+    module.hooks.wrap("SelectNextDreamBiome", "run-planner-dream-biome-choice", function(_, runtime, base, source, args)
+        local state = getState(runtime)
+        local biomeKey = dreamNextBiome(state)
+        if biomeKey == nil then return base(source, args) end
+        local priorLast = _G.GameState and _G.GameState.LastDreamStartingBiome or nil
+        local initialPool = _G.CurrentRun and next(_G.CurrentRun.DreamBiomePool or {}) == nil
+        local bypassLast = initialPool and _G.GameState and priorLast == biomeKey
+        if bypassLast then _G.GameState.LastDreamStartingBiome = nil end
+        dreamBiomeScope = { biomeKey = biomeKey }
+        local result = table.pack(pcall(base, source, args))
+        dreamBiomeScope = nil
+        if not result[1] then
+            if bypassLast then _G.GameState.LastDreamStartingBiome = priorLast end
+            error(result[2], 0)
+        end
+        return table.unpack(result, 2, result.n)
+    end)
+
+    module.hooks.wrap("RemoveRandomValue", "run-planner-dream-biome-random-removal", function(_, _, base, values, ...)
+        local scope = dreamBiomeScope
+        if scope ~= nil and values == (_G.CurrentRun and _G.CurrentRun.DreamBiomePool) then
+            return _G.RemoveValue(values, scope.biomeKey)
+        end
+        return base(values, ...)
+    end)
+
+    module.hooks.wrap("RemoveValue", "run-planner-dream-biome-forced-removal", function(_, _, base, values, value, ...)
+        local scope = dreamBiomeScope
+        if scope ~= nil and values == (_G.CurrentRun and _G.CurrentRun.DreamBiomePool) then
+            return base(values, scope.biomeKey, ...)
+        end
+        return base(values, value, ...)
+    end)
 
     module.hooks.wrap("SetupRoomReward", "run-planner-reward-source", function(_, runtime, base, currentRun,
         nativeRoom, prior, args)
@@ -296,6 +342,12 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
         proveOutgoingDoors = function(state, currentRun)
             local occurrence = routeSession.current(state.route)
             if occurrence == nil or occurrence.doors == nil then return true end
+            -- Dream bosses and Postboss rooms leave through native Dream
+            -- Points, not an offered-door product. The next StartRoom remains
+            -- the exact occurrence identity proof for both transitions.
+            if state.plan.routeKey == "Dream"
+                and (occurrence.resumeBoundary == "postbossEntry"
+                    or occurrence.gameName:find("_Boss") ~= nil) then return true end
             local offered = orderedDoors(_G.MapState and _G.MapState.OfferedExitDoors or {})
             local normal, additional = doors.partition(occurrence, offered)
             local localScope = ephyra.scope(

@@ -13,7 +13,7 @@ local resources = type(import) == "function" and import("mods/protocol/resources
 
 local protocol = {
     FORMAT = "run-planner-execution",
-    VERSION = 41,
+    VERSION = 42,
     CATALOG_VERSION = "0.55.0-anvil-of-fates",
     MAX_ITEMS = p.MAX_ITEMS,
     MAX_STRING = p.MAX_STRING,
@@ -34,17 +34,15 @@ local function extent(value)
         4
     )
     if not biomeKeys then return nil, biomeError end
-    local supported = (#biomeKeys == 1 and biomeKeys[1] == "F")
-        or (#biomeKeys == 2 and biomeKeys[1] == "F" and biomeKeys[2] == "G")
-        or (#biomeKeys == 3 and biomeKeys[1] == "F" and biomeKeys[2] == "G" and biomeKeys[3] == "H")
-        or (#biomeKeys == 4 and biomeKeys[1] == "F" and biomeKeys[2] == "G" and biomeKeys[3] == "H"
-            and biomeKeys[4] == "I")
-        or (#biomeKeys == 1 and biomeKeys[1] == "N")
-        or (#biomeKeys == 2 and biomeKeys[1] == "N" and biomeKeys[2] == "O")
-        or (#biomeKeys == 3 and biomeKeys[1] == "N" and biomeKeys[2] == "O" and biomeKeys[3] == "P")
-        or (#biomeKeys == 4 and biomeKeys[1] == "N" and biomeKeys[2] == "O" and biomeKeys[3] == "P"
-            and biomeKeys[4] == "Q")
-    if record.kind ~= "configuredPrefix" or not supported
+    local known = { F = true, G = true, H = true, I = true, N = true, O = true, P = true, Q = true }
+    local dream, selected = #biomeKeys >= 1 and #biomeKeys <= 4, {}
+    for _, biomeKey in ipairs(biomeKeys) do
+        if not known[biomeKey] or selected[biomeKey] then
+            dream = false
+        end
+        selected[biomeKey] = true
+    end
+    if record.kind ~= "configuredPrefix" or not dream
         or record.terminalBiomeKey ~= biomeKeys[#biomeKeys] then
         return p.fail("execution plan.extent is unsupported")
     end
@@ -136,7 +134,7 @@ function protocol.decode(value)
     if plan.format ~= protocol.FORMAT
         or plan.protocolVersion ~= protocol.VERSION
         or plan.catalogVersion ~= protocol.CATALOG_VERSION
-        or (plan.routeKey ~= "Underworld" and plan.routeKey ~= "Surface")
+        or (plan.routeKey ~= "Underworld" and plan.routeKey ~= "Surface" and plan.routeKey ~= "Dream")
         or not p.str(plan.projectId, "execution plan.projectId")
         or type(plan.planFingerprint) ~= "string"
         or not plan.planFingerprint:match("^[0-9a-f]+$")
@@ -145,8 +143,17 @@ function protocol.decode(value)
     end
     local _, extentError = extent(plan.extent)
     if extentError then return nil, extentError end
-    if (plan.routeKey == "Underworld" and plan.extent.biomeKeys[1] ~= "F")
-        or (plan.routeKey == "Surface" and plan.extent.biomeKeys[1] ~= "N") then
+    local keys = plan.extent.biomeKeys
+    local underworld = (#keys == 1 and keys[1] == "F")
+        or (#keys == 2 and keys[1] == "F" and keys[2] == "G")
+        or (#keys == 3 and keys[1] == "F" and keys[2] == "G" and keys[3] == "H")
+        or (#keys == 4 and keys[1] == "F" and keys[2] == "G" and keys[3] == "H" and keys[4] == "I")
+    local surface = (#keys == 1 and keys[1] == "N")
+        or (#keys == 2 and keys[1] == "N" and keys[2] == "O")
+        or (#keys == 3 and keys[1] == "N" and keys[2] == "O" and keys[3] == "P")
+        or (#keys == 4 and keys[1] == "N" and keys[2] == "O" and keys[3] == "P" and keys[4] == "Q")
+    if (plan.routeKey == "Underworld" and not underworld)
+        or (plan.routeKey == "Surface" and not surface) then
         return p.fail("execution plan.routeKey disagrees with extent")
     end
     local _, loadoutError = loadout.decode(plan.startingLoadout)

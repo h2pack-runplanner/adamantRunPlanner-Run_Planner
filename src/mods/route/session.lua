@@ -46,6 +46,17 @@ function routeSession.current(route)
     return route and route.currentOccurrence or nil
 end
 
+-- Dream chooses its next native biome before the current Postboss leaves.
+-- Keep that cursor-relative lookup alongside route state so both the native
+-- selector and later starting-room realization use the same occurrence.
+function routeSession.next(route)
+    if route == nil then return nil end
+    local index = route.index
+    if route.currentOccurrence ~= nil then index = index + 1 end
+    local id = route.plan.selectedOccurrenceIds[index]
+    return id and route.plan.occurrencesById[id] or nil
+end
+
 function routeSession.enter(route, occurrenceId, gameName)
     if route.firstFault then return nil, route.firstFault end
     if route.firstMismatch then return nil, route.firstMismatch end
@@ -82,7 +93,12 @@ end
 -- N Hub and completed-parent reloads are native restoration transitions, not
 -- execution rooms. They must not consume the single fresh-occurrence cursor.
 function routeSession.transparent(route, gameName)
-    if route == nil or route.currentOccurrence ~= nil or route.lastExitedOccurrence == nil then return false end
+    if route == nil or route.currentOccurrence ~= nil then return false end
+    -- Dream_Intro is entered before the first published occurrence. Its native
+    -- LeaveRoom follows ChooseStartingRoom, so it must neither close nor
+    -- advance the still-unentered first cursor position.
+    if route.plan.routeKey == "Dream" and route.index == 1 and gameName == "Dream_Intro" then return true end
+    if route.lastExitedOccurrence == nil then return false end
     if gameName == "N_Hub" then
         for _, occurrence in pairs(route.plan.occurrencesById or {}) do
             local hub = occurrence.overview and occurrence.overview.hub

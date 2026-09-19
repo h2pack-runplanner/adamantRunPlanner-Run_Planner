@@ -134,6 +134,11 @@ local function selectedPostboss(plan, gameName)
     return nil, matches or 0
 end
 
+local function nativeRunModeMatches(plan)
+    local dream = _G.CurrentRun ~= nil and _G.CurrentRun.IsDreamRun == true
+    return (plan.routeKey == "Dream") == dream
+end
+
 -- One fresh-process admission. Hades II already restored the native Postboss
 -- room, so success constructs only fresh route and room coordinators. The
 -- ordinary StartRoom path adopts and enters the existing native room.
@@ -148,6 +153,11 @@ function runtime.attemptPostbossAdmission(state, inbox, activeSlot, nativeRoom)
         local observed = inboxStatus and inboxStatus.error or plan
         return runtime.rejectAdmission(state, "postboss-admission:active-plan",
             "ready execution plan", observed)
+    end
+    if not nativeRunModeMatches(plan) then
+        return runtime.rejectAdmission(state, "postboss-admission:run-mode", plan.routeKey, {
+            isDreamRun = _G.CurrentRun and _G.CurrentRun.IsDreamRun == true,
+        })
     end
 
     local current = nativeRoom or (_G.CurrentRun and _G.CurrentRun.CurrentRoom)
@@ -201,6 +211,11 @@ function runtime.start(state, inbox, phase, activeSlot)
         local inboxStatus = inbox.status and inbox.status() or nil
         local observed = inboxStatus and inboxStatus.error or plan
         return runtime.rejectAdmission(state, "run-start", "ready execution plan", observed)
+    end
+    if not nativeRunModeMatches(plan) then
+        return runtime.rejectAdmission(state, "run-mode", plan.routeKey, {
+            isDreamRun = _G.CurrentRun and _G.CurrentRun.IsDreamRun == true,
+        })
     end
     for _, occurrence in ipairs(plan.occurrences) do
         for _, fact in ipairs((occurrence.roomExitConformance or {}).facts or {}) do

@@ -28,12 +28,19 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
         args)
         local state = getState(runtime)
         if state == nil then return base(currentRun, args) end
-        if state.state ~= "starting" then report(runtime); return base(currentRun, args) end
-        if not loadoutScope.synchronizeStartingRoom(runtime) then
+        local enteringDreamBiome = state.state == "synchronized"
+            and state.plan.routeKey == "Dream"
+            and type(args) == "table" and args.StartingBiome ~= nil
+            and currentRun and currentRun.IsDreamRun == true
+        if state.state ~= "starting" and not enteringDreamBiome then
             report(runtime)
             return base(currentRun, args)
         end
-        local occurrence = route.expected(state.route)
+        if state.state == "starting" and not loadoutScope.synchronizeStartingRoom(runtime, args) then
+            report(runtime)
+            return base(currentRun, args)
+        end
+        local occurrence = enteringDreamBiome and route.next(state.route) or route.expected(state.route)
         if occurrence == nil or room.prepare(state, occurrence) == nil
             or state.state ~= "synchronized" then
             report(runtime)

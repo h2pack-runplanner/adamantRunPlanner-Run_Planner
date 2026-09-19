@@ -11,9 +11,16 @@ function hooks.attach(module, loadoutRuntime, getState, report, room, hexTree)
     local roomCoordinator = room
     local startDepth, startingHexScope = 0, nil
 
-    local function synchronizeStartingRoom(runtime)
+    local function synchronizeStartingRoom(runtime, args)
         local state = getState(runtime)
         if state == nil or state.state ~= "starting" then return false end
+        -- Dream_Intro is a native prologue. It starts before the first planned
+        -- biome and must leave the route cursor untouched until its native
+        -- selector reaches ChooseStartingRoom.
+        local current = _G.CurrentRun and _G.CurrentRun.CurrentRoom
+        local name = type(current) == "table" and (current.GenusName or current.Name) or nil
+        if state.plan and state.plan.routeKey == "Dream" and name == "Dream_Intro"
+            and (type(args) ~= "table" or args.StartingBiome == nil) then return false end
         loadoutRuntime.loadout.verifyCompleted(state, loadoutRuntime.session.mismatch)
         report(runtime)
         return state.state == "synchronized"

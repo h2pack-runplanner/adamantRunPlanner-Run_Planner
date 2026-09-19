@@ -124,6 +124,21 @@ function TestRuntimeSession.testMalformedPlanAdmissionPreservesTheInboxDecoderRe
     lu.assertEquals(value.state, "inactive")
 end
 
+function TestRuntimeSession.testDreamPlanRequiresTheNativeDreamRunFlag()
+    local prior = _G.CurrentRun
+    _G.CurrentRun = {}
+    local row = occurrence()
+    local plan = {
+        kind = "ready", routeKey = "Dream", occurrences = { row },
+        occurrencesById = { one = row }, selectedOccurrenceIds = { "one" },
+    }
+    local value = {}
+    lu.assertNil(runtime.start(value, { load = function() return true, plan end }))
+    lu.assertEquals(value.admissionError.checkpoint, "run-mode")
+    lu.assertEquals(value.admissionError.observed, { isDreamRun = false })
+    _G.CurrentRun = prior
+end
+
 function TestRuntimeSession.testUnknownCoreHandleIsAFaultWithoutAMismatch()
     local row = occurrence()
     local plan = { kind = "ready", occurrences = { row }, occurrencesById = { one = row },
