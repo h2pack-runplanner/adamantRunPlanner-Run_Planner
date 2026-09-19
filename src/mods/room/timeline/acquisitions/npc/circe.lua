@@ -49,7 +49,7 @@ function circe.attach(module, session, report, npcScope)
         if expected == nil or expected.kind ~= kind then return nil end
         return {
             shared = shared,
-            targets = expected.arcanaKeys or { expected.vowKey },
+            targets = expected.arcanaKeys or expected.vowKeys,
             index = 1,
             kind = kind,
             admitCastCount = kind == "activateArcana" and

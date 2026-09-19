@@ -97,7 +97,7 @@ local function circeResolution(value, label)
     if record.kind == "activateArcana" or record.kind == "promoteArcana" then
         local row, rowError = p.exact(record, { "kind", "arcanaKeys" }, {}, label)
         if not row then return nil, rowError end
-        local maximum = row.kind == "activateArcana" and 1 or 2
+        local maximum = row.kind == "activateArcana" and 3 or 5
         local keys, keysError = p.strings(row.arcanaKeys, label .. ".arcanaKeys", maximum)
         if not keys then return nil, keysError end
         local seen = {}
@@ -108,10 +108,15 @@ local function circeResolution(value, label)
         return row
     end
     if record.kind == "disableFear" then
-        local row, rowError = p.exact(record, { "kind", "vowKey" }, {}, label)
+        local row, rowError = p.exact(record, { "kind", "vowKeys" }, {}, label)
         if not row then return nil, rowError end
-        if not p.str(row.vowKey, label .. ".vowKey") then
-            return p.fail(label .. " has invalid vowKey")
+        local keys, keysError = p.strings(row.vowKeys, label .. ".vowKeys", 3)
+        if not keys then return nil, keysError end
+        if #keys == 0 then return p.fail(label .. ".vowKeys must not be empty") end
+        local seen = {}
+        for _, key in ipairs(keys) do
+            if seen[key] then return p.fail(label .. ".vowKeys must be distinct") end
+            seen[key] = true
         end
         return row
     end

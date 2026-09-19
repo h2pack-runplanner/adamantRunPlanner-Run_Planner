@@ -497,12 +497,21 @@ function TestProtocol.testCirceResolutionIsClosedAndBelongsOnlyToTheSelectedCirc
     }
     lu.assertNotNil(rewards.traitOffer(tagged(offer), "offer"))
 
-    offer.options[1].circeResolution.arcanaKeys = { "CastCount", "CardDraw", "ChanneledCast" }
+    offer.options[1].circeResolution.arcanaKeys = {
+        "CastCount", "CardDraw", "ChanneledCast", "DoorReroll", "TradeOff", "ManaOverTime",
+    }
     lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
     offer.options[1].circeResolution.arcanaKeys = { "CastCount", "CastCount" }
     lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
-    offer.options[1].circeResolution = { kind = "disableFear", vowKey = "EnemyDamageShrineUpgrade" }
+    offer.options[1].circeResolution = {
+        kind = "disableFear", vowKeys = { "EnemyDamageShrineUpgrade", "EnemyHealthShrineUpgrade" },
+    }
     lu.assertNotNil(rewards.traitOffer(tagged(offer), "offer"))
+    offer.options[1].circeResolution.vowKeys = {}
+    lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
+    offer.options[1].circeResolution.vowKeys = { "EnemyDamageShrineUpgrade", "EnemyDamageShrineUpgrade" }
+    lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
+    offer.options[1].circeResolution.vowKeys = { "EnemyDamageShrineUpgrade", "EnemyHealthShrineUpgrade" }
     offer.options[1].circeResolution.extra = true
     lu.assertNil(rewards.traitOffer(tagged(offer), "offer"))
     offer.options[1].circeResolution = nil

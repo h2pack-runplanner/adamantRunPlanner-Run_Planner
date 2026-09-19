@@ -367,11 +367,13 @@ function TestNpcAcquisitions.testCircePromotionUsesExactPublishedArcanaThroughNa
     lu.assertEquals(#mismatches, 0)
 end
 
-function TestNpcAcquisitions.testCirceFearRemovalUsesExactPublishedVowThroughNativeMutation()
+function TestNpcAcquisitions.testCirceFearRemovalUsesEveryExactPublishedVowThroughNativeMutation()
     local selected = "RemoveShrineTrait"
     local callbacks, source, _, _, _, _, _, _, mismatches, _, finish = harness(
         "Circe", selected, { offer = offer("Circe", selected,
-            { kind = "disableFear", vowKey = "EnemyDamageShrineUpgrade" }) })
+            { kind = "disableFear", vowKeys = {
+                "EnemyDamageShrineUpgrade", "EnemyHealthShrineUpgrade",
+            } }) })
     local args = { UpgradeOptions = {
         { ItemName = "CirceOne" }, { ItemName = selected }, { ItemName = "CirceThree" },
     } }
@@ -382,14 +384,19 @@ function TestNpcAcquisitions.testCirceFearRemovalUsesExactPublishedVowThroughNat
                 EnemyHealthShrineUpgrade = true,
                 EnemyDamageShrineUpgrade = true,
             }
-            local target = callbacks.GetRandomKey(nil, {}, function()
-                return "EnemyHealthShrineUpgrade"
-            end, candidates)
-            disabled[target] = true
+            for _ = 1, 2 do
+                local target = callbacks.GetRandomKey(nil, {}, function()
+                    return "missing"
+                end, candidates)
+                candidates[target] = nil
+                disabled[target] = true
+            end
         end, { Count = 1 })
     end)
     finish()
-    lu.assertEquals(disabled, { EnemyDamageShrineUpgrade = true })
+    lu.assertEquals(disabled, {
+        EnemyDamageShrineUpgrade = true, EnemyHealthShrineUpgrade = true,
+    })
     lu.assertEquals(#mismatches, 0)
 end
 
