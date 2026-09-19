@@ -97,5 +97,17 @@ with your plan, the room where it happened, what you expected, and what you
 actually saw. Include `logOutput.log` from your profile's `ReturnOfModding`
 folder when possible.
 
+To find the log when using r2modman:
+
+1. Open File Explorer and paste this into the address bar, then press Enter:
+
+   ```text
+   %USERPROFILE%\AppData\Roaming\r2modmanPlus-local\HadesII\profiles\
+   ```
+
+2. Open the folder matching the profile you play with (for example, `h2-dev`).
+3. Open its `ReturnOfModding` folder.
+4. Attach `logOutput.log` to your issue report.
+
 Interested in the code? See the
 [development guide](https://github.com/h2pack-runplanner/adamantRunPlanner-Run_Planner/blob/main/CONTRIBUTING.md).
