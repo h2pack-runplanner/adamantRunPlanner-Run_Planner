@@ -8,6 +8,17 @@ local overview = require("mods.protocol.overview")
 local generated = require("mods.protocol.generated_encounter")
 
 TestProtocol = {}
+
+function TestProtocol.testPublishedCompatibilityMatchesDecoder()
+    local file = assert(io.open("src/execution-compatibility.json", "r"))
+    local contents = file:read("*a")
+    file:close()
+    lu.assertEquals(assert(json.decode(contents)), {
+        format = protocol.FORMAT,
+        protocolVersion = protocol.VERSION,
+        catalogVersion = protocol.CATALOG_VERSION,
+    })
+end
 local root = "fixtures/execution-plan/"
 
 function TestProtocol.testGeneratedEncounterSparseOperands()
