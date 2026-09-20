@@ -58,7 +58,7 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         local ok, result = pcall(base, index, kitId, args)
         refills[thread] = prior
         if not ok then error(result, 0) end
-        if refillScope.begun then session.complete(state, handle) end
+        if refillScope.begun and refillScope.installed then session.complete(state, handle) end
         report(runtime)
         return result
     end)

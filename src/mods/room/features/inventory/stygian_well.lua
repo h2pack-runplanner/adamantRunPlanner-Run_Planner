@@ -17,11 +17,8 @@ local function retainOffer(storeData, offer)
     if type(offer) ~= "table" then return false end
     local matched = false
     if storeData.HealingOffers and storeData.HealingOffers.WeightedList then
-        local retained, count = primitives.retainAndCount(storeData.HealingOffers.WeightedList,
-            { [offer.offerKey] = true })
-        storeData.HealingOffers.WeightedList = retained
-        -- Native generation keeps drawing until this quota is met, even when
-        -- the narrowed pool is empty because the refill is not a healing item.
+        local count = primitives.narrowHealingOffer(storeData.HealingOffers, offer)
+        -- A non-healing refill must consume no healing carrier.
         storeData.HealingOffers.Amount = count > 0 and 1 or 0
         matched = matched or count > 0
     end
@@ -59,9 +56,12 @@ function wellInventory.prepare(well, storeData, args)
     if not healing or not left or not right then
         return nil, { checkpoint = "well-inventory", expected = "three initial offers" }
     end
+    local healingMatches = 0
     if storeData.HealingOffers and storeData.HealingOffers.WeightedList then
-        storeData.HealingOffers.WeightedList = primitives.retain(
-            storeData.HealingOffers.WeightedList, { [healing.offerKey] = true })
+        healingMatches = primitives.narrowHealingOffer(storeData.HealingOffers, healing)
+    end
+    if healingMatches == 0 then
+        return nil, { checkpoint = "well-inventory", expected = healing.offerKey, observed = nil }
     end
     local wanted = { [left.offerKey] = true, [right.offerKey] = true }
     storeData.Traits = primitives.retain(storeData.Traits, wanted)

@@ -69,9 +69,26 @@ function primitives.filterGroups(storeData, offers)
                 group.Options, count = primitives.retainRawOffers(group.Options, offers)
                 matchedCount = matchedCount + count
             end
+            -- StoreLogic's weighted branch cannot satisfy an undersupplied
+            -- narrowed group after native requirements reject one row.  The
+            -- nonweighted branch retains those requirements and safely emits
+            -- the eligible remainder for verification/fallback.
+            if group.WeightedList then group.WeightedList = false end
         end
     end
     return matchedCount
+end
+
+function primitives.narrowHealingOffer(healing, offer)
+    if type(healing) ~= "table" or type(healing.WeightedList) ~= "table" then return 0 end
+    local retained, count = primitives.retainAndCount(healing.WeightedList,
+        { [offer.offerKey] = true })
+    -- The narrowed Well path has one healing carrier.  StoreLogic's Options
+    -- enumeration applies the same native eligibility check without the
+    -- WeightedList exhaustion loop when that carrier is rejected.
+    healing.WeightedList = nil
+    healing.Options = retained
+    return count
 end
 
 local function generatedName(offer)

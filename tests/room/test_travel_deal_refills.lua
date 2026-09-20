@@ -76,8 +76,10 @@ local function fill(callbacks, storeData, observeArgs)
             for _, option in ipairs(group.OptionsData or {}) do options[#options + 1] = option end
             for _, option in ipairs(group.Options or {}) do options[#options + 1] = option end
         end
-        for _, option in ipairs(args.StoreData.HealingOffers
-            and args.StoreData.HealingOffers.WeightedList or {}) do options[#options + 1] = option end
+        local healing = args.StoreData.HealingOffers
+        for _, option in ipairs(healing and (healing.Options or healing.WeightedList) or {}) do
+            options[#options + 1] = option
+        end
         for _, option in ipairs(args.StoreData.Traits or {}) do options[#options + 1] = option end
         for _, option in ipairs(args.StoreData.Consumables or {}) do options[#options + 1] = option end
         return { StoreOptions = options }
@@ -184,7 +186,7 @@ function TestTravelDealRefills.testWorldShopHammerRefillUsesNativeNameForBothEli
     end
 end
 
-function TestTravelDealRefills.testWorldShopRefillConstructionMissDiagnosesAndCompletesAtNativeTerminal()
+function TestTravelDealRefills.testWorldShopRefillConstructionMissDoesNotCompleteAtNativeTerminal()
     local callbacks, _, diagnostics, begins, completions = harness("worldShop")
     local nativeCalls = 0
     callbacks.RestockWorldItem(nil, {}, function()
@@ -195,7 +197,24 @@ function TestTravelDealRefills.testWorldShopRefillConstructionMissDiagnosesAndCo
     lu.assertEquals(diagnostics[1].checkpoint, "shop-refill-group")
     lu.assertEquals(nativeCalls, 1)
     lu.assertEquals(begins(), 1)
-    lu.assertEquals(completions(), 1)
+    lu.assertEquals(completions(), 0)
+end
+
+function TestTravelDealRefills.testWorldShopSecondGenerationFallbackClearsPriorInstallation()
+    local callbacks, refill, diagnostics, begins, completions = harness("worldShop")
+    local installed, fallback
+    callbacks.RestockWorldItem(nil, {}, function()
+        installed = fill(callbacks, { GroupsOf = { {
+            OptionsData = { { Name = refill.replacement.optionKey } },
+        } } })
+        fallback = fill(callbacks, { GroupsOf = {} })
+        return true
+    end, 1, 91, {})
+    lu.assertEquals(installed.StoreOptions[1].Name, "ArmorBoost")
+    lu.assertEquals(fallback.StoreOptions, {})
+    lu.assertEquals(diagnostics[1].checkpoint, "shop-refill-group")
+    lu.assertEquals(begins(), 1)
+    lu.assertEquals(completions(), 0)
 end
 
 function TestTravelDealRefills.testWorldShopWrongRefillDiagnosesAndPassesNativeThroughUnclaimed()
@@ -293,6 +312,8 @@ function TestTravelDealRefills.testWellRefillGeneratesOneItemWithMatchingNativeP
             return callbacks.FillInShopOptions(nil, {}, function(args)
                 lu.assertEquals(args.StoreData.MaxOffers, 1)
                 lu.assertEquals(args.StoreData.HealingOffers.Amount, item.healingCount)
+                lu.assertNil(args.StoreData.HealingOffers.WeightedList)
+                lu.assertEquals(#args.StoreData.HealingOffers.Options, item.healingCount)
                 local generated = nativeGame.fillWellInventory(args)
                 lu.assertEquals(#generated.StoreOptions, 1)
                 return generated
@@ -391,7 +412,7 @@ function TestTravelDealRefills.testWellMissingSlotIsDiagnosedOnlyWhenPublishedRe
     lu.assertEquals(diagnostics[1].checkpoint, "well-refill-slot")
     lu.assertEquals(#diagnostics, 1)
     lu.assertEquals(begins(), 1)
-    lu.assertEquals(completions(), 1)
+    lu.assertEquals(completions(), 0)
 end
 
 function TestTravelDealRefills.testWellRefillWithoutCandidatePassesNativeArgumentsWithoutInitialFallback()

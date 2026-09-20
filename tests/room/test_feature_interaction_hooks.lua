@@ -144,6 +144,72 @@ function TestFeatureInteractionHooks.testShrinePublishesAllThreeOffersAndKeepsUn
     lu.assertEquals(mismatches, {})
 end
 
+function TestFeatureInteractionHooks.testShrineWeightedUndersupplyFallsBackWithoutForcedGodSource()
+    local module, _, callbacks = capture()
+    local diagnostics = {}
+    local active = opaque({ occurrence = { overview = { hermesShrine = { offers = {
+        { generationKey = "initial:first", optionKey = "RandomLoot", source = "ApolloUpgrade" },
+        { generationKey = "initial:secondLeft", optionKey = "BoostedRandomLoot", source = "HeraUpgrade" },
+    } } } } }, function() return nil end)
+    local session = stub()
+    session.current = function() return active end
+    session.diagnostic = function(_, checkpoint, values)
+        diagnostics[#diagnostics + 1] = { checkpoint = checkpoint, values = values }
+    end
+    attachFeatureHooks(module, session, function() return {} end, function() end, session)
+
+    local original = { StoreData = { GroupsOf = { {
+        Offers = 2, WeightedList = true, OptionsData = {
+            { Name = "RandomLoot" }, { Name = "BoostedRandomLoot" }, { Name = "NativeOffer" },
+        },
+    } } } }
+    local narrowedGod, fallbackGod
+    local result = callbacks.FillInShopOptions(nil, {}, function(args)
+        if args == original then
+            -- The original native group remains eligible for its ordinary
+            -- substitute.  It must not inherit the narrowed forced provider.
+            fallbackGod = callbacks.GetEligibleInteractedGod(nil, {}, function() return "NativeGod" end)
+            return { StoreOptions = { { Name = "RandomLoot" }, { Name = "NativeOffer" } } }
+        end
+        local group = args.StoreData.GroupsOf[1]
+        -- StoreLogic's WeightedList branch would exhaust trying to fill two
+        -- rows after BoostedRandomLoot fails native requirements.  The copied group
+        -- uses the native nonweighted branch, which returns its one survivor.
+        lu.assertFalse(group.WeightedList)
+        narrowedGod = callbacks.GetEligibleInteractedGod(nil, {}, function() return "NativeGod" end)
+        return { StoreOptions = { { Name = "RandomLoot" } } }
+    end, original)
+
+    lu.assertEquals(narrowedGod, "ApolloUpgrade")
+    lu.assertEquals(fallbackGod, "NativeGod")
+    lu.assertEquals(result.StoreOptions, { { Name = "RandomLoot" }, { Name = "NativeOffer" } })
+    lu.assertEquals(diagnostics[1].checkpoint, "inventory-generation")
+    lu.assertEquals(diagnostics[1].values.expected, "BoostedRandomLoot")
+    lu.assertNil(diagnostics[1].values.observed)
+end
+
+function TestFeatureInteractionHooks.testShrineNativeFaultRestoresItsForcedGodScope()
+    local module, _, callbacks = capture()
+    local active = opaque({ occurrence = { overview = { hermesShrine = { offers = {
+        { generationKey = "initial:first", optionKey = "RandomLoot", source = "ApolloUpgrade" },
+    } } } } }, function() return nil end)
+    local session = stub()
+    session.current = function() return active end
+    attachFeatureHooks(module, session, function() return {} end, function() end, session)
+
+    local fault = {}
+    local ok, observed = pcall(callbacks.FillInShopOptions, nil, {}, function()
+        lu.assertEquals(callbacks.GetEligibleInteractedGod(nil, {}, function() return "NativeGod" end),
+            "ApolloUpgrade")
+        error(fault)
+    end, { StoreData = { GroupsOf = { {
+        Offers = 1, OptionsData = { { Name = "RandomLoot" } },
+    } } } })
+    lu.assertFalse(ok)
+    lu.assertIs(observed, fault)
+    lu.assertEquals(callbacks.GetEligibleInteractedGod(nil, {}, function() return "NativeGod" end), "NativeGod")
+end
+
 function TestFeatureInteractionHooks.testShrineBuilderFaultRestoresDelayScope()
     local module, _, callbacks = capture()
     local active = opaque({ occurrence = { overview = { hermesShrine = {
@@ -533,8 +599,11 @@ function TestFeatureInteractionHooks.testInteractedWellSteersItsThreeInitialOffe
     attachFeatureHooks(module, session, function() return {} end, function() end, session)
 
     local generated = callbacks.FillInShopOptions(nil, {}, function(args)
+        local healing = args.StoreData.HealingOffers
+        lu.assertNil(healing.WeightedList)
+        lu.assertEquals(healing.Options, { { Name = "ArmorBoostStore" } })
         return { StoreOptions = {
-            args.StoreData.HealingOffers.WeightedList[1],
+            (healing.Options or healing.WeightedList)[1],
             args.StoreData.Traits[1],
             args.StoreData.Consumables[1],
         } }

@@ -52,8 +52,9 @@ function nativeGame.fillWellInventory(args)
     end
     local healing = data.HealingOffers
     local healingCount = healing and (healing.Amount or healing.Min) or 0
+    local healingPool = healing and (healing.Options or healing.WeightedList) or {}
     for index = 1, healingCount do
-        local option = assert(healing.WeightedList[index], "native Well healing draw has no candidate")
+        local option = assert(healingPool[index], "native Well healing draw has no candidate")
         healingOptions[#healingOptions + 1] = { Name = option.Name, Type = option.Type }
     end
     local ordinaryCount = data.MaxOffers - healingCount

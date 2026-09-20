@@ -16,6 +16,7 @@ function worldShop.prepareRefill(storeData, args, scope)
     end
     if group.Options then group.Options = primitives.retainRawOffers(group.Options, { refill }) end
     group.Offers = 1
+    if group.WeightedList then group.WeightedList = false end
     storeData.GroupsOf = { group }
     return { kind = "travelDealWorldShop", expected = { refill }, args = primitives.withStoreData(args, storeData) }
 end
@@ -79,6 +80,7 @@ function worldShop.prepare(shop, storeData, args)
                 }
             end
             slotGroup.Offers = 1
+            if slotGroup.WeightedList then slotGroup.WeightedList = false end
             slotGroups[#slotGroups + 1] = slotGroup
         end
     end

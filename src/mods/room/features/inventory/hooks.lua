@@ -25,10 +25,32 @@ end
 
 local function completeRefill(session, state, refillScope)
     if refillScope and refillScope.handle ~= nil and refillScope.begun and not refillScope.completed
-        and refillScope.kind ~= "shop" then
+        and refillScope.installed and refillScope.kind ~= "shop" then
         refillScope.completed = true
         session.complete(state, refillScope.handle)
     end
+end
+
+local function callNative(scope, base, args, expected)
+    scope.inventorySources = nil
+    if expected ~= nil then
+        scope.inventorySources = {}
+        for _, offer in ipairs(expected) do
+            if offer.source then scope.inventorySources[#scope.inventorySources + 1] = offer.source end
+            if offer.reward and offer.reward.source then
+                scope.inventorySources[#scope.inventorySources + 1] = offer.reward.source
+            end
+        end
+    end
+    local ok, result = pcall(base, args)
+    scope.inventorySources = nil
+    return ok, result
+end
+
+local function nativeOrRethrow(scope, base, args)
+    local ok, result = callNative(scope, base, args)
+    if not ok then error(result, 0) end
+    return result
 end
 
 local function prepareInventory(occurrence, args, refillScope, contractOnly)
@@ -57,8 +79,9 @@ function hooks.attach(module, session, getState, report, room, route, scope)
         local state = getState(runtime)
         local active = current.resolve(state, room, route)
         local activeRefill = currentRefill(scope)
+        if activeRefill then activeRefill.installed = false end
         if activeRefill and activeRefill.nativeOnly then
-            local result = base(args)
+            local result = nativeOrRethrow(scope, base, args)
             report(runtime)
             return result
         end
@@ -71,7 +94,7 @@ function hooks.attach(module, session, getState, report, room, route, scope)
             end
         end
         if activeRefill and activeRefill.nativeOnly then
-            local result = base(args)
+            local result = nativeOrRethrow(scope, base, args)
             report(runtime)
             return result
         end
@@ -81,30 +104,33 @@ function hooks.attach(module, session, getState, report, room, route, scope)
             session.diagnostic(state, errorValue.checkpoint, {
                 expected = errorValue.expected, observed = errorValue.observed,
             }, active and active.occurrence)
-            local result = base(args)
+            local result = nativeOrRethrow(scope, base, args)
+            report(runtime)
+            return result
+        end
+        if prepared == nil then
+            local result = nativeOrRethrow(scope, base, args)
+            report(runtime)
+            return result
+        end
+        local baseOk, result = callNative(scope, base, prepared.args, prepared.expected)
+        if not baseOk then error(result, 0) end
+        result = primitives.placeRefill(prepared, result)
+        result = primitives.order(prepared, result)
+        local ok, verifyError = primitives.verify(prepared, result)
+        if ok then
+            if activeRefill then activeRefill.installed = true end
             completeRefill(session, state, activeRefill)
             report(runtime)
             return result
         end
-        scope.inventorySources = {}
-        for _, offer in ipairs(prepared and prepared.expected or {}) do
-            if offer.source then scope.inventorySources[#scope.inventorySources + 1] = offer.source end
-            if offer.reward and offer.reward.source then
-                scope.inventorySources[#scope.inventorySources + 1] = offer.reward.source
-            end
-        end
-        local baseOk, result = pcall(base, prepared and prepared.args or args)
-        if not baseOk then scope.inventorySources = nil; error(result, 0) end
-        scope.inventorySources = nil
-        result = primitives.placeRefill(prepared, result)
-        result = primitives.order(prepared, result)
-        local ok, verifyError = primitives.verify(prepared, result)
-        if not ok then
-            session.diagnostic(state, verifyError.checkpoint, {
-                expected = verifyError.expected, observed = verifyError.observed,
-            }, active and active.occurrence)
-        end
-        completeRefill(session, state, activeRefill)
+        session.diagnostic(state, verifyError.checkpoint, {
+            expected = verifyError.expected, observed = verifyError.observed,
+        }, active and active.occurrence)
+        -- A narrowed inventory that native requirements cannot realize is
+        -- diagnostic.  Retry the untouched native arguments with no forced
+        -- god/provider scope; native faults always propagate after cleanup.
+        result = nativeOrRethrow(scope, base, args)
         report(runtime)
         return result
     end)

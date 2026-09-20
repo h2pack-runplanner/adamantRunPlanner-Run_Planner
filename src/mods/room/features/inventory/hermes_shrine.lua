@@ -22,7 +22,10 @@ function shrineInventory.prepareRefill(storeData, args, scope)
                 groupMatched = groupMatched + count
             end
             matched = matched + groupMatched
-            if sourceGroup == nil and groupMatched > 0 then sourceGroup = group end
+            if sourceGroup == nil and groupMatched > 0 then
+                sourceGroup = group
+                if sourceGroup.WeightedList then sourceGroup.WeightedList = false end
+            end
         end
     end
     if matched == 0 then
