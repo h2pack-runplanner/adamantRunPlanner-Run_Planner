@@ -31,6 +31,10 @@ local function initialize()
     module.ui.tab(ui.drawTab)
     module.ui.quickContent(ui.drawQuickContent)
     runtime.attach(module)
+    module.fallbackUi.attachGuiOnce(function(fallbackUi)
+        rom.gui.add_imgui(fallbackUi.renderWindow)
+        rom.gui.add_to_menu_bar(fallbackUi.addMenuBar)
+    end)
     module.activate()
 end
 
