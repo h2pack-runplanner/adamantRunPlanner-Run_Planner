@@ -24,14 +24,45 @@ function proof.compare(checkpoint, expected, observed)
     return true
 end
 
+local function keepsakeCheckpoint(value, requireActivation, expected)
+    if type(value) ~= "table" then return value end
+    local result = {}
+    for key, entry in pairs(value) do result[key] = entry end
+    if type(value.figLeaf) == "table" and value.figLeaf.remainingUses ~= nil then
+        result.figLeaf = {}
+        for key, entry in pairs(value.figLeaf) do
+            if key ~= "activatedThisBiome" then result.figLeaf[key] = entry end
+        end
+        if requireActivation then
+            result.figLeaf.activatedThisBiome = expected or value.figLeaf.activatedThisBiome
+        end
+    end
+    return result
+end
+
+function proof.compareKeepsakes(checkpoint, expected, observed, requireActivation)
+    return proof.compare(checkpoint,
+        keepsakeCheckpoint(expected, requireActivation, true),
+        keepsakeCheckpoint(observed, requireActivation, false))
+end
+
 function proof.prove(occurrence, read)
     for _, fact in ipairs((occurrence.roomExitConformance or {}).facts or {}) do
         local expected = occurrence.conformanceExpected and occurrence.conformanceExpected[fact.kind]
         local observed = type(read) == "function" and read(fact.kind, expected) or nil
-        local ok, mismatch = proof.compare(
+        local compare = proof.compare
+        local requireActivation = false
+        if fact.kind == "keepsakeEffects" then
+            compare = proof.compareKeepsakes
+            for _, phase in ipairs((occurrence.overview or {}).encounterPhases or {}) do
+                requireActivation = requireActivation or phase.figLeafSkip == true
+            end
+        end
+        local ok, mismatch = compare(
             "room-exit-conformance:" .. fact.kind,
             expected,
-            observed
+            observed,
+            requireActivation
         )
         if not ok then return nil, mismatch end
     end

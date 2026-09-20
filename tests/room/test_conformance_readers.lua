@@ -584,7 +584,7 @@ function TestConformanceReaders.testKeepsakeReaderUsesNativeCardAndTimePieceFiel
     lu.assertEquals(observed.timePiece, { remainingCharges = 0 })
 end
 
-function TestConformanceReaders.testKeepsakeReaderProjectsFigLeafUsesAndBiomeLatch()
+function TestConformanceReaders.testKeepsakeReaderProjectsFigLeafUsesAndCurrentRoomActivation()
     local expected = { figLeaf = { remainingUses = 2, activatedThisBiome = false } }
     local run = {
         Hero = { Traits = {
@@ -602,7 +602,7 @@ function TestConformanceReaders.testKeepsakeReaderProjectsFigLeafUsesAndBiomeLat
     run.Hero.Traits[1].RemainingUses = 1
     run.Hero.Traits[1].ActivatedThisBiome = true
     lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
-        remainingUses = 1, activatedThisBiome = true,
+        remainingUses = 1, activatedThisBiome = false,
     })
 
     run.Hero.Traits[1].ActivatedThisBiome = false
@@ -622,14 +622,14 @@ function TestConformanceReaders.testKeepsakeReaderProjectsFigLeafUsesAndBiomeLat
     }
     run.CurrentRoom = { TraitUses = {} }
     lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
-        remainingUses = 0, activatedThisBiome = true,
+        remainingUses = 0, activatedThisBiome = false,
     })
 
-    -- A transparent/special room does not reset the native biome latch.
+    -- Past room evidence is deliberately irrelevant, including across Chaos.
     table.insert(run.RoomHistory, run.CurrentRoom)
     run.CurrentRoom = { Name = "Chaos_01", TraitUses = {} }
     lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
-        remainingUses = 0, activatedThisBiome = true,
+        remainingUses = 0, activatedThisBiome = false,
     })
 
     run.CurrentRoom = { BiomeStartRoom = true, TraitUses = {} }
@@ -647,8 +647,51 @@ function TestConformanceReaders.testKeepsakeReaderProjectsFigLeafUsesAndBiomeLat
         { Name = "PersistentDionysusSkipKeepsake", RemainingUses = 3, ActivatedThisBiome = true },
     }
     lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
-        remainingUses = 3, activatedThisBiome = true,
+        remainingUses = 3, activatedThisBiome = false,
     })
+end
+
+function TestConformanceReaders.testFigLeafProofChecksActivationOnlyInPlannedRoom()
+    local run = { Hero = { Traits = {} }, CurrentRoom = { TraitUses = {} } }
+    local expected = readers.read("keepsakeEffects", run, nil, {
+        figLeaf = { remainingUses = 0, activatedThisBiome = true },
+    })
+    expected.figLeaf.activatedThisBiome = true
+    local occurrence = {
+        overview = { encounterPhases = { { figLeafSkip = true } } },
+        roomExitConformance = { facts = { { kind = "keepsakeEffects" } } },
+        conformanceExpected = { keepsakeEffects = expected },
+    }
+    local function read(kind, value) return readers.read(kind, run, nil, value) end
+    lu.assertNil(proof.prove(occurrence, read))
+    run.CurrentRoom.TraitUses.PersistentDionysusSkipKeepsake = 1
+    lu.assertTrue(proof.prove(occurrence, read))
+
+    -- Native Save strips old TraitUses and BiomeStartRoom in place. Neither
+    -- the next room nor any later room needs to re-prove the consumed last use.
+    run.RoomHistory = { { Name = "I_Intro" }, { Name = "I_Combat05" } }
+    run.CurrentRoom = { Name = "I_Combat02", TraitUses = {} }
+    occurrence.overview.encounterPhases = { { figLeafSkip = false } }
+    lu.assertTrue(proof.prove(occurrence, read))
+    lu.assertTrue(expected.figLeaf.activatedThisBiome)
+    run.Hero.Traits = { { Name = "PersistentDionysusSkipKeepsake", RemainingUses = 1 } }
+    lu.assertNil(proof.prove(occurrence, read))
+end
+
+function TestConformanceReaders.testPostbossFigLeafAdmissionDoesNotReproveActivation()
+    local occurrence, startingLoadout, restore = admissionFixture()
+    occurrence.diagnostics.roomEntered.retainedEffects.keepsakes.figLeaf = {
+        remainingUses = 0, activatedThisBiome = true,
+    }
+    local ok = admission.verify(occurrence, startingLoadout)
+    table.insert(_G.CurrentRun.Hero.Traits, {
+        Name = "PersistentDionysusSkipKeepsake", RemainingUses = 1,
+    })
+    local wrong, mismatch = admission.verify(occurrence, startingLoadout)
+    restore()
+    lu.assertTrue(ok)
+    lu.assertNil(wrong)
+    lu.assertEquals(mismatch.checkpoint, "postboss-admission:keepsakeEffects")
 end
 
 function TestConformanceReaders.testKeepsakeReaderProjectsGorgonPendingConsumedAndExpired()

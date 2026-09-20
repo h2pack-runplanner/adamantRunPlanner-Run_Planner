@@ -25,23 +25,10 @@ local function findTrait(run, key)
     return nil
 end
 
-local function usedTraitThisBiome(run, key)
-    local function used(room)
-        local uses = type(room) == "table" and room.TraitUses
-        return type(uses) == "table" and type(uses[key]) == "number" and uses[key] > 0
-    end
+local function usedTraitThisRoom(run, key)
     local current = type(run) == "table" and run.CurrentRoom
-    if used(current) then return true end
-    if type(current) == "table" and current.BiomeStartRoom then return false end
-    -- Native use exhaustion removes the persistent Fig Leaf trait. RoomHistory
-    -- retains its usage; the native biome-start marker bounds the latch reset.
-    local history = type(run) == "table" and run.RoomHistory or {}
-    for index = #(history or {}), 1, -1 do
-        local room = history[index]
-        if used(room) then return true end
-        if room.BiomeStartRoom then break end
-    end
-    return false
+    local uses = type(current) == "table" and current.TraitUses
+    return type(uses) == "table" and type(uses[key]) == "number" and uses[key] > 0
 end
 
 local function findGrantedTrait(run)
@@ -156,18 +143,18 @@ function conformance.read(run, gameState, expected)
     end
     if expected.figLeaf ~= nil and not json.isNull(expected.figLeaf) then
         local figLeafKey = conformanceBindings.keepsakeTraits.figLeaf
-        local remainingUses, activatedThisBiome = 0, false
+        local remainingUses = 0
         for _, trait in pairs(traits(run) or {}) do
             if traitKey(trait) == figLeafKey and type(trait) == "table" then
                 local uses = type(trait.RemainingUses) == "number" and trait.RemainingUses or 0
                 remainingUses = math.max(remainingUses, uses)
-                activatedThisBiome = activatedThisBiome or trait.ActivatedThisBiome == true
             end
         end
-        activatedThisBiome = activatedThisBiome or usedTraitThisBiome(run, figLeafKey)
         result.figLeaf = {
             remainingUses = remainingUses,
-            activatedThisBiome = activatedThisBiome,
+            -- Only compared at an exit whose encounter plans an activation.
+            -- Native room history is stripped by Save; it is not a durable latch.
+            activatedThisBiome = usedTraitThisRoom(run, figLeafKey),
         }
     end
     if expected.gorgon ~= nil and not json.isNull(expected.gorgon) then

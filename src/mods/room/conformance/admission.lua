@@ -42,7 +42,8 @@ function admission.verify(occurrence, startingLoadout)
     local currentRun, gameState = _G.CurrentRun, _G.GameState
     for _, kind in ipairs(families) do
         local observed = readers.read(kind, currentRun, gameState, expected[kind])
-        local ok, mismatch = proof.compare(
+        local compare = kind == "keepsakeEffects" and proof.compareKeepsakes or proof.compare
+        local ok, mismatch = compare(
             "postboss-admission:" .. kind,
             expected[kind],
             observed
