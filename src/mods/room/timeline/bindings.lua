@@ -1,5 +1,6 @@
 -- Private correlation index for published Timeline contacts. Hooks use only
 -- descriptors through coordinator.lua; they never see these index namespaces.
+local json = type(import) == "function" and import("mods/protocol/json.lua") or require("mods.protocol.json")
 local bindings = {}
 
 local function add(index, namespace, key, transaction, detail)
@@ -67,8 +68,13 @@ function bindings.index(occurrence)
             ok, errorValue = add(index, "rewardWheel", transaction.wheelKey, transaction)
             if not ok then return nil, errorValue end
         elseif transaction.kind == "acquisition" and transaction.window.kind == "shipPostCombat" then
-            ok, errorValue = add(index, "rewardWheelAcquisition", transaction.window.wheelKey, transaction)
-            if not ok then return nil, errorValue end
+            -- The window also contains generated pickups such as Artificer
+            -- replacements. Only the wheel offer itself owns its native spawn.
+            local source = json.decode(transaction.sourceOwner)
+            if source and json.isArray(source) and source[1] == "rewardWheelOffer" then
+                ok, errorValue = add(index, "rewardWheelAcquisition", source[5], transaction)
+                if not ok then return nil, errorValue end
+            end
         end
         addSource(index, "source", transaction.sourceOwner, transaction)
         if transaction.producerLifecycleKey and transaction.reward then

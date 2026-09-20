@@ -32,6 +32,37 @@ function TestTimelineBindings.testIndexesRejectAmbiguousPublishedKeys()
     lu.assertEquals(errorValue.checkpoint, "timeline-binding")
 end
 
+function TestTimelineBindings.testWheelWindowDoesNotOwnArtificerReplacement()
+    local owner = '["rewardWheelOffer","Surface","O","room","wheel1","offer1"]'
+    local original = {
+        owner = owner, sourceOwner = owner, kind = "acquisition",
+        window = { kind = "shipPostCombat", wheelKey = "wheel1" },
+        roles = { { role = "self", gameName = "GiftDrop", disposition = "artificer" } },
+    }
+    local replacement = {
+        owner = "replacement", sourceOwner = '["acquisitionEntry","replacement"]', kind = "acquisition",
+        window = { kind = "shipPostCombat", wheelKey = "wheel1" },
+        roles = { {
+            role = "self", gameName = "HermesUpgrade",
+            producer = { kind = "artificerReplacement", sourceOwner = owner, sourceRole = "self" },
+        } },
+    }
+    local index = assert(bindings.index({ transactionsByOwner = {
+        original = original, replacement = replacement,
+    } }))
+    local wheel = resolved(index, { kind = "rewardWheelAcquisition", wheelKey = "wheel1" })
+    lu.assertIs(wheel.transaction, original)
+    lu.assertEquals(bindings.resolve(index, { kind = "materialized", gameName = "GiftDrop" }, wheel).detail,
+        original.roles[1])
+    local child = assert(bindings.resolve(index, { kind = "produced", role = "self" }, wheel))
+    lu.assertIs(child.transaction, replacement)
+    lu.assertEquals(child.detail.gameName, "HermesUpgrade")
+
+    -- A window without its original reward must not claim an unrelated pickup.
+    index = assert(bindings.index({ transactionsByOwner = { replacement = replacement } }))
+    lu.assertNil(bindings.resolve(index, { kind = "rewardWheelAcquisition", wheelKey = "wheel1" }))
+end
+
 function TestTimelineBindings.testTrialAcquisitionsShareSourceButBindDistinctNativeGods()
     local chosen = {
         owner = "chosen", sourceOwner = "incoming", kind = "acquisition",

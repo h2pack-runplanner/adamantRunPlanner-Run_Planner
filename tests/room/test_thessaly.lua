@@ -13,7 +13,8 @@ TestThessaly = {}
 
 function TestThessaly.testIndexesSelectedWheelAcquisitionByItsExactWheel()
     local transaction = {
-        kind = "acquisition", owner = "picked", sourceOwner = "picked",
+        kind = "acquisition", owner = "picked",
+        sourceOwner = '["rewardWheelOffer","Surface","O","room","wheel2","offer1"]',
         reward = { rewardType = "MaxHealthDrop", producerLifecycleKey = "RoomReward" },
         producerLifecycleKey = "RoomReward", roles = {},
         window = { kind = "shipPostCombat", wheelKey = "wheel2" },
