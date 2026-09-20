@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-09-20
+
+### Fixed
+
+- shops: resolve hammer options to native loot identity (d5ff594)
+
 ## [0.7.4] - 2026-09-20
 
 ### Fixed
