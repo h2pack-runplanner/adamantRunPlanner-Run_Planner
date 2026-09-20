@@ -1,5 +1,5 @@
--- Native consumable terminals shared by outcome transformations and Well item
--- effects.  Native acceptance remains authoritative; this only claims a ready
+-- Native consumable terminals shared by outcome transformations and consumable
+-- Well effects. Native acceptance remains authoritative; this only claims a ready
 -- published outcome after the accepted presentation and settles after use.
 local anvil = type(import) == "function" and import("mods/room/timeline/transformations/anvil.lua")
     or require("mods.room.timeline.transformations.anvil")

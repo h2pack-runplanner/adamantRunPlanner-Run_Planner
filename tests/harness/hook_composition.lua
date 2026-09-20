@@ -12,7 +12,12 @@ function M.capture()
             wrap = function(name, id, callback)
                 names[name] = names[name] or {}
                 names[name][id] = true
-                callbacks[name] = callback
+                local previous = callbacks[name]
+                callbacks[name] = previous and function(context, runtime, base, ...)
+                    return callback(context, runtime, function(...)
+                        return previous(context, runtime, base, ...)
+                    end, ...)
+                end or callback
             end,
         },
     }, names, callbacks

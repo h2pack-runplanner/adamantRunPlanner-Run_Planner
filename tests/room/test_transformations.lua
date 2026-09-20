@@ -355,9 +355,9 @@ end
 
 function TestTransformations.testItemEffectCompletesOnlyAfterAcceptedNativeUseReturns()
     local module, callbacks = capture()
-    local item, handle = { Name = "TemporaryForcedSecretDoorTrait" }, {}
+    local item, handle = { Name = "LastStandShopItem" }, {}
     local payload = { transaction = {
-        kind = "itemEffect", owner = "spark", itemKey = item.Name, effect = "spark", extended = false,
+        kind = "itemEffect", owner = "lastStand", itemKey = item.Name, effect = "lastStand", extended = false,
     } }
     local begins, completions = 0, 0
     local room = {
@@ -411,6 +411,64 @@ local function outcomeHarness(transaction, beginPayload)
     transformations.attach(module, session, function() return state end, function() end, room)
     return callbacks, function() return completions end, mismatches,
         function() return begins end
+end
+
+function TestTransformations.testWellTraitsCompleteAfterNativeGrantOrStack()
+    for _, name in ipairs({ "TemporaryForcedSecretDoorTrait", "TemporaryBoonRarityTrait" }) do
+        for _, existingUses in ipairs({ 0, 1 }) do
+            local callbacks, completions, _, begins = outcomeHarness({ kind = "itemEffect", itemKey = name })
+            local item = { Name = name, Type = "Trait", RemainingUses = 1, IncreaseUsesOnStack = true }
+            local uses = existingUses
+            local result = callbacks.HandleStorePurchase(nil, {}, function(screen, button)
+                callbacks.StorePurchasePresentation(nil, {}, function() end, screen, button, button.Data)
+                lu.assertEquals(begins(), 1)
+                lu.assertEquals(completions(), 0)
+                -- Native StoreLogic grants a new trait or increments the existing
+                -- trait directly. Neither path calls UseConsumableItem.
+                uses = uses + button.Data.RemainingUses
+                return "native-result"
+            end, {}, { Data = item })
+            lu.assertEquals(result, "native-result")
+            lu.assertEquals(uses, existingUses + 1)
+            lu.assertEquals(completions(), 1)
+        end
+    end
+end
+
+function TestTransformations.testWellTraitRejectionAndUnplannedItemsRemainNative()
+    for _, mode in ipairs({ "rejected", "unplanned", "consumable", "blocked" }) do
+        local name = "TemporaryForcedSecretDoorTrait"
+        local callbacks, completions, _, begins = outcomeHarness(
+            { kind = "itemEffect", itemKey = name }, mode ~= "blocked")
+        local item = { Name = mode == "unplanned" and "OtherTrait" or name,
+            Type = mode == "consumable" and "Consumable" or "Trait" }
+        local called = false
+        callbacks.HandleStorePurchase(nil, {}, function(screen, button)
+            called = true
+            if mode ~= "rejected" then
+                callbacks.StorePurchasePresentation(nil, {}, function() end, screen, button, item)
+            end
+        end, {}, { Data = item })
+        lu.assertTrue(called)
+        lu.assertEquals(completions(), 0)
+        lu.assertEquals(begins(), mode == "blocked" and 1 or 0)
+    end
+end
+
+function TestTransformations.testWellTraitFaultClearsScopeWithoutCompleting()
+    local name = "TemporaryForcedSecretDoorTrait"
+    local callbacks, completions, _, begins = outcomeHarness({ kind = "itemEffect", itemKey = name })
+    local item = { Name = name, Type = "Trait" }
+    local button = { Data = item }
+    lu.assertErrorMsgContains("native fault", function()
+        callbacks.HandleStorePurchase(nil, {}, function(screen)
+            callbacks.StorePurchasePresentation(nil, {}, function() end, screen, button, item)
+            error("native fault")
+        end, {}, button)
+    end)
+    lu.assertEquals(completions(), 0)
+    callbacks.StorePurchasePresentation(nil, {}, function() end, {}, button, item)
+    lu.assertEquals(begins(), 1)
 end
 
 function TestTransformations.testRejectedAnvilBeginLeavesNativeSelectionsUntouched()
