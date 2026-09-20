@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-09-20
+
+### Fixed
+
+- host: attach standalone inspector UI (4510e39)
+
 ## [0.7.2] - 2026-09-20
 
 ### Fixed
