@@ -1,0 +1,122 @@
+[
+  {
+    "name": "null",
+    "json": "null",
+    "canonical": "z",
+    "fingerprint": "ff0c53ad"
+  },
+  {
+    "name": "booleans",
+    "json": "[true,false]",
+    "canonical": "[tf]",
+    "fingerprint": "5f93bf5b"
+  },
+  {
+    "name": "zero",
+    "json": "0",
+    "canonical": "n0000000000000000;",
+    "fingerprint": "f6a2967e"
+  },
+  {
+    "name": "negative-zero",
+    "json": "-0",
+    "canonical": "n0000000000000000;",
+    "fingerprint": "f6a2967e"
+  },
+  {
+    "name": "third",
+    "json": "0.3333333333333333",
+    "canonical": "n3fd5555555555555;",
+    "fingerprint": "a835fefc"
+  },
+  {
+    "name": "two-thirds",
+    "json": "0.6666666666666666",
+    "canonical": "n3fe5555555555555;",
+    "fingerprint": "f550555b"
+  },
+  {
+    "name": "decimal",
+    "json": "0.1",
+    "canonical": "n3fb999999999999a;",
+    "fingerprint": "f5cc817e"
+  },
+  {
+    "name": "negative",
+    "json": "-1.5",
+    "canonical": "nbff8000000000000;",
+    "fingerprint": "3aea8770"
+  },
+  {
+    "name": "exponent",
+    "json": "1e20",
+    "canonical": "n4415af1d78b58c40;",
+    "fingerprint": "55b24b7b"
+  },
+  {
+    "name": "small-exponent",
+    "json": "1e-7",
+    "canonical": "n3e7ad7f29abcaf48;",
+    "fingerprint": "80b9c273"
+  },
+  {
+    "name": "min-subnormal",
+    "json": "5e-324",
+    "canonical": "n0000000000000001;",
+    "fingerprint": "fea0647f"
+  },
+  {
+    "name": "max-subnormal",
+    "json": "2.225073858507201e-308",
+    "canonical": "n000fffffffffffff;",
+    "fingerprint": "ca87fa34"
+  },
+  {
+    "name": "min-normal",
+    "json": "2.2250738585072014e-308",
+    "canonical": "n0010000000000000;",
+    "fingerprint": "eaed0b59"
+  },
+  {
+    "name": "max-finite",
+    "json": "1.7976931348623157e308",
+    "canonical": "n7fefffffffffffff;",
+    "fingerprint": "29d03024"
+  },
+  {
+    "name": "unicode",
+    "json": "\"é水😀\"",
+    "canonical": "sc3a9e6b0b4f09f9880;",
+    "fingerprint": "afc0b302"
+  },
+  {
+    "name": "controls",
+    "json": "\"\\u0000\\b\\f\\n\\r\\t\\\"\\\\/\"",
+    "canonical": "s00080c0a0d09225c2f;",
+    "fingerprint": "4b857ac4"
+  },
+  {
+    "name": "empty-containers",
+    "json": "[{},[],\"\"]",
+    "canonical": "[{}[]s;]",
+    "fingerprint": "cda3d7b7"
+  },
+  {
+    "name": "keys",
+    "json": "{\"é\":null,\"a\":false,\"_\":true,\"Z\":[],\"A\":{}}",
+    "canonical": "{s41;{}s5a;[]s5f;ts61;fsc3a9;z}",
+    "fingerprint": "a6cb1ce0"
+  },
+  {
+    "name": "unicode-keys",
+    "json": "{\"😀\":false,\"\":true,\"水\":null}",
+    "canonical": "{se6b0b4;zsee8080;tsf09f9880;f}",
+    "fingerprint": "77431dc0"
+  },
+  {
+    "name": "nested",
+    "json": "{\"b\":[0.1,null],\"a\":{\"x\":\"y\"}}",
+    "canonical": "{s61;{s78;s79;}s62;[n3fb999999999999a;z]}",
+    "fingerprint": "58d5b058"
+  }
+]

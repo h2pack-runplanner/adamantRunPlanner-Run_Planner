@@ -81,20 +81,70 @@ function primitives.roomRef(value, label)
     end
     return record
 end
-local function stable(value)
-    if json.isNull(value) then return "null" end
-    if type(value) == "string" then return string.format("%q", value):gsub("\\\n", "\\n") end
-    if type(value) == "number" or type(value) == "boolean" then return tostring(value) end
-    if json.isArray(value) then
-        local parts = {}; for index, item in ipairs(value) do parts[index] = stable(item) end
-        return "[" .. table.concat(parts, ",") .. "]"
+local function utf8Hex(value)
+    local bytes = {}
+    local index = 1
+    while index <= #value do
+        local first = value:byte(index)
+        local length, code, minimum
+        if first < 128 then length, code, minimum = 1, first, 0
+        elseif first >= 194 and first <= 223 then length, code, minimum = 2, first - 192, 128
+        elseif first >= 224 and first <= 239 then length, code, minimum = 3, first - 224, 2048
+        elseif first >= 240 and first <= 244 then length, code, minimum = 4, first - 240, 65536
+        else error("fingerprint strings must contain Unicode scalar values") end
+        for offset = 1, length - 1 do
+            local byte = value:byte(index + offset)
+            assert(byte and byte >= 128 and byte <= 191,
+                "fingerprint strings must contain Unicode scalar values")
+            code = code * 64 + byte - 128
+        end
+        assert(code >= minimum and code <= 1114111 and (code < 55296 or code > 57343),
+            "fingerprint strings must contain Unicode scalar values")
+        for offset = 0, length - 1 do
+            bytes[#bytes + 1] = string.format("%02x", value:byte(index + offset))
+        end
+        index = index + length
     end
-    local keys = {}; for key in pairs(value) do keys[#keys + 1] = key end; table.sort(keys)
-    for index, key in ipairs(keys) do keys[index] = stable(key) .. ":" .. stable(value[key]) end
-    return "{" .. table.concat(keys, ",") .. "}"
+    return table.concat(bytes)
 end
+local function numberHex(value)
+    assert(primitives.num(value, "fingerprint number"))
+    if value == 0 then return "0000000000000000" end
+    local sign = value < 0 and 2147483648 or 0
+    local magnitude = math.abs(value)
+    local mantissa, exponent
+    if magnitude < 2 ^ -1022 then
+        exponent, mantissa = 0, magnitude / (2 ^ -1074)
+    else
+        local fraction, power = math.frexp(magnitude)
+        exponent, mantissa = power + 1022, (fraction * 2 - 1) * (2 ^ 52)
+    end
+    local high = sign + exponent * 1048576 + math.floor(mantissa / 4294967296)
+    return string.format("%08x%08x", high, mantissa % 4294967296)
+end
+local function byteLess(left, right)
+    for index = 1, math.min(#left, #right) do
+        if left:byte(index) ~= right:byte(index) then return left:byte(index) < right:byte(index) end
+    end
+    return #left < #right
+end
+local function canonical(value)
+    if json.isNull(value) then return "z" end
+    if type(value) == "string" then return "s" .. utf8Hex(value) .. ";" end
+    if type(value) == "number" then return "n" .. numberHex(value) .. ";" end
+    if type(value) == "boolean" then return value and "t" or "f" end
+    if json.isArray(value) then
+        local parts = {}; for index, item in ipairs(value) do parts[index] = canonical(item) end
+        return "[" .. table.concat(parts) .. "]"
+    end
+    assert(type(value) == "table", "unsupported fingerprint value")
+    local keys = {}; for key in pairs(value) do keys[#keys + 1] = key end; table.sort(keys, byteLess)
+    for index, key in ipairs(keys) do keys[index] = canonical(key) .. canonical(value[key]) end
+    return "{" .. table.concat(keys) .. "}"
+end
+primitives.canonicalFingerprintInput = canonical
 function primitives.fingerprint(value)
-    local text, hash = stable(value), 2166136261
+    local text, hash = canonical(value), 2166136261
     for index = 1, #text do
         hash = bit32.bxor(hash, text:byte(index))
         local low, high = hash % 65536, math.floor(hash / 65536)

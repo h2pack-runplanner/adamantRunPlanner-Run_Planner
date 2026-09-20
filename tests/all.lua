@@ -1,6 +1,7 @@
 package.path = "./src/?.lua;./src/?/init.lua;./tests/?.lua;./tests/?/init.lua;./?.lua;./?/init.lua;" .. package.path
 
 require("tests/protocol/test_json")
+require("tests/protocol/test_fingerprint")
 require("tests/host/test_inbox")
 require("tests/host/test_status_ui")
 require("tests/host/test_bootstrap")

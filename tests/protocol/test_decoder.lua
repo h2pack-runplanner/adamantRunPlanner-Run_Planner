@@ -990,6 +990,10 @@ function TestProtocol.testSurfaceNFixtureClosesHubAndNativeRestoreReferences()
     lu.assertNotNil(decoded, errorMessage)
     lu.assertEquals(decoded.extent.biomeKeys, { "N" })
 
+    -- Admission attaches runtime indexes in place; mutate fresh wire input,
+    -- not the already-admitted runtime product.
+    plan = decode("surface-n")
+
     local parentsBySide = {}
     for _, occurrence in ipairs(plan.occurrences) do
         for _, slot in ipairs(occurrence.overview.localSlots or {}) do
