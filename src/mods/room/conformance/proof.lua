@@ -28,14 +28,12 @@ local function keepsakeCheckpoint(value, requireActivation, expected)
     if type(value) ~= "table" then return value end
     local result = {}
     for key, entry in pairs(value) do result[key] = entry end
-    if type(value.figLeaf) == "table" and value.figLeaf.remainingUses ~= nil then
-        result.figLeaf = {}
-        for key, entry in pairs(value.figLeaf) do
-            if key ~= "activatedThisBiome" then result.figLeaf[key] = entry end
-        end
-        if requireActivation then
-            result.figLeaf.activatedThisBiome = expected or value.figLeaf.activatedThisBiome
-        end
+    result.figLeaf = nil
+    if requireActivation then
+        result.figLeaf = {
+            activatedThisBiome = expected or
+                (type(value.figLeaf) == "table" and value.figLeaf.activatedThisBiome == true),
+        }
     end
     return result
 end

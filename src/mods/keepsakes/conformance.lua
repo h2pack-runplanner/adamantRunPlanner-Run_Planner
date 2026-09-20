@@ -143,18 +143,16 @@ function conformance.read(run, gameState, expected)
     end
     if expected.figLeaf ~= nil and not json.isNull(expected.figLeaf) then
         local figLeafKey = conformanceBindings.keepsakeTraits.figLeaf
-        local remainingUses = 0
+        local activated = usedTraitThisRoom(run, figLeafKey)
         for _, trait in pairs(traits(run) or {}) do
             if traitKey(trait) == figLeafKey and type(trait) == "table" then
-                local uses = type(trait.RemainingUses) == "number" and trait.RemainingUses or 0
-                remainingUses = math.max(remainingUses, uses)
+                activated = activated or trait.ActivatedThisBiome == true
             end
         end
         result.figLeaf = {
-            remainingUses = remainingUses,
             -- Only compared at an exit whose encounter plans an activation.
             -- Native room history is stripped by Save; it is not a durable latch.
-            activatedThisBiome = usedTraitThisRoom(run, figLeafKey),
+            activatedThisBiome = activated,
         }
     end
     if expected.gorgon ~= nil and not json.isNull(expected.gorgon) then
