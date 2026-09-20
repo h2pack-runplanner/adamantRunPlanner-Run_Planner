@@ -616,7 +616,28 @@ function TestConformanceReaders.testKeepsakeReaderProjectsFigLeafUsesAndBiomeLat
         remainingUses = 0, activatedThisBiome = true,
     })
 
-    run.CurrentRoom.TraitUses = {}
+    run.RoomHistory = {
+        { BiomeStartRoom = true, TraitUses = {} },
+        run.CurrentRoom,
+    }
+    run.CurrentRoom = { TraitUses = {} }
+    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
+        remainingUses = 0, activatedThisBiome = true,
+    })
+
+    -- A transparent/special room does not reset the native biome latch.
+    table.insert(run.RoomHistory, run.CurrentRoom)
+    run.CurrentRoom = { Name = "Chaos_01", TraitUses = {} }
+    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
+        remainingUses = 0, activatedThisBiome = true,
+    })
+
+    run.CurrentRoom = { BiomeStartRoom = true, TraitUses = {} }
+    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
+        remainingUses = 0, activatedThisBiome = false,
+    })
+    table.insert(run.RoomHistory, run.CurrentRoom)
+    run.CurrentRoom = { TraitUses = {} }
     lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).figLeaf, {
         remainingUses = 0, activatedThisBiome = false,
     })

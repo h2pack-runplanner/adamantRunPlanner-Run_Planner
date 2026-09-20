@@ -25,6 +25,25 @@ local function findTrait(run, key)
     return nil
 end
 
+local function usedTraitThisBiome(run, key)
+    local function used(room)
+        local uses = type(room) == "table" and room.TraitUses
+        return type(uses) == "table" and type(uses[key]) == "number" and uses[key] > 0
+    end
+    local current = type(run) == "table" and run.CurrentRoom
+    if used(current) then return true end
+    if type(current) == "table" and current.BiomeStartRoom then return false end
+    -- Native use exhaustion removes the persistent Fig Leaf trait. RoomHistory
+    -- retains its usage; the native biome-start marker bounds the latch reset.
+    local history = type(run) == "table" and run.RoomHistory or {}
+    for index = #(history or {}), 1, -1 do
+        local room = history[index]
+        if used(room) then return true end
+        if room.BiomeStartRoom then break end
+    end
+    return false
+end
+
 local function findGrantedTrait(run)
     for _, trait in pairs(traits(run) or {}) do
         if type(trait) == "table" and trait.GrantedTrait == true then return trait end
@@ -145,12 +164,7 @@ function conformance.read(run, gameState, expected)
                 activatedThisBiome = activatedThisBiome or trait.ActivatedThisBiome == true
             end
         end
-        local currentRoom = type(run) == "table" and run.CurrentRoom or nil
-        local roomTraitUses = type(currentRoom) == "table" and currentRoom.TraitUses or nil
-        if type(roomTraitUses) == "table" and type(roomTraitUses[figLeafKey]) == "number"
-            and roomTraitUses[figLeafKey] > 0 then
-            activatedThisBiome = true
-        end
+        activatedThisBiome = activatedThisBiome or usedTraitThisBiome(run, figLeafKey)
         result.figLeaf = {
             remainingUses = remainingUses,
             activatedThisBiome = activatedThisBiome,
