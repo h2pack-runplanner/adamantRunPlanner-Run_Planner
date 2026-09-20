@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.7.9] - 2026-09-20
+
+### Fixed
+
+- executor: resolve identity clash between artificer and original reward at thessaly wheels (8e48aef)
+
 ## [0.7.8] - 2026-09-20
 
 ### Fixed
