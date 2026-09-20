@@ -5,7 +5,7 @@ schemaVersion = "0.0.1"
 namespace = "adamantRunPlanner"
 name = "Run_Planner"
 description = "The Hades II game companion to the Run Planner application."
-versionNumber = "0.7.5"
+versionNumber = "0.7.6"
 websiteUrl = "https://github.com/h2pack-runplanner/adamantRunPlanner-Run_Planner"
 containsNsfwContent = false
 
