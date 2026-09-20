@@ -117,6 +117,45 @@ function TestEncounters.testRoomEntryProofRebindsTheCanonicalEncounterAfterMapLo
     })
 end
 
+function TestEncounters.testFieldsEntryBindsPassiveAndCagesAfterMapLoad()
+    local registry = require("mods.room.timeline.encounters.phases").create()
+    local occurrence = {
+        id = "fields", overview = { encounterPhases = {
+            { slotKey = "Passive", encounterKey = "GeneratedH_PassiveSmall" },
+            { slotKey = "Cage01", encounterKey = "GeneratedH" },
+            { slotKey = "Cage02", encounterKey = "GeneratedH" },
+        } },
+    }
+    local native = {
+        Encounter = { Name = "GeneratedH_PassiveSmall" },
+        CageRewards = {
+            { Encounter = { Name = "GeneratedH" } },
+            { Encounter = { Name = "GeneratedH" } },
+        },
+    }
+    for _, phase in ipairs(occurrence.overview.encounterPhases) do
+        lu.assertNotNil(registry.bind(occurrence, { Name = phase.encounterKey }, phase.slotKey))
+    end
+    -- Entry and completed-setup proofs must both bind the restored carriers.
+    for _ = 1, 2 do
+        lu.assertTrue(registry.prove(occurrence, native))
+        lu.assertEquals(registry.forNative(native.Encounter).phase.slotKey, "Passive")
+        for index, reward in ipairs(native.CageRewards) do
+            lu.assertIs(registry.forNative(reward.Encounter).phase, occurrence.overview.encounterPhases[index + 1])
+        end
+    end
+    lu.assertNil(native.Encounters)
+    native.CageRewards[2].Encounter = { Name = "WrongEncounter" }
+    local ok, mismatch = registry.prove(occurrence, native)
+    lu.assertNil(ok)
+    lu.assertEquals(mismatch.kind, "encounter")
+    lu.assertEquals(mismatch.observed, "WrongEncounter")
+    native.CageRewards[2].Encounter = nil
+    ok, mismatch = registry.prove(occurrence, native)
+    lu.assertNil(ok)
+    lu.assertEquals(mismatch.kind, "encounter")
+end
+
 function TestEncounters.testBossArcanaAdmitsAnExactEternityOutcome()
     local module, callbacks = capture()
     local state = { state = "synchronized" }

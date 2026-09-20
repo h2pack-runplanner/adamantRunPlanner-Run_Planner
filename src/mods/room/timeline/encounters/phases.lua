@@ -4,9 +4,18 @@
 local phases = {}
 
 local function nativePhases(room)
-    if type(room.Encounters) == "table" and #room.Encounters > 0 then return room.Encounters end
-    if room.Encounter ~= nil then return { room.Encounter } end
-    return {}
+    local result = {}
+    if type(room.Encounters) == "table" and #room.Encounters > 0 then
+        for _, encounter in ipairs(room.Encounters) do result[#result + 1] = encounter end
+    elseif room.Encounter ~= nil then
+        result[1] = room.Encounter
+    end
+    -- Fields keeps the passive encounter on the room and each required cage
+    -- encounter on its reward, not in the multiple-encounter array.
+    for _, reward in ipairs(room.CageRewards or {}) do
+        result[#result + 1] = reward.Encounter or false
+    end
+    return result
 end
 
 local function phaseAt(occurrence, slotKey)
