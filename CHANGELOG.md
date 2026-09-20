@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.7.10] - 2026-09-20
+
+### Fixed
+
+- executor: fields encounter shape mismatch (bc93e4d)
+
 ## [0.7.9] - 2026-09-20
 
 ### Fixed
