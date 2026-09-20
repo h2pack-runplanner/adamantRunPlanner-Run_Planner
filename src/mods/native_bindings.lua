@@ -19,6 +19,8 @@ return {
     },
     roomFeatures = {
         resolvedShopOptionNames = {
+            WeaponUpgradeDropEarly = { WeaponUpgradeDrop = "WeaponUpgradeDrop" },
+            WeaponUpgradeDropLate = { WeaponUpgradeDrop = "WeaponUpgradeDrop" },
             SpellDrop = { TalentDrop = "TalentDrop" },
         },
         shopOptionCarriers = {

@@ -445,6 +445,52 @@ function TestFeatureInteractionHooks.testDestinationShopInventoryUsesTheNextOccu
     lu.assertEquals(state.state, "synchronized")
 end
 
+function TestFeatureInteractionHooks.testWorldShopHammerEligibilityAliasesPreserveTheWholeInventory()
+    for _, optionKey in ipairs({ "WeaponUpgradeDropEarly", "WeaponUpgradeDropLate" }) do
+        local module, _, callbacks = capture()
+        local active = opaque({ occurrence = { id = "N_PreBoss01", overview = { shop = { offers = {
+            { offerKey = "Boon", optionKey = "RandomLoot", source = "ApolloUpgrade" },
+            { offerKey = "MajorNonBoon", optionKey = optionKey, rewardType = "WeaponUpgradeDrop",
+                transactionOwner = "planned-hammer" },
+            { offerKey = "Minor", optionKey = "StackUpgrade" },
+        } } } } }, function() return nil end)
+        local session = stub()
+        session.current = function() return active end
+        session.diagnostic = runtimeSession.diagnostic
+        local state = { state = "synchronized", diagnostics = {} }
+        attachFeatureHooks(module, session, function() return state end, function() end, session)
+        -- StoreData.WorldShop: both eligibility rows use the same native name,
+        -- never the planner's Early/Late option keys. Alternatives expose a full-store fallback.
+        local native = { GroupsOf = {
+            { Offers = 1, OptionsData = { { Name = "BlindBoxLoot" }, { Name = "RandomLoot" } } },
+            { Offers = 1, OptionsData = {
+                { Name = "ArmorBoost" },
+                { Name = "WeaponUpgradeDrop", ReplaceRequirements = { NamedRequirements = { "HammerLootRequirements" } } },
+                { Name = "WeaponUpgradeDrop", ReplaceRequirements = { NamedRequirements = { "LateHammerLootRequirements" } } },
+            } },
+            { Offers = 1, OptionsData = { { Name = "StoreRewardRandomStack" }, { Name = "StackUpgrade" } } },
+        } }
+        local result = callbacks.FillInShopOptions(nil, {}, function(args)
+            local groups = args.StoreData.GroupsOf
+            lu.assertEquals(#groups[1].OptionsData, 1)
+            lu.assertEquals(#groups[2].OptionsData, 2)
+            lu.assertEquals(#groups[3].OptionsData, 1)
+            lu.assertEquals(groups[2].OptionsData[2].ReplaceRequirements.NamedRequirements,
+                { "LateHammerLootRequirements" })
+            lu.assertEquals(callbacks.GetEligibleInteractedGod(nil, {}, function() return "DemeterUpgrade" end),
+                "ApolloUpgrade")
+            return { StoreOptions = { groups[1].OptionsData[1], groups[2].OptionsData[1], groups[3].OptionsData[1] } }
+        end, { StoreData = native })
+        lu.assertEquals(result.StoreOptions[1].Name, "RandomLoot")
+        lu.assertEquals(result.StoreOptions[2].Name, "WeaponUpgradeDrop")
+        lu.assertEquals(result.StoreOptions[2].__runPlannerTransactionOwner, "planned-hammer")
+        lu.assertEquals(result.StoreOptions[3].Name, "StackUpgrade")
+        lu.assertEquals(#native.GroupsOf[2].OptionsData, 3)
+        lu.assertEquals(state.diagnostics, {})
+        lu.assertEquals(state.state, "synchronized")
+    end
+end
+
 
 
 function TestFeatureInteractionHooks.testUninteractedWellLeavesNativeInventoryUntouched()

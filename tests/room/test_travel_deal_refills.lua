@@ -154,6 +154,36 @@ function TestTravelDealRefills.testWorldShopSpellRefillUsesThePublishedResolvedD
     lu.assertEquals(diagnostics, {})
 end
 
+function TestTravelDealRefills.testWorldShopHammerRefillUsesNativeNameForBothEligibilityAliases()
+    for _, optionKey in ipairs({ "WeaponUpgradeDropEarly", "WeaponUpgradeDropLate" }) do
+        local callbacks, refill, diagnostics, begins, completions = harness("worldShop")
+        refill.source.offerKey = "MajorNonBoon"
+        refill.replacement = {
+            slotIndex = 1, groupIndex = 1, optionKey = optionKey,
+            reward = { rewardType = "WeaponUpgradeDrop", producerLifecycleKey = "WorldShop" },
+        }
+        -- StoreData.WorldShop's native Hammer item; do not manufacture an alias-named item.
+        local hammer = { Name = "WeaponUpgradeDrop" }
+        local storeData = { GroupsOf = {
+            { OptionsData = { { Name = "RandomLoot" } } },
+            { OptionsData = { { Name = "MaxHealthDrop" }, hammer } },
+            { OptionsData = { { Name = "StackUpgrade" } } },
+        } }
+        local generated = callbacks.RestockWorldItem(nil, {}, function()
+            return fill(callbacks, storeData, function(args)
+                lu.assertEquals(args.StoreData.GroupsOf, { { Offers = 1, OptionsData = { hammer } } })
+            end)
+        end, 2, 91, {})
+        lu.assertNil(generated.StoreOptions[1])
+        lu.assertEquals(generated.StoreOptions[2].Name, "WeaponUpgradeDrop")
+        lu.assertEquals(generated.StoreOptions[2].__runPlannerGenerationKey, "travelDealRefill")
+        lu.assertEquals(#storeData.GroupsOf[2].OptionsData, 2)
+        lu.assertEquals(begins(), 1)
+        lu.assertEquals(completions(), 1)
+        lu.assertEquals(diagnostics, {})
+    end
+end
+
 function TestTravelDealRefills.testWorldShopRefillConstructionMissDiagnosesAndCompletesAtNativeTerminal()
     local callbacks, _, diagnostics, begins, completions = harness("worldShop")
     local nativeCalls = 0
