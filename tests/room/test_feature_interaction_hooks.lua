@@ -290,15 +290,13 @@ function TestFeatureInteractionHooks.testUninteractedPoolLeavesNativeSaleMenuUnt
         purgingPool = { interacted = false },
     } } }, function() return nil end)
     local session = stub()
-    session.current = function() return active end
-    attachFeatureHooks(module, session, function() return {} end, function() end, session)
-
-    local priorRun = _G.CurrentRun
-    _G.CurrentRun = { CurrentRoom = { SellOptions = nativeOptions } }
-    callbacks.CreateSellButtons(nil, {}, function() return true end, {})
-    _G.CurrentRun = priorRun
-
-    lu.assertEquals(_G.CurrentRun, priorRun)
+    session.occurrence = function() return active.occurrence end
+    attachFeatureHooks(module, session, function() return { state = "synchronized" } end, function() end, session)
+    local nativeRoom = { __runPlannerExecutionRoomId = "pool", SellOptions = nativeOptions }
+    callbacks.HandleSecretSpawns(nil, {}, function()
+        nativeRoom.SellTraitShop = {}
+    end, { CurrentRoom = nativeRoom })
+    lu.assertNil(callbacks.CreateSellButtons)
     lu.assertEquals(nativeOptions, { { Name = "TraitA" }, { Name = "TraitB" } })
 end
 
@@ -311,12 +309,14 @@ function TestFeatureInteractionHooks.testInteractedPoolSteersOnlyTheNativeSaleMe
         } },
     } } }, function() return nil end)
     local session = stub()
-    session.current = function() return active end
-    attachFeatureHooks(module, session, function() return {} end, function() end, session)
+    session.occurrence = function() return active.occurrence end
+    local state = { state = "synchronized" }
+    attachFeatureHooks(module, session, function() return state end, function() end, session)
 
     local priorRun = _G.CurrentRun
     local nativeOptions = { { Name = "TraitA" }, { Name = "TraitC" } }
     local nativeRoom = {
+        __runPlannerExecutionRoomId = "pool",
         SellOptions = nativeOptions,
         SellValues = {
             TraitA = { Name = "TraitA", Value = 10 },
@@ -330,14 +330,95 @@ function TestFeatureInteractionHooks.testInteractedPoolSteersOnlyTheNativeSaleMe
     -- from the random rows.  The authored menu must recover both.
     nativeRoom.SellValues.TraitA = nil
     nativeRoom.SellOptions = { { Name = "TraitA", Value = 10 } }
-    callbacks.CreateSellButtons(nil, {}, function() return true end, {})
+    callbacks.HandleSecretSpawns(nil, {}, function()
+        nativeRoom.SellTraitShop = {}
+    end, { CurrentRoom = nativeRoom })
     _G.CurrentRun = priorRun
 
     lu.assertEquals(nativeRoom.SellOptions[1].Name, "TraitB")
     lu.assertEquals(nativeRoom.SellOptions[2].Name, "TraitA")
+    lu.assertNil(nativeRoom.SellValues.TraitA)
+    lu.assertNil(nativeRoom.SellValues.TraitB)
+    lu.assertNotNil(nativeRoom.SellValues.TraitC)
+    lu.assertTrue(nativeRoom.__runPlannerPoolInventoryInstalled)
+    lu.assertNil(callbacks.CreateSellButtons)
+    lu.assertNil(callbacks.GenerateSellTraitShop)
     lu.assertNil(callbacks.HandleSellChoiceSelection)
 end
 
+
+function TestFeatureInteractionHooks.testPoolInstallationUsesSetupRoomBeforeSessionEntryAndDoesNotReplay()
+    local module, _, callbacks = capture()
+    local state = { state = "synchronized" }
+    local rooms = {
+        first = { overview = { purgingPool = { interacted = true, traits = { { traitKey = "A" } } } } },
+        second = { overview = { purgingPool = { interacted = true, traits = { { traitKey = "B" } } } } },
+    }
+    local session = { diagnostic = function() error("unexpected diagnostic") end }
+    local room = { occurrence = function(_, native) return rooms[native.__runPlannerExecutionRoomId] end }
+    require("mods.room.features.inventory.purging_pool_hooks").attach(
+        module, session, function() return state end, function() end, room)
+    local first = { __runPlannerExecutionRoomId = "first" }
+    local second = { __runPlannerExecutionRoomId = "second" }
+    local priorRun = _G.CurrentRun
+    _G.CurrentRun = { CurrentRoom = first }
+    local function generate(run)
+        run.CurrentRoom.SellTraitShop = {}
+        run.CurrentRoom.SellValues = { A = { Name = "A", Value = 10 } }
+        run.CurrentRoom.SellOptions = { [2] = { Name = "B", Value = 20 } }
+        return "native-result"
+    end
+    lu.assertEquals(callbacks.HandleSecretSpawns(nil, {}, generate, { CurrentRoom = second }), "native-result")
+    lu.assertEquals(second.SellOptions, { { Name = "B", Value = 20 } })
+    lu.assertNil(first.SellOptions)
+    callbacks.HandleSecretSpawns(nil, {}, generate, { CurrentRoom = first })
+    lu.assertEquals(first.SellOptions, { { Name = "A", Value = 10 } })
+    -- Native sale leaves a sparse list; neither menu rebuilding nor NPC calls
+    -- have a pool hook. Even repeated setup cannot reinstall the sold row.
+    first.SellOptions[1] = nil
+    callbacks.HandleSecretSpawns(nil, {}, function() end, { CurrentRoom = first })
+    lu.assertEquals(first.SellOptions, {})
+    -- Reroll/refresh remains native, including after a resumed room's marker
+    -- has been stripped: an already-created pool is not initial generation.
+    first.__runPlannerPoolInventoryInstalled = nil
+    first.SellOptions = { { Name = "B", Value = 20 } }
+    callbacks.HandleSecretSpawns(nil, {}, function() end, { CurrentRoom = first })
+    lu.assertEquals(first.SellOptions[1].Name, "B")
+    lu.assertNil(callbacks.GenerateSellTraitShop)
+    lu.assertNil(callbacks.CreateSellButtons)
+    _G.CurrentRun = priorRun
+end
+
+function TestFeatureInteractionHooks.testPoolInstallationFailureIsAtomicAndUnboundSetupPassesThrough()
+    local module, _, callbacks = capture()
+    local state = { state = "synchronized" }
+    local diagnostics = {}
+    local occurrence = { overview = { purgingPool = { interacted = true,
+        traits = { { traitKey = "A" }, { traitKey = "Missing" } },
+    } } }
+    local room = { occurrence = function() return occurrence end }
+    require("mods.room.features.inventory.purging_pool_hooks").attach(module,
+        { diagnostic = function(_, checkpoint) diagnostics[#diagnostics + 1] = checkpoint end },
+        function() return state end, function() end, room)
+    local function generate(run)
+        run.CurrentRoom.SellTraitShop = {}
+        run.CurrentRoom.SellValues = { A = { Name = "A", Value = 10 } }
+        run.CurrentRoom.SellOptions = { { Name = "B", Value = 20 } }
+    end
+    local nativeRoom = { __runPlannerExecutionRoomId = "pool" }
+    callbacks.HandleSecretSpawns(nil, {}, generate, { CurrentRoom = nativeRoom })
+    lu.assertEquals(diagnostics, { "purging-pool-inventory" })
+    lu.assertEquals(nativeRoom.SellOptions[1].Name, "B")
+    lu.assertNotNil(nativeRoom.SellValues.A)
+    lu.assertNil(nativeRoom.__runPlannerPoolInventoryInstalled)
+    for _, runState in ipairs({ "synchronized", "desynchronized" }) do
+        state.state = runState
+        local unbound = {}
+        callbacks.HandleSecretSpawns(nil, {}, generate, { CurrentRoom = unbound })
+        lu.assertEquals(unbound.SellOptions[1].Name, "B")
+    end
+    lu.assertEquals(#diagnostics, 1)
+end
 
 function TestFeatureInteractionHooks.testSuccessfulNativeKeepsakeEquipCompletesTheRackTransaction()
     local module, _, callbacks = capture()

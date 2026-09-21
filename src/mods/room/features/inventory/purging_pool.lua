@@ -11,7 +11,7 @@ function poolInventory.steer(occurrence, nativeRoom)
     for key, option in pairs(nativeRoom.SellValues) do available[key] = option end
     -- GenerateSellTraitShop removes random selections from SellValues after
     -- placing them in SellOptions. Together they are one legal candidate set.
-    for _, option in ipairs(nativeRoom.SellOptions or {}) do
+    for _, option in pairs(nativeRoom.SellOptions or {}) do
         if type(option) == "table" and option.Name ~= nil then available[option.Name] = option end
     end
     local selected = {}
@@ -25,6 +25,10 @@ function poolInventory.steer(occurrence, nativeRoom)
             selected[#selected + 1] = option
         end
     end
+    -- Preserve the native partition: selected rows are not leftover candidates.
+    -- Rerolls may then use the remaining domain without replaying our selection.
+    for _, option in ipairs(selected) do available[option.Name] = nil end
+    nativeRoom.SellValues = available
     nativeRoom.SellOptions = selected
     return true
 end

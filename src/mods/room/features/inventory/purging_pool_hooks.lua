@@ -1,48 +1,34 @@
--- Purging Pool inventory contacts over the native legal sale domain.
-local current = type(import) == "function"
-    and import("mods/room/features/inventory/current.lua")
-    or require("mods.room.features.inventory.current")
+-- Install the authored pool once, where native room setup creates it.
 local poolInventory = type(import) == "function"
     and import("mods/room/features/inventory/purging_pool.lua")
     or require("mods.room.features.inventory.purging_pool")
 local hooks = {}
 
-local function isNemesisTradeSellShop(nativeRoom, args)
-    return nativeRoom == (_G.CurrentRun and _G.CurrentRun.CurrentRoom)
-        and type(args) == "table" and args.SellOptionCount == 1 and args.PrioritizeCommonTraits == true
-end
-
-local function steer(session, state, active, nativeRoom)
-    local ok, errorValue = poolInventory.steer(active and active.occurrence, nativeRoom)
-    if not ok then
-        session.diagnostic(state, errorValue.checkpoint, {
-            expected = errorValue.expected, observed = errorValue.observed,
-        })
-    end
-end
-
-function hooks.attach(module, session, getState, report, room, route)
-    module.hooks.wrap("GenerateSellTraitShop", "run-planner-pool-inventory", function(_, runtime, base,
-        nativeRoom, args)
-        if isNemesisTradeSellShop(nativeRoom, args) then return base(nativeRoom, args) end
+function hooks.attach(module, session, getState, report, room)
+    module.hooks.wrap("HandleSecretSpawns", "run-planner-pool-inventory", function(_, runtime, base,
+        currentRun)
+        local nativeRoom = currentRun and currentRun.CurrentRoom
         local state = getState(runtime)
-        local active = current.resolve(state, room, route)
-        local result = base(nativeRoom, args)
-        -- Native generation owns legal trait filtering and SellValues.
-        steer(session, state, active, nativeRoom)
-        report(runtime)
-        return result
-    end)
-
-    -- Initial generation can precede room entry; reapply at button creation to
-    -- the already-generated native candidate set.
-    module.hooks.wrap("CreateSellButtons", "run-planner-pool-inventory", function(_, runtime, base, screen)
-        local state = getState(runtime)
-        local active = current.resolve(state, room, route)
-        local nativeRoom = _G.CurrentRun and _G.CurrentRun.CurrentRoom
-        steer(session, state, active, nativeRoom)
-        local result = base(screen)
-        report(runtime)
+        local occurrence
+        if state ~= nil and state.state == "synchronized" and type(nativeRoom) == "table"
+            and nativeRoom.__runPlannerExecutionRoomId ~= nil and nativeRoom.SellTraitShop == nil
+            and not nativeRoom.__runPlannerPoolInventoryInstalled then
+            occurrence = room.occurrence(state, nativeRoom)
+        end
+        local result = base(currentRun)
+        local pool = occurrence and occurrence.overview.purgingPool
+        if pool ~= nil and pool.interacted and nativeRoom.SellTraitShop ~= nil
+            and getState(runtime) == state and state.state == "synchronized" then
+            local ok, errorValue = poolInventory.steer(occurrence, nativeRoom)
+            if ok then
+                nativeRoom.__runPlannerPoolInventoryInstalled = true
+            else
+                session.diagnostic(state, errorValue.checkpoint, {
+                    expected = errorValue.expected, observed = errorValue.observed,
+                })
+            end
+            report(runtime)
+        end
         return result
     end)
 end
