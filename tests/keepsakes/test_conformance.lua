@@ -4,6 +4,30 @@ local conformance = require("mods.keepsakes.conformance")
 
 TestKeepsakeConformance = {}
 
+function TestKeepsakeConformance.testGorgonUseStateIsNotCheckpointEvidence()
+    local proof = require("mods.room.conformance.proof")
+    local expected = { gorgon = { status = "consumed" } }
+    local observed = conformance.read({ Hero = { Traits = {
+        { Name = "AthenaEncounterKeepsake", Slot = "Keepsake", RemainingUses = 1, Rarity = "Epic" },
+    } } }, {}, expected)
+    lu.assertTrue(proof.compareKeepsakes("entry", expected, { gorgon = observed.gorgon }))
+    local occurrence = {
+        roomExitConformance = { facts = { { kind = "keepsakeEffects" }, { kind = "traitInventory" } } },
+        conformanceExpected = { keepsakeEffects = expected, traitInventory = { "InvulnerabilityCastBoon" } },
+    }
+    local function read(kind)
+        if kind == "keepsakeEffects" then return { gorgon = { status = "pending", rarity = "Epic" } } end
+        return {}
+    end
+    local ok, mismatch = proof.prove(occurrence, read)
+    lu.assertNil(ok)
+    lu.assertEquals(mismatch.checkpoint, "room-exit-conformance:traitInventory")
+    lu.assertTrue(proof.prove(occurrence, function(kind)
+        if kind == "traitInventory" then return { "InvulnerabilityCastBoon" } end
+        return { gorgon = { status = "expired" } }
+    end))
+end
+
 function TestKeepsakeConformance.testReadsAllMutableKeepsakeEffectsInOneSparseFact()
     local expected = {
         olympianSources = {},

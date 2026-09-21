@@ -99,7 +99,6 @@ return {
             transcendentEmbryo = "RandomBlessingKeepsake",
             figurine = "BossMetaUpgradeKeepsake",
             figLeaf = "PersistentDionysusSkipKeepsake",
-            gorgon = "AthenaEncounterKeepsake",
         },
     },
     keepsakeEffects = {

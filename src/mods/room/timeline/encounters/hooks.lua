@@ -21,8 +21,6 @@ local nemesis = type(import) == "function" and import("mods/room/timeline/encoun
     or require("mods.room.timeline.encounters.nemesis")
 local figLeaf = type(import) == "function" and import("mods/keepsakes/fig_leaf.lua")
     or require("mods.keepsakes.fig_leaf")
-local gorgon = type(import) == "function" and import("mods/keepsakes/gorgon.lua")
-    or require("mods.keepsakes.gorgon")
 local thessaly = type(import) == "function" and import("mods/room/timeline/encounters/thessaly.lua")
     or require("mods.room.timeline.encounters.thessaly")
 local generated = type(import) == "function" and import("mods/room/timeline/encounters/generated.lua")
@@ -148,7 +146,6 @@ function hooks.attach(module, session, getState, report, room, shipCombat, gener
     typhon.attach(module, session, getState, report, room)
     nemesis.attach(module, session, getState, report, room)
     figLeaf.attach(module, getState, report, room)
-    gorgon.attach(module, getState, report, room)
 end
 
 return hooks

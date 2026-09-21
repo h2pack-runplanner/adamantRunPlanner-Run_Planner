@@ -101,21 +101,21 @@ function TestOrdinaryTraits.testEncounterLootCarriersMatchOnlyTheirPublishedGive
     end
 end
 
-function TestOrdinaryTraits.testArtemisEncounterLootUsesTheOrdinaryOfferLifecycle()
+local function encounterLootUsesTheOrdinaryOfferLifecycle(giver, name, keys)
     local callbacks = {}
     local module = { hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } }
     local state = { state = "synchronized" }
     local active = { occurrence = { overview = {} } }
     local offer = {
-        kind = "traits", giver = "Artemis", selected = "option2",
+        kind = "traits", giver = giver, selected = "option2",
         options = {
-            { key = "SupportingFireBoon", rarity = "Common" },
-            { key = "FocusCritBoon", rarity = "Epic" },
-            { key = "DashOmegaBuffBoon", rarity = "Common" },
+            { key = keys[1], rarity = "Common" },
+            { key = keys[2], rarity = "Epic" },
+            { key = keys[3], rarity = "Common" },
         },
     }
     local transaction = {
-        owner = "artemis", kind = "encounterInteraction",
+        owner = "encounter-offer", kind = "encounterInteraction",
         resolution = { kind = "traitOffer", offer = offer },
     }
     local handle = {}
@@ -144,7 +144,7 @@ function TestOrdinaryTraits.testArtemisEncounterLootUsesTheOrdinaryOfferLifecycl
     }
     hooks.attach(module, session, function() return state end, function() end, room, seaStar)
     local loot = {
-        Name = "NPC_Artemis_Field_01",
+        Name = name,
         UpgradeOptions = {
             { Type = "Trait", ItemName = "CritBonusBoon", Rarity = "Common" },
             { Type = "Trait", ItemName = "InsideCastCritBoon", Rarity = "Common" },
@@ -154,16 +154,52 @@ function TestOrdinaryTraits.testArtemisEncounterLootUsesTheOrdinaryOfferLifecycl
     callbacks.HandleLootPickup(nil, {}, function(_, nativeLoot)
         callbacks.CreateBoonLootButtons(nil, {}, function(_, installed)
             lu.assertEquals(installed.UpgradeOptions, {
-                { Type = "Trait", ItemName = "SupportingFireBoon", Rarity = "Common" },
-                { Type = "Trait", ItemName = "FocusCritBoon", Rarity = "Epic" },
-                { Type = "Trait", ItemName = "DashOmegaBuffBoon", Rarity = "Common" },
+                { Type = "Trait", ItemName = keys[1], Rarity = "Common" },
+                { Type = "Trait", ItemName = keys[2], Rarity = "Epic" },
+                { Type = "Trait", ItemName = keys[3], Rarity = "Common" },
             })
         end, {}, nativeLoot, false, {})
         return callbacks.HandleUpgradeChoiceSelection(nil, {}, function() return true end,
-            {}, { LootData = nativeLoot, Data = { Name = "FocusCritBoon" } }, {})
+            {}, { LootData = nativeLoot, Data = { Name = keys[2] } }, {})
     end, {}, loot, {})
     lu.assertEquals(completed, 1)
     lu.assertEquals(mismatches, {})
+end
+
+function TestOrdinaryTraits.testArtemisEncounterLootUsesTheOrdinaryOfferLifecycle()
+    encounterLootUsesTheOrdinaryOfferLifecycle("Artemis", "NPC_Artemis_Field_01",
+        { "SupportingFireBoon", "FocusCritBoon", "DashOmegaBuffBoon" })
+end
+
+function TestOrdinaryTraits.testUnboundAthenaUsesTheOrdinaryOfferLifecycle()
+    encounterLootUsesTheOrdinaryOfferLifecycle("Athena", "NPC_Athena_01",
+        { "InvulnerabilityCastBoon", "RetaliateInvulnerabilityBoon", "FocusLastStandBoon" })
+end
+
+function TestOrdinaryTraits.testAthenaClaimRequiresItsWindowAndDependencies()
+    local timeline = require("mods.room.timeline.session")
+    local transaction = {
+        owner = "athena", kind = "encounterInteraction", phaseKey = "Cage02",
+        window = { kind = "encounterEnd", phaseKey = "Cage02" },
+        resolution = { kind = "traitOffer", offer = { giver = "Athena", kind = "traits", options = {} } },
+    }
+    local active = timeline.new({
+        transactionsByOwner = { athena = transaction },
+        timeline = { transactions = { transaction },
+            dependencies = { { owner = "athena", afterOwner = "earlier" } }, obligations = {} },
+    })
+    local native = { Name = "NPC_Athena_01" }
+    local contact = { kind = "encounterTraitOffer", gameName = native.Name }
+    local function claim()
+        return timeline.claimReady(active, contact, native, ordinary.encounterTraitOffer)
+    end
+    lu.assertNil(claim())
+    lu.assertTrue(timeline.open(active, "encounterEnd:Cage02"))
+    lu.assertNil(claim())
+    active.completedOwners.earlier = true
+    local handle = claim()
+    lu.assertNotNil(handle)
+    lu.assertEquals(timeline.bound(active, native), handle)
 end
 
 function TestOrdinaryTraits.testOlympianHermesAndHammerShareTheNativeRowContract()

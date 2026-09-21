@@ -155,24 +155,6 @@ function conformance.read(run, gameState, expected)
             activatedThisBiome = activated,
         }
     end
-    if expected.gorgon ~= nil and not json.isNull(expected.gorgon) then
-        local trait = findTrait(run, conformanceBindings.keepsakeTraits.gorgon)
-        local expiredKeepsakes = type(run) == "table" and run.ExpiredKeepsakes or nil
-        local consumed = type(expiredKeepsakes) == "table"
-            and expiredKeepsakes[conformanceBindings.keepsakeTraits.gorgon] == true
-        if type(trait) == "table" and type(trait.RemainingUses) == "number"
-            and trait.RemainingUses <= 0 then
-            consumed = true
-        end
-        if consumed then
-            result.gorgon = { status = "consumed" }
-        elseif type(trait) == "table" and trait.Slot == "Keepsake"
-            and type(trait.RemainingUses) == "number" and trait.RemainingUses > 0 then
-            result.gorgon = { status = "pending", rarity = trait.Rarity }
-        else
-            result.gorgon = { status = "expired" }
-        end
-    end
     if expected.phial ~= nil and not json.isNull(expected.phial) then
         local key = conformanceBindings.keepsakeTraits.phial
         local trait = findTrait(run, key)

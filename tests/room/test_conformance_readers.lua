@@ -659,44 +659,6 @@ function TestConformanceReaders.testPostbossFigLeafAdmissionDoesNotReproveActiva
     lu.assertTrue(differentCharges)
 end
 
-function TestConformanceReaders.testKeepsakeReaderProjectsGorgonPendingConsumedAndExpired()
-    local expected = { gorgon = { status = "pending", rarity = "Epic" } }
-    local run = {
-        Hero = { Traits = {
-            {
-                Name = "AthenaEncounterKeepsake", Slot = "Keepsake",
-                RemainingUses = 1, Rarity = "Epic",
-            },
-        } },
-        ExpiredKeepsakes = {},
-    }
-    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).gorgon, {
-        status = "pending", rarity = "Epic",
-    })
-
-    run.Hero.Traits[1].RemainingUses = 0
-    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).gorgon, {
-        status = "consumed",
-    })
-
-    run.Hero.Traits[1].RemainingUses = 1
-    run.ExpiredKeepsakes.AthenaEncounterKeepsake = true
-    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).gorgon, {
-        status = "consumed",
-    })
-
-    run.ExpiredKeepsakes = {}
-    run.Hero.Traits[1].Slot = nil
-    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).gorgon, {
-        status = "expired",
-    })
-
-    run.Hero.Traits = {}
-    lu.assertEquals(readers.read("keepsakeEffects", run, nil, expected).gorgon, {
-        status = "expired",
-    })
-end
-
 function TestConformanceReaders.testKeepsakeReaderUsesNativeOlympianSourceCharges()
     local expected = {
         olympianSources = {

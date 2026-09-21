@@ -511,7 +511,7 @@ function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHo
 end
 
 function TestRuntimeComposition.testRuntimeCompositionInstallsSupportedHookGroups()
-    local module, names = capture()
+    local module, names, callbacks = capture()
     local hexTree = hexTreeDefinition.create()
     local session = stub()
     local getState, report = function() end, function() end
@@ -531,6 +531,8 @@ function TestRuntimeComposition.testRuntimeCompositionInstallsSupportedHookGroup
         unusedLoadoutScope)
     encounterHooks.attach(module, session, getState, report, session)
     attachFeatureHooks(module, session, getState, report, session, route)
+    lu.assertNil(callbacks.AthenaUse)
+    lu.assertNil(callbacks.HandleAthenaSpawn)
     for _, name in ipairs({
         "ChooseStartingRoom", "StartRoom", "DoUnlockRoomExits", "LeaveRoom",
         "StartEncounter", "EndEncounterEffects", "SetupRoomMultipleEncountersData",
@@ -577,7 +579,6 @@ function TestRuntimeComposition.testKeepsakeAdaptersAreInstalledOnceAtTheirCarri
         { "AddRandomChaosBlessing", "run-planner-embryo" },
         { "GetProcessedTraitData", "run-planner-equip-embryo-values" },
         { "GetProcessedTraitData", "run-planner-embryo-values" },
-        { "AthenaUse", "run-planner-gorgon-athena-use" },
         { "HandleEncounterPreSpawns", "run-planner-fig-leaf-pre-spawns" },
         { "HandleEnemySpawns", "run-planner-fig-leaf-enemy-spawns" },
         { "HasHeroTraitValue", "run-planner-scope-concave-stone-roll" },

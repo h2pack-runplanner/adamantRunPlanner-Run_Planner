@@ -28,6 +28,8 @@ local function keepsakeCheckpoint(value, requireActivation, expected)
     if type(value) ~= "table" then return value end
     local result = {}
     for key, entry in pairs(value) do result[key] = entry end
+    -- Athena acquisition is proved by trait inventory, not keepsake-use bookkeeping.
+    result.gorgon = nil
     result.figLeaf = nil
     if requireActivation then
         result.figLeaf = {

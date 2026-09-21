@@ -366,52 +366,6 @@ function TestEncounters.testUnboundEncounterDoesNotOpenPlannedAfterCombat()
     lu.assertEquals(opened, {})
 end
 
-function TestEncounters.testAthenaUseBindsOnlyThePublishedExactPhaseInteraction()
-    local module, callbacks = capture()
-    local state = { state = "synchronized" }
-    local active = { occurrence = { overview = { encounterPhases = {
-        { slotKey = "phase", encounterKey = "Encounter" },
-    } } } }
-    local nativeEncounter = { Name = "Encounter" }
-    local athena = { Name = "NPC_Athena_Field_01" }
-    local handle = {}
-    local bound
-    local resolvedContact
-    local payload = {
-        transaction = {
-            kind = "encounterInteraction",
-            resolution = { kind = "traitOffer", offer = { kind = "traits", giver = "Athena" } },
-        },
-    }
-    local priorRun = _G.CurrentRun
-    _G.CurrentRun = { CurrentRoom = { Encounter = nativeEncounter } }
-    local room = {
-        current = function() return active end,
-        encounterPhase = function(_, encounter)
-            return encounter == nativeEncounter and active.occurrence.overview.encounterPhases[1] or nil
-        end,
-        encounterHandle = function(_, source)
-            resolvedContact = { kind = "encounterInteraction", phaseKey = "phase" }
-            bound = { handle = handle, native = source }
-            return handle
-        end,
-        peek = function(_, value) return value == handle and payload or nil end,
-    }
-    encounterHooks.attach(module, {}, function() return state end, function() end, room)
-    local result, resultArgs, resultUser = callbacks.AthenaUse(nil, {}, function(source, args, user)
-        return source, args, user
-    end, athena, { value = 1 }, { id = 2 })
-    _G.CurrentRun = priorRun
-
-    lu.assertEquals(result, athena)
-    lu.assertEquals(resultArgs, { value = 1 })
-    lu.assertEquals(resultUser, { id = 2 })
-    lu.assertEquals(resolvedContact, { kind = "encounterInteraction", phaseKey = "phase" })
-    lu.assertEquals(bound, { handle = handle, native = athena })
-    lu.assertNil(callbacks.HandleAthenaSpawn)
-    lu.assertNil(callbacks.StartEncounterEffects)
-end
-
 function TestEncounters.testDirectEncounterChoicesAreBoundToOnePublishedSequence()
     local module, callbacks = capture()
     local phasesForRoom = require("mods.room.timeline.encounters.phases").create()
