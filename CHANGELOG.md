@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.7.14] - 2026-09-21
+
+### Fixed
+
+- executor: install purging pool inventory once at room setup (565a4a9)
+
 ## [0.7.13] - 2026-09-20
 
 ### Fixed
