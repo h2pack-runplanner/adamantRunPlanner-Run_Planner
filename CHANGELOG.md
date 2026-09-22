@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-22
+
+### Fixed
+
+- executor: reduce gorgon amulet implementation to match its contract (
+618a8e)
+
 ## [0.7.14] - 2026-09-21
 
 ### Fixed
