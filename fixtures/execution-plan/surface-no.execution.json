@@ -413,7 +413,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": [],
@@ -512,11 +513,11 @@
                 "callingCard": null,
                 "timePiece": null,
                 "figLeaf": null,
-                "gorgon": null,
                 "phial": null,
                 "figurine": null,
                 "stone": null,
-                "transcendentEmbryo": null
+                "transcendentEmbryo": null,
+                "gorgon": null
               },
               "steadyGrowth": [],
               "hermesShrineDeliveries": [],
@@ -553,7 +554,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": ["ApolloUpgrade"],
@@ -946,7 +948,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         },
@@ -972,7 +975,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "traits": {
               "equipped": [
@@ -1407,7 +1411,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -1608,7 +1613,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "traits": {
               "equipped": [
@@ -1708,65 +1714,22 @@
             },
             "traits": {
               "equipped": [
-                {
-                  "traitKey": "ApolloWeaponBoon",
-                  "rarity": "Common",
-                  "level": 1
-                },
-                {
-                  "traitKey": "AresSpecialBoon",
-                  "rarity": "Common",
-                  "level": 1
-                },
-                {
-                  "traitKey": "HermesWeaponBoon",
-                  "rarity": "Common"
-                },
-                {
-                  "traitKey": "HephaestusCastBoon",
-                  "rarity": "Common",
-                  "level": 1
-                },
-                {
-                  "traitKey": "AresSprintBoon",
-                  "rarity": "Common",
-                  "level": 1
-                }
+                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 }
               ],
               "slots": [
-                {
-                  "slot": "Melee",
-                  "traitKey": "ApolloWeaponBoon"
-                },
-                {
-                  "slot": "Secondary",
-                  "traitKey": "AresSpecialBoon"
-                },
-                {
-                  "slot": "Ranged",
-                  "traitKey": "HephaestusCastBoon"
-                },
-                {
-                  "slot": "Rush",
-                  "traitKey": "AresSprintBoon"
-                },
-                {
-                  "slot": "Mana"
-                },
-                {
-                  "slot": "Spell"
-                }
+                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
+                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
+                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
+                { "slot": "Rush", "traitKey": "AresSprintBoon" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
               ],
-              "elements": {
-                "Aether": 0,
-                "Earth": 5,
-                "Air": 1,
-                "Fire": 0,
-                "Water": 0
-              },
-              "godRarityCounts": {
-                "Common": 5
-              },
+              "elements": { "Aether": 0, "Earth": 5, "Air": 1, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Common": 5 },
               "upgradableCount": 4,
               "bannedTraitKeys": []
             }
@@ -2410,7 +2373,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -2534,7 +2498,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -2665,7 +2630,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -3082,7 +3048,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "traits": {
               "equipped": [
@@ -3423,5 +3390,5 @@
       }
     }
   ],
-  "planFingerprint": "76d49506"
+  "planFingerprint": "ec1fdecc"
 }

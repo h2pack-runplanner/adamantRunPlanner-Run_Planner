@@ -412,7 +412,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": [],
@@ -552,7 +553,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": ["ApolloUpgrade"],
@@ -696,7 +698,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -823,7 +826,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": ["ApolloUpgrade", "ZeusUpgrade"],
@@ -992,7 +996,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -1135,7 +1140,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "traits": {
               "equipped": [
@@ -1291,7 +1297,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -1430,7 +1437,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": ["ApolloUpgrade", "HeraUpgrade", "ZeusUpgrade"],
@@ -1601,7 +1609,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -1726,7 +1735,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "traits": {
               "equipped": [
@@ -1882,7 +1892,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -2018,7 +2029,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -2344,14 +2356,13 @@
             "room": { "id": "golden-g-b1-e1", "biomeKey": "G", "gameName": "G_Combat01" },
             "zagreusContractPresent": false,
             "reward": {
-              "rewardType": "Boon",
+              "rewardType": "MetaCurrencyBigDrop",
               "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress",
-              "source": "HeraUpgrade"
+              "resolvedStoreKey": "MetaProgress"
             }
           }
         ],
-        "resolvedSharedRewardStoreKey": "RunProgress"
+        "resolvedSharedRewardStoreKey": "MetaProgress"
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "stygianWell" }] },
       "diagnostics": {
@@ -2406,8 +2417,8 @@
               "roomHistoryOrdinal": 15
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 20 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 8 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 3 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 7 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -2416,7 +2427,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -2430,10 +2442,9 @@
       "kind": "SingleEncounter",
       "overview": {
         "incomingReward": {
-          "rewardType": "Boon",
+          "rewardType": "MetaCurrencyBigDrop",
           "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "RunProgress",
-          "source": "HeraUpgrade"
+          "resolvedStoreKey": "MetaProgress"
         },
         "encounterPhases": [
           { "slotKey": "Encounter", "encounterKey": "GeneratedG", "kind": "combat" }
@@ -2549,8 +2560,8 @@
               "roomHistoryOrdinal": 16
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 20 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 3 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 5 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -2559,7 +2570,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "chaos": {
               "active": [
@@ -2685,8 +2697,8 @@
               "roomHistoryOrdinal": 17
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 17 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 18 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 5 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -2695,7 +2707,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "chaos": {
               "active": [
@@ -2794,9 +2807,9 @@
             "room": { "id": "golden-g-b4-e1", "biomeKey": "G", "gameName": "G_Combat06" },
             "zagreusContractPresent": false,
             "reward": {
-              "rewardType": "SpellDrop",
+              "rewardType": "MetaCardPointsCommonBigDrop",
               "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
+              "resolvedStoreKey": "MetaProgress"
             }
           },
           {
@@ -2805,13 +2818,13 @@
             "room": { "id": "golden-g-b4-e2", "biomeKey": "G", "gameName": "G_Combat07" },
             "zagreusContractPresent": false,
             "reward": {
-              "rewardType": "StackUpgrade",
+              "rewardType": "GiftDrop",
               "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
+              "resolvedStoreKey": "MetaProgress"
             }
           }
         ],
-        "resolvedSharedRewardStoreKey": "RunProgress"
+        "resolvedSharedRewardStoreKey": "MetaProgress"
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "chaos" }] },
       "diagnostics": {
@@ -2833,8 +2846,8 @@
               "roomHistoryOrdinal": 18
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 15 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 18 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 16 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -2843,7 +2856,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "chaos": {
               "active": [
@@ -2915,9 +2929,9 @@
       "kind": "SingleEncounter",
       "overview": {
         "incomingReward": {
-          "rewardType": "SpellDrop",
+          "rewardType": "MetaCardPointsCommonBigDrop",
           "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "RunProgress"
+          "resolvedStoreKey": "MetaProgress"
         },
         "encounterPhases": [
           { "slotKey": "Encounter", "encounterKey": "GeneratedG", "kind": "combat" }
@@ -2931,9 +2945,9 @@
             "owner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b4-e1\\\"]\",\"self\"]",
             "sourceOwner": "[\"incomingReward\",\"Underworld\",\"G\",\"golden-g-b4-e1\"]",
             "reward": {
-              "rewardType": "SpellDrop",
+              "rewardType": "MetaCardPointsCommonBigDrop",
               "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
+              "resolvedStoreKey": "MetaProgress"
             },
             "producerLifecycleKey": "RoomReward",
             "roles": [
@@ -2941,30 +2955,11 @@
                 "role": "self",
                 "disposition": "normal",
                 "lifecyclePoint": "roomRewardPickup",
-                "kind": "loot",
-                "gameName": "SpellDrop",
+                "kind": "resource",
+                "gameName": "MetaCardPointsCommonBigDrop",
                 "settlement": {
                   "site": "[\"acquisitionSite\",\"Underworld\",\"G\",\"[\\\"occurrence\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b4-e1\\\"]\",\"roomRewardPickup\"]",
                   "entry": "[\"acquisitionEntry\",\"Underworld\",\"G\",\"[\\\"acquisitionSite\\\",\\\"Underworld\\\",\\\"G\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Underworld\\\\\\\",\\\\\\\"G\\\\\\\",\\\\\\\"golden-g-b4-e1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
-                },
-                "traitOffer": {
-                  "kind": "traits",
-                  "giver": "SpellDrop",
-                  "options": [
-                    { "key": "SpellPolymorphTrait" },
-                    { "key": "SpellMeteorTrait" },
-                    { "key": "SpellTransformTrait" }
-                  ],
-                  "selected": "option1",
-                  "hexTree": {
-                    "layoutKey": "Lung",
-                    "rareTalentKeys": ["PolymorphBossDamageTalent", "PolymorphDeathExplodeTalent"],
-                    "epicTalentKeys": ["PolymorphSandwichTalent"],
-                    "godSent": {
-                      "olympianTalentKey": "PolymorphZeusTalent",
-                      "lineageTalentKey": "OlympianSpellCountTalent"
-                    }
-                  }
                 }
               }
             ],
@@ -3003,14 +2998,7 @@
         ],
         "resolvedSharedRewardStoreKey": "RunProgress"
       },
-      "roomExitConformance": {
-        "facts": [
-          { "kind": "elementCounts" },
-          { "kind": "traitInventory" },
-          { "kind": "chaos" },
-          { "kind": "pathOfStars" }
-        ]
-      },
+      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }, { "kind": "chaos" }] },
       "diagnostics": {
         "roomEntered": {
           "frame": 36,
@@ -3030,8 +3018,8 @@
               "roomHistoryOrdinal": 19
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 14 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 17 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 16 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -3040,46 +3028,12 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
-            "traits": {
-              "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 2 },
-                { "traitKey": "ZeusSpecialBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "HeraCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "RestockBoon", "rarity": "Epic" },
-                { "traitKey": "SpellPolymorphTrait" }
-              ],
-              "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "ZeusSpecialBoon" },
-                { "slot": "Ranged", "traitKey": "HeraCastBoon" },
-                { "slot": "Rush" },
-                { "slot": "Mana" },
-                { "slot": "Spell", "traitKey": "SpellPolymorphTrait" }
-              ],
-              "elements": { "Aether": 0, "Earth": 0, "Air": 3, "Fire": 1, "Water": 0 },
-              "godRarityCounts": { "Common": 3, "Epic": 1 },
-              "upgradableCount": 3,
-              "bannedTraitKeys": []
-            },
             "chaos": {
               "active": [],
               "matured": [{ "blessingKey": "ChaosWeaponBlessing", "rarity": "Common" }]
-            },
-            "hexProgress": {
-              "spellTraitKey": "SpellPolymorphTrait",
-              "layoutKey": "Lung",
-              "talentKeys": [
-                "PolymorphBossDamageTalent",
-                "PolymorphDeathExplodeTalent",
-                "PolymorphSandwichTalent",
-                "PolymorphZeusTalent",
-                "OlympianSpellCountTalent"
-              ],
-              "closed": false,
-              "bankedPathPoints": 0,
-              "investedPathPoints": 0
             }
           }
         }
@@ -3093,9 +3047,9 @@
       "kind": "SingleEncounter",
       "overview": {
         "incomingReward": {
-          "rewardType": "StackUpgrade",
+          "rewardType": "GiftDrop",
           "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "RunProgress"
+          "resolvedStoreKey": "MetaProgress"
         },
         "encounterPhases": [
           { "slotKey": "Encounter", "encounterKey": "GeneratedG", "kind": "combat" }
@@ -3194,8 +3148,8 @@
               "roomHistoryOrdinal": 20
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 15 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 16 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -3204,7 +3158,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -3355,8 +3310,8 @@
               "roomHistoryOrdinal": 21
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 4 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 15 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 14 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -3365,7 +3320,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": [
@@ -3387,7 +3343,6 @@
                 { "traitKey": "ZeusSpecialBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "HeraCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "RestockBoon", "rarity": "Epic" },
-                { "traitKey": "SpellPolymorphTrait" },
                 { "traitKey": "HestiaWeaponBoon", "rarity": "Rare", "level": 2 }
               ],
               "slots": [
@@ -3396,7 +3351,7 @@
                 { "slot": "Ranged", "traitKey": "HeraCastBoon" },
                 { "slot": "Rush" },
                 { "slot": "Mana" },
-                { "slot": "Spell", "traitKey": "SpellPolymorphTrait" }
+                { "slot": "Spell" }
               ],
               "elements": { "Aether": 0, "Earth": 0, "Air": 2, "Fire": 2, "Water": 0 },
               "godRarityCounts": { "Common": 2, "Epic": 1, "Rare": 1 },
@@ -3536,8 +3491,8 @@
               "roomHistoryOrdinal": 22
             },
             "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 11 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 4 } },
+              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 14 } },
+              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 14 } },
               { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 10 } },
               { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 23 } },
               { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
@@ -3546,7 +3501,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -3775,5 +3731,5 @@
       }
     }
   ],
-  "planFingerprint": "88079ecb"
+  "planFingerprint": "bf816109"
 }
