@@ -4,7 +4,39 @@ local spell = require("mods.room.timeline.acquisitions.spell.hooks")
 
 TestSpellAcquisitions = {}
 
-function TestSpellAcquisitions.testShopSpellPregeneratesBeforeSpawnReturnsAndInstallsTheSelectedTree()
+function TestSpellAcquisitions:setUp()
+    self.oldSession = _G.SessionMapState
+    self.oldPregenerate = _G.PregenerateSpells
+end
+
+function TestSpellAcquisitions:tearDown()
+    _G.SessionMapState = self.oldSession
+    _G.PregenerateSpells = self.oldPregenerate
+end
+
+-- Native pregeneration consumes GetEligibleSpells and records offer-dependent
+-- God Sent eligibility. Tests supply the native eligibility result, not planner policy.
+local function nativePregeneration(callbacks)
+    _G.SessionMapState = { SelectedSpells = { "Other" },
+        DuoTalentEligible = true, DuoTalentEligibleSpell = { Other = true },
+        DuoTalentEligibleGender = { Stale = true } }
+    _G.PregenerateSpells = function(screen)
+        _G.SessionMapState.SelectedSpells = {}
+        local pool = callbacks.GetEligibleSpells(nil, nil, function() return { "Other" } end, screen)
+        while #pool > 0 do
+            local name = callbacks.RemoveRandomValue(nil, nil,
+                function(values) return table.remove(values) end, pool)
+            table.insert(_G.SessionMapState.SelectedSpells, name)
+            if _G.SpellData[name].nativeGodSent then
+                _G.SessionMapState.DuoTalentEligible = true
+                _G.SessionMapState.DuoTalentEligibleSpell[name] = true
+                _G.SessionMapState.DuoTalentEligibleGender.Female = true
+            end
+        end
+    end
+end
+
+local function assertScreenInstallation(isShop)
     local room = require("mods.room.coordinator")
     local callbacks = {}
     local module = { hooks = { wrap = function(name, _, callback)
@@ -23,7 +55,7 @@ function TestSpellAcquisitions.testShopSpellPregeneratesBeforeSpawnReturnsAndIns
     local offer = {
         kind = "traits", giver = "SpellDrop", selected = "option1",
         options = {
-            { key = "SpellPolymorphTrait" }, { key = "SpellMeteorTrait" }, { key = "SpellTransformTrait" },
+            { key = "SpellPolymorphTrait" }, { key = "SpellMeteorTrait" }, { key = "SpellSummonTrait" },
         },
         hexTree = { layoutKey = "Nacelle", rareTalentKeys = { "PolymorphBossDamageTalent" },
             epicTalentKeys = { "PolymorphSandwichTalent" } },
@@ -52,8 +84,8 @@ function TestSpellAcquisitions.testShopSpellPregeneratesBeforeSpawnReturnsAndIns
     local restore = require("tests.harness.native_game").install({
         SpellData = {
             Heal = { TraitName = "SpellHealTrait" }, Beam = { TraitName = "SpellLaserTrait" },
-            Polymorph = { TraitName = "SpellPolymorphTrait" }, Meteor = { TraitName = "SpellMeteorTrait" },
-            Transform = { TraitName = "SpellTransformTrait" },
+            Polymorph = { TraitName = "SpellPolymorphTrait", nativeGodSent = isShop },
+            Meteor = { TraitName = "SpellMeteorTrait" }, Summon = { TraitName = "SpellSummonTrait" },
         },
         SessionMapState = {},
     })
@@ -61,34 +93,54 @@ function TestSpellAcquisitions.testShopSpellPregeneratesBeforeSpawnReturnsAndIns
         return invoke("RemoveRandomValue", function(pool) return table.remove(pool, 1) end, values)
     end
     local ok, failure = pcall(function()
-        local item = invoke("SpawnStoreItemInWorld", function()
+        nativePregeneration(callbacks)
+        local function spawn()
             local native = { Name = "SpellDrop", SetupEvents = { { FunctionName = "PregenerateSpells" } } }
             -- Native CreateConsumableItemFromData runs SetupEvents before returning the item.
             invoke("RunEventsGeneric", function(_, source)
                 invoke("PregenerateSpells", function()
                     _G.SessionMapState.SelectedSpells = {}
-                    local eligible = { "Heal", "Beam", "Polymorph", "Meteor", "Transform" }
+                    local eligible = { "Heal", "Beam", "Polymorph", "Meteor", "Summon" }
                     for index = 1, 3 do _G.SessionMapState.SelectedSpells[index] = removeRandom(eligible) end
                 end, source)
             end, native.SetupEvents, native)
             return native
-        end, { Name = "SpellDrop", __runPlannerWorldShop = true,
-            __runPlannerTransactionOwner = transaction.owner }, 10)
-        lu.assertEquals(_G.SessionMapState.SelectedSpells, { "Polymorph", "Meteor", "Transform" })
-        lu.assertNotNil(room.bound(state, active, item))
+        end
+        local item
+        if isShop then
+            item = invoke("SpawnStoreItemInWorld", spawn, { Name = "SpellDrop", __runPlannerWorldShop = true,
+                __runPlannerTransactionOwner = transaction.owner }, 10)
+        else
+            item = spawn()
+        end
+        lu.assertEquals(_G.SessionMapState.SelectedSpells, { "Heal", "Beam", "Polymorph" })
+        if isShop then lu.assertNotNil(room.bound(state, active, item))
+        else lu.assertNil(room.bound(state, active, item)) end
         lu.assertEquals(completions, 0)
         assert(room.window(state, "postOutgoing"))
         local installed
         invoke("OpenSpellScreen", function(source)
             local screen = { Source = source, Components = {} }
             invoke("CreateSpellButtons", function(value)
+                lu.assertEquals(_G.SessionMapState.SelectedSpells, { "Polymorph", "Meteor", "Summon" })
+                lu.assertEquals(_G.SessionMapState.DuoTalentEligibleSpell,
+                    isShop and { Polymorph = true } or {})
+                lu.assertEquals(_G.SessionMapState.DuoTalentEligibleGender,
+                    isShop and { Female = true } or {})
+                lu.assertEquals(_G.SessionMapState.DuoTalentEligible, isShop and true or nil)
+                local unrelated = { "native-first", "native-last" }
+                lu.assertEquals(invoke("RemoveRandomValue", function(values) return table.remove(values) end,
+                    unrelated), "native-last")
                 -- GetEligibleSpells returns the cached list; button creation consumes it in place.
+                local pool = invoke("GetEligibleSpells", function() return _G.SessionMapState.SelectedSpells end, value)
                 for index = 1, 3 do
-                    local name = removeRandom(_G.SessionMapState.SelectedSpells)
+                    local name = removeRandom(pool)
                     value.Components[index] = { TraitName = _G.SpellData[name].TraitName, SpellName = name }
                 end
             end, screen)
             lu.assertEquals(screen.Components[1].TraitName, "SpellPolymorphTrait")
+            lu.assertEquals(screen.Components[3].TraitName, "SpellSummonTrait")
+            lu.assertEquals(_G.SessionMapState.SelectedSpells, {})
             invoke("AcceptAndCloseSpellScreen", function(_, button)
                 installed = invoke("CreateTalentTree", function()
                     local layout = invoke("GetRandomValue", function(values) return values[1] end,
@@ -103,9 +155,19 @@ function TestSpellAcquisitions.testShopSpellPregeneratesBeforeSpawnReturnsAndIns
             epic = "PolymorphSandwichTalent" })
         lu.assertEquals(completions, 1)
         lu.assertEquals(diagnostics, {})
+        lu.assertEquals(invoke("GetEligibleSpells", function() return { "native" } end, {}),
+            { "native" })
     end)
     restore()
     if not ok then error(failure, 0) end
+end
+
+function TestSpellAcquisitions.testShopSpellInstallsAtScreenOpeningInsteadOfSpawn()
+    assertScreenInstallation(true)
+end
+
+function TestSpellAcquisitions.testCageSpellSpawnedBeforeAcquisitionReadinessReplacesNativeOffersAtScreen()
+    assertScreenInstallation(false)
 end
 
 function TestSpellAcquisitions.testCreatedHexTreesDoNotSharePendingScopes()
@@ -233,6 +295,7 @@ local function capture(state, payload, treeAdapter, spellAdapter, isBound)
     spellAdapter = spellAdapter or spell
     treeAdapter.attach(module)
     spellAdapter.attach(module, session, function() return state end, function() end, room, treeAdapter)
+    nativePregeneration(callbacks)
     return callbacks, completed, mismatches, function() return claims end
 end
 
@@ -259,7 +322,7 @@ function TestSpellAcquisitions.testUnboundSpellSteersTheTreeWithoutComparingTheL
     callbacks.OpenSpellScreen(nil, nil, function(source)
         local screen = { Source = source, Components = {} }
         callbacks.CreateSpellButtons(nil, nil, function(value)
-            local values = { "SpellOne", "SpellTwo", "SpellThree" }
+            local values = callbacks.GetEligibleSpells(nil, nil, function() return { "Other" } end, value)
             for index = 1, 3 do
                 local name = callbacks.RemoveRandomValue(nil, nil,
                     function(pool) return table.remove(pool, 1) end, values)
@@ -297,23 +360,16 @@ function TestSpellAcquisitions.testFreshImportedSpellAdapterUsesTheProvidedHexTr
         local freshSpell = assert(loadfile("src/mods/room/timeline/acquisitions/spell/hooks.lua"))()
         local callbacks, completed, mismatches = capture(state, payload, freshTree, freshSpell)
         local item, screen = { Name = "SpellDrop" }, nil
-        local pregenerated = callbacks.PregenerateSpells(nil, nil, function()
-            local values, rows = { "Other", "SpellThree", "SpellOne", "SpellTwo" }, {}
-            for index = 1, 3 do
-                rows[index] = callbacks.RemoveRandomValue(nil, nil,
-                    function(pool) return table.remove(pool, 1) end, values)
-            end
-            return rows
-        end, item)
-        lu.assertEquals(pregenerated, { "SpellOne", "SpellTwo", "SpellThree" })
+        lu.assertNil(callbacks.PregenerateSpells)
         local installed, bonus
         callbacks.OpenSpellScreen(nil, nil, function(source)
             screen = { Source = source, Components = {} }
             callbacks.CreateSpellButtons(nil, nil, function(value)
+                local pool = callbacks.GetEligibleSpells(nil, nil, function() return { "Other" } end, value)
                 for index = 1, 3 do
                     local name = callbacks.RemoveRandomValue(nil, nil,
                         function(values) return table.remove(values, 1) end,
-                        { "Other", "SpellThree", "SpellOne", "SpellTwo" })
+                        pool)
                     value.Components[index] = {
                         TraitName = _G.SpellData[name].TraitName, BonusTalentPoints = index - 1,
                     }

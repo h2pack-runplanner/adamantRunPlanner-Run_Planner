@@ -15,21 +15,22 @@ local function spellRole(transaction, contact)
             and type(offer.hexTree) == "table" then return role end
     end
 end
-local function expected(scope, index) local row = scope.offer.options[index]; return row and row.key end
-local function selectSpell(scope, values, phase)
-    local cursor = scope[phase] or 0
-    local wanted = expected(scope, cursor + 1)
-    for index, spellName in ipairs(values or {}) do
-        local spell = _G.SpellData and _G.SpellData[spellName]
-        if wanted and spell and spell.TraitName == wanted then
-            scope[phase] = cursor + 1; return table.remove(values, index)
+local function spellNames(offer)
+    local names = {}
+    for _, option in ipairs(offer.options) do
+        local found
+        for name, spell in pairs(_G.SpellData or {}) do
+            if spell.TraitName == option.key then found = name; break end
         end
+        if not found then return nil, option.key end
+        names[#names + 1] = found
     end
+    return names
 end
 function hooks.attach(module, session, getState, report, room, tree)
     assert(type(tree) == "table", "spell acquisition Hex Tree instance is required")
     local scopesByLoot = setmetatable({}, { __mode = "k" })
-    local randomScope, randomPhase
+    local offerScope
     local function diagnosticFor(state)
         return function(checkpoint, expectedValue, observed)
             session.diagnostic(state, "spell-steering", {
@@ -49,48 +50,51 @@ function hooks.attach(module, session, getState, report, room, tree)
         end
         local offer = offerFor(payload)
         if not handle or not offer then return nil end
-        scope = { state = state, handle = handle, offer = offer, pregeneration = 0, buttons = 0 }
+        scope = { state = state, handle = handle, offer = offer }
         scopesByLoot[spellItem] = scope
         return scope
     end
     local function clearScope(item, scope)
         if item and scopesByLoot[item] == scope then scopesByLoot[item] = nil end
     end
-    module.hooks.wrap("RemoveRandomValue", "run-planner-spell-offer-order", function(_, _, base, values, ...)
-        if randomScope and type(values) == "table" and (randomScope[randomPhase] or 0) < #randomScope.offer.options then
-            local selected = selectSpell(randomScope, values, randomPhase)
-            if selected then return selected end
-            randomScope.failed = true
-            diagnosticFor(randomScope.state)("spell-offer-option",
-                expected(randomScope, (randomScope[randomPhase] or 0) + 1), "native-ineligible")
+    module.hooks.wrap("GetEligibleSpells", "run-planner-spell-offer-install", function(_, _, base, screen, ...)
+        if offerScope and screen == offerScope.screen then
+            local values = _G.SessionMapState.SelectedSpells
+            if offerScope.preparing then
+                values = {}
+                for index, name in ipairs(offerScope.names) do values[index] = name end
+            end
+            offerScope.pool = values
+            return values
         end
+        return base(screen, ...)
+    end)
+    module.hooks.wrap("RemoveRandomValue", "run-planner-spell-offer-order", function(_, _, base, values, ...)
+        if offerScope and values == offerScope.pool then return table.remove(values, 1) end
         return base(values, ...)
     end)
     module.hooks.wrap("CreateSpellButtons", "run-planner-spell-offer-buttons", function(_, _, base, screen)
         local scope = screen and screen.Source and scopesByLoot[screen.Source] or nil
         if not scope then return base(screen) end
-        local priorScope, priorPhase = randomScope, randomPhase
-        randomScope, randomPhase = scope, "buttons"
-        local ok, result = pcall(base, screen)
-        randomScope, randomPhase = priorScope, priorPhase
+        local names, missing = spellNames(scope.offer)
+        if not names then
+            diagnosticFor(scope.state)("spell-offer-install", missing, "unknown-spell")
+            return base(screen)
+        end
+        local prior = offerScope
+        offerScope = { screen = screen, names = names, preparing = true }
+        local ok, result = pcall(function()
+            -- Refresh offer-dependent God Sent facts through the native routine.
+            -- Spawn-time random offers may predate this acquisition's DAG readiness.
+            _G.SessionMapState.DuoTalentEligible = nil
+            _G.SessionMapState.DuoTalentEligibleSpell = {}
+            _G.SessionMapState.DuoTalentEligibleGender = {}
+            _G.PregenerateSpells(screen)
+            offerScope.preparing = false
+            return base(screen)
+        end)
+        offerScope = prior
         if not ok then error(result, 0) end
-        if scope.buttons ~= #scope.offer.options then
-            scope.failed = true; diagnosticFor(scope.state)("spell-offer-contact", #scope.offer.options, scope.buttons)
-        end
-        return result
-    end)
-    module.hooks.wrap("PregenerateSpells", "run-planner-spell-offer-pregeneration", function(_, runtime, base, screen)
-        local scope = resolveScope(runtime, screen)
-        if not scope then return base(screen) end
-        local priorScope, priorPhase = randomScope, randomPhase
-        randomScope, randomPhase = scope, "pregeneration"
-        local ok, result = pcall(base, screen)
-        randomScope, randomPhase = priorScope, priorPhase
-        if not ok then clearScope(screen, scope); error(result, 0) end
-        if scope.pregeneration ~= #scope.offer.options then
-            scope.failed = true
-            diagnosticFor(scope.state)("spell-pregeneration-contact", #scope.offer.options, scope.pregeneration)
-        end
         return result
     end)
     module.hooks.wrap("OpenSpellScreen", "run-planner-spell-begin", function(_, runtime, base, spellItem, args, user)
@@ -112,14 +116,6 @@ function hooks.attach(module, session, getState, report, room, tree)
         local item = screen and screen.Source
         local scope = item and scopesByLoot[item] or nil
         if not scope then return base(screen, button) end
-        if scope.failed then
-            local ok, result = pcall(base, screen, button)
-            clearScope(item, scope)
-            if not ok then error(result, 0) end
-            session.complete(scope.state, scope.handle)
-            report(runtime)
-            return result
-        end
         local ok, result = pcall(function()
             return tree.realize(scope.offer.hexTree, button.TraitName, diagnosticFor(scope.state),
                 function() return base(screen, button) end)
