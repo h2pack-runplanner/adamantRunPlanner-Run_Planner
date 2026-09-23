@@ -286,6 +286,9 @@ function TestRoomGuide.testOverlayRefreshesOnlyOnProjectionChangesAndClearsOnTog
         return snapshot
     end)
     lu.assertNotNil(lines["room-guide-header"])
+    lu.assertEquals(lines["room-guide-header"].hudVisibility, "independent")
+    lu.assertEquals(lines["room-guide-footer"].hudVisibility, "independent")
+    lu.assertEquals(tables["room-guide-rows"].hudVisibility, "independent")
     local overlay = {
         setLine = function(name, value) lines[name].value = value end,
         setTable = function(name, value) tables[name].value = value end,

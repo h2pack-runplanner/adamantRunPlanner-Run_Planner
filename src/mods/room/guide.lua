@@ -228,17 +228,20 @@ function guide.attach(module, inspect)
     local visible = { guide = false, footer = false }
     local lastFingerprint = nil
     module.overlays.createLine("room-guide-header", {
+        hudVisibility = "independent",
         region = "middleRightStack", order = module.overlays.order.module,
         columns = { { key = "text", minWidth = 240 } },
         visible = function() return visible.guide end,
     })
     module.overlays.createTable("room-guide-rows", {
+        hudVisibility = "independent",
         region = "middleRightStack", order = module.overlays.order.module + 1,
         maxRows = MAX_ROWS,
         columns = { { key = "number", minWidth = 24 }, { key = "instruction", minWidth = 216 } },
         visible = function() return visible.guide end,
     })
     module.overlays.createLine("room-guide-footer", {
+        hudVisibility = "independent",
         region = "middleRightStack", order = module.overlays.order.module + MAX_ROWS + 1,
         columns = { { key = "text", minWidth = 240 } },
         visible = function() return visible.footer end,
