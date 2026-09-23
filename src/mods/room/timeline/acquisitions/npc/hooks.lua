@@ -30,7 +30,7 @@ local function encounterHandle(room, state, source)
     return type(room.encounterHandle) == "function" and room.encounterHandle(state, source) or nil
 end
 
-function npc.attach(module, session, getState, report, room)
+function npc.attach(module, session, getState, report, room, highlights)
     local choices = setmetatable({}, { __mode = "k" })
     local activeSelection
     local selectionObservers = {}
@@ -96,6 +96,8 @@ function npc.attach(module, session, getState, report, room)
                 scope.steered = true
             end
         end
+        local expected = adapter.expectedTrait(scope and scope.payload)
+        if highlights and expected then highlights.bindSource(runtime, getState(runtime), source, expected.key, false) end
         local result = base(source, args)
         report(runtime)
         return result

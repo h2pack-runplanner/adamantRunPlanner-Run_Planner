@@ -115,7 +115,7 @@ local function nativeRows(scope)
     return true
 end
 
-function chaosOffer.attach(module, session, getState, report, room)
+function chaosOffer.attach(module, session, getState, report, room, highlights)
     local screens = setmetatable({}, { __mode = "k" })
     local processedContext
 
@@ -152,6 +152,10 @@ function chaosOffer.attach(module, session, getState, report, room)
         end
         if scope.valid or scope.invalid then
             session.complete(scope.state, scope.handle)
+        end
+        local selected = optionIndex(scope.offer and scope.offer.selected)
+        if highlights and scope.valid and selected and scope.offer.blessingKey then
+            highlights.screen(runtime, scope.state, screen, scope.offer.blessingKey, true)
         end
         screens[loot] = nil
         report(runtime)

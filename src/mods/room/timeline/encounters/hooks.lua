@@ -41,7 +41,7 @@ local function chooseForcedEncounter(base, currentRun, nativeRoom, args, declara
     return result
 end
 
-function hooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter)
+function hooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter, highlights)
     shipCombat = shipCombat or thessaly.create()
     generatedEncounter = generatedEncounter or generated.create()
     generatedEncounter.attach(module, session)
@@ -135,7 +135,7 @@ function hooks.attach(module, session, getState, report, room, shipCombat, gener
         return result
     end)
 
-    shipCombat.attach(module, session, getState, report, room)
+    shipCombat.attach(module, session, getState, report, room, highlights)
     automatic.attach(module, session, getState, report, room)
     boss.attach(module, session, getState, report, room)
     hecate.attach(module, session, getState, report, room)

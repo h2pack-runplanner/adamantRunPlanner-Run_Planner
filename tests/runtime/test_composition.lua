@@ -37,6 +37,13 @@ local function generatedEncounterStub()
         withRewardDestination = function(_, _, _, action) return action() end,
     }
 end
+local function highlightStub()
+    return { create = function() return {
+        attach = function() end, refresh = function() end, doors = function() end, hub = function() end,
+        wheel = function() end, clearWorld = function() end, retireWorld = function() end,
+        screen = function() end, bindSource = function() end,
+    } end }
+end
 
 TestRuntimeComposition = {}
 
@@ -82,6 +89,7 @@ function TestRuntimeComposition.testGuideInspectionProjectsActualRoomCompletionW
         if path == "mods/spells/hex_tree.lua" then return { create = function() return { attach = function() end } end } end
         if path == "mods/room/timeline/encounters/thessaly.lua" then return { create = shipCombatStub } end
         if path == "mods/room/timeline/encounters/generated.lua" then return { create = generatedEncounterStub } end
+        if path == "mods/guidance/highlights.lua" then return highlightStub() end
         return { attach = function() end }
     end
     _G.import, _G.rom = freshImport, { path = {} }
@@ -155,6 +163,7 @@ function TestRuntimeComposition.testSuccessfulPostbossAdmissionIsLoggedOnce()
         if path == "mods/room/timeline/encounters/generated.lua" then
             return { create = generatedEncounterStub }
         end
+        if path == "mods/guidance/highlights.lua" then return highlightStub() end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report)
                 report({})
@@ -220,6 +229,7 @@ function TestRuntimeComposition.testFirstMismatchLogIncludesFullInventoryAndOccu
         if path == "mods/room/timeline/encounters/generated.lua" then
             return { create = generatedEncounterStub }
         end
+        if path == "mods/guidance/highlights.lua" then return highlightStub() end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report) report({}) end }
         end
@@ -272,6 +282,7 @@ function TestRuntimeComposition.testFaultLogIncludesBindingContextAndEachStackLi
         if path == "mods/room/timeline/encounters/generated.lua" then
             return { create = generatedEncounterStub }
         end
+        if path == "mods/guidance/highlights.lua" then return highlightStub() end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report) report({}); report({}) end }
         end
@@ -347,6 +358,7 @@ function TestRuntimeComposition.testFieldsDiagnosticLogsItsCompletedSnapshotWith
         if path == "mods/room/timeline/encounters/generated.lua" then
             return { create = generatedEncounterStub }
         end
+        if path == "mods/guidance/highlights.lua" then return highlightStub() end
         if path == "mods/room/hooks.lua" then
             return { attach = function(_, _, _, report)
                 report({})
@@ -466,6 +478,7 @@ function TestRuntimeComposition.testRuntimeCompositionSharesOneHexTreeAcrossLoad
         if path == "mods/room/timeline/encounters/generated.lua" then
             return { create = generatedEncounterStub }
         end
+        if path == "mods/guidance/highlights.lua" then return highlightStub() end
         if path == "mods/loadout/hooks.lua" then
             return { attach = function(_, _, _, _, _, sharedTree)
                 loadoutTree = sharedTree
@@ -548,6 +561,7 @@ function TestRuntimeComposition.testCompositionPassesRouteAndRoomAuthoritiesToHo
         if path == "mods/room/timeline/encounters/generated.lua" then
             return { create = generatedEncounterStub }
         end
+        if path == "mods/guidance/highlights.lua" then return highlightStub() end
         if path == "mods/loadout/hooks.lua" or path == "mods/room/timeline/acquisitions/hooks.lua" then
             return { attach = function() return {} end }
         end

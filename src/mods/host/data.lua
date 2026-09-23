@@ -18,6 +18,13 @@ function data.buildStorage()
             tooltip = "Show read-only planned room instructions on the HUD.",
             default = false,
         },
+        {
+            type = "bool",
+            alias = "HighlightPlannedChoices",
+            label = "Highlight planned choices",
+            tooltip = "Mark the next planned door or choice when it is available.",
+            default = false,
+        },
     }
 end
 

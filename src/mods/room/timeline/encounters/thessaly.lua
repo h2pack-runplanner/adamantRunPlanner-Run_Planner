@@ -56,7 +56,7 @@ function thessaly.create()
         end
     end
 
-    function instance.attach(module, session, getState, report, room)
+    function instance.attach(module, session, getState, report, room, highlights)
         module.hooks.wrap("ShipsEncounterSetup", "run-planner-ship-wheel-realization", function(_, runtime,
             base, encounter, args)
             local state = getState(runtime)
@@ -66,6 +66,7 @@ function thessaly.create()
             if state == nil or state.state ~= "synchronized" or wheel == nil then
                 return base(encounter, args)
             end
+            if highlights then highlights.clearWorld() end
             room.window(state, "shipPreCombat:" .. wheel.wheelKey)
             local prior = wheelScope
             wheelScope = {
@@ -91,7 +92,7 @@ function thessaly.create()
             return base(...)
         end)
 
-        module.hooks.wrap("CreateDoorRewardPreview", "run-planner-bind-ship-wheel", function(_, _, base,
+        module.hooks.wrap("CreateDoorRewardPreview", "run-planner-bind-ship-wheel", function(_, runtime, base,
             wheelObstacle, ...)
             local scope = wheelScope
             if scope ~= nil and type(wheelObstacle) == "table" and scope.currentOffer ~= nil then
@@ -99,6 +100,9 @@ function thessaly.create()
                 wheelObstacle.__runPlannerOfferKey = scope.currentOffer.offerKey
             end
             local result = base(wheelObstacle, ...)
+            if highlights and scope ~= nil then
+                highlights.wheel(runtime, scope.state, wheelObstacle, scope.wheel.pickedOfferKey)
+            end
             if wheelScope == scope and scope ~= nil and scope.offerIndex == #scope.wheel.offers then
                 wheelScope = scope.prior
             end
@@ -134,9 +138,15 @@ function thessaly.create()
                     end
                 end
             end
+            if highlights then highlights.clearWorld() end
             local result = base(wheel)
             if selected ~= nil then report(runtime) end
             return result
+        end)
+
+        module.hooks.wrap("AttemptRerollShipWheel", "run-planner-highlight-ship-wheel-reroll", function(_, _, base, ...)
+            if highlights then highlights.clearWorld() end
+            return base(...)
         end)
     end
 

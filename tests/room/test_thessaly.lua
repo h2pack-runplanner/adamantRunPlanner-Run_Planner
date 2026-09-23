@@ -168,7 +168,7 @@ function TestThessaly.testExactPublishedPhaseCountBypassesNativeThirdPhaseRoll()
     end
 end
 
-local function runWheel(offerCount, pickedOfferKey, selectedIndex)
+local function runWheel(offerCount, pickedOfferKey, selectedIndex, highlights, observe)
     local module, callbacks = capture()
     local active, phase, wheel = fixture(offerCount, pickedOfferKey)
     local state = { state = "synchronized" }
@@ -208,7 +208,7 @@ local function runWheel(offerCount, pickedOfferKey, selectedIndex)
     local shipCombat = thessaly.create()
     navigation.attach(module, session, function() return state end, function() end, {}, room, nil,
         shipCombat.rewardContext)
-    shipCombat.attach(module, session, function() return state end, function() end, room)
+    shipCombat.attach(module, session, function() return state end, function() end, room, highlights)
 
     local nativeRoom = { Encounter = nativeEncounter }
     local obstacles = {}
@@ -228,16 +228,67 @@ local function runWheel(offerCount, pickedOfferKey, selectedIndex)
             end, {}, nativeRoom, {}, { AlwaysSetupForceLootName = true })
             local obstacle = {}
             obstacles[index] = obstacle
-            callbacks.CreateDoorRewardPreview(nil, {}, function() return true end, obstacle, rewardType)
+            callbacks.CreateDoorRewardPreview(nil, { data = { read = function() return true end } }, function()
+                obstacle.RewardPreviewIconIds = { index * 10 }
+                return true
+            end, obstacle, rewardType)
         end
+        if observe then observe(obstacles, false) end
         selected = obstacles[selectedIndex]
-        callbacks.UseShipWheel(nil, {}, function(value) return value end, selected)
+        callbacks.UseShipWheel(nil, {}, function(value)
+            if observe then observe(obstacles, true) end
+            return value
+        end, selected)
         return "native-result"
     end, nativeEncounter, {})
     return {
         result = result, chosenRewards = chosenRewards, obstacles = obstacles,
         selected = selected, windows = windows, completed = completed, diagnostics = diagnostics,
     }
+end
+
+function TestThessaly.testGuidanceMarksOnlyThePickedOfferAndRetiresBeforeNativeUse()
+    local events = {}
+    local highlights = {
+        clearWorld = function() events[#events + 1] = "phase" end,
+        wheel = function(_, _, obstacle, picked) events[#events + 1] = "offer:" .. obstacle.__runPlannerOfferKey .. ":" .. picked end,
+        retireWorld = function(obstacle) events[#events + 1] = "retire:" .. obstacle.__runPlannerOfferKey end,
+    }
+    local result = runWheel(2, "offer2", 2, highlights)
+    lu.assertEquals(events, {
+        "phase", "offer:offer1:offer2", "offer:offer2:offer2", "phase",
+    })
+    lu.assertEquals(result.selected, result.obstacles[2])
+end
+
+function TestThessaly.testRealGuidanceSurvivesSecondOfferAndRetiresBeforeAnyNativeSelection()
+    local priorAdd, priorDestroy = _G.AddDoorInfoIcon, _G.Destroy
+    local nextId = 800
+    _G.AddDoorInfoIcon = function(args)
+        nextId = nextId + 1
+        args.Door.AdditionalIcons[args.Name] = nextId
+    end
+    _G.Destroy = function() end
+    for _, count in ipairs({ 1, 2 }) do
+        for _, selected in ipairs(count == 1 and { 1 } or { 1, 2 }) do
+            local guide = require("mods.guidance.highlights").create({})
+            runWheel(count, "offer1", selected, guide, function(obstacles, used)
+                if used then
+                    for _, obstacle in ipairs(obstacles) do
+                        lu.assertNil((obstacle.AdditionalIcons or {}).RunPlannerPlannedChoice)
+                    end
+                    -- Native use can synchronously build the next phase on the same object.
+                    guide.wheel({ data = { read = function() return true end } },
+                        { state = "synchronized" }, obstacles[1], "offer1")
+                else
+                    lu.assertNotNil(obstacles[1].AdditionalIcons.RunPlannerPlannedChoice)
+                    if count == 2 then lu.assertNil(obstacles[2].AdditionalIcons) end
+                end
+            end)
+            guide.clearWorld()
+        end
+    end
+    _G.AddDoorInfoIcon, _G.Destroy = priorAdd, priorDestroy
 end
 
 function TestThessaly.testForcesOneAndTwoOfferWheelCohortsAndCompletesExactChoice()

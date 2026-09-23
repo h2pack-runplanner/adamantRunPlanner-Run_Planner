@@ -29,23 +29,23 @@ local path = type(import) == "function" and import("mods/room/timeline/acquisiti
 
 local acquisitions = {}
 
-function acquisitions.attach(module, session, getState, report, room, hexTree, rewardWheelProducer)
+function acquisitions.attach(module, session, getState, report, room, hexTree, rewardWheelProducer, highlights)
     assert(type(hexTree) == "table", "acquisition Hex Tree instance is required")
     -- This acquisition-owned instance carries one active chance scope across
     -- every concrete pickup adapter.
     local seaStar = seaStarDefinition.create()
     seaStar.attach(module)
     binding.attach(module, session, getState, report, room, rewardWheelProducer)
-    local traitScopes = traits.attach(module, session, getState, report, room, seaStar)
-    local npcScope = npc.attach(module, session, getState, report, room)
+    local traitScopes = traits.attach(module, session, getState, report, room, seaStar, highlights)
+    local npcScope = npc.attach(module, session, getState, report, room, highlights)
     circe.attach(module, session, report, npcScope)
     icarus.attach(module, session, report, npcScope)
-    echo.attach(module, session, report, npcScope, traitScopes)
+    echo.attach(module, session, report, npcScope, traitScopes, highlights, getState)
     mystery.attach(module, session, getState, report, room)
     spell.attach(module, session, getState, report, room, hexTree)
     path.attach(module, session, getState, report, room, seaStar)
     pickups.attach(module, session, getState, report, room, seaStar)
-    levels.attach(module, session, getState, report, room, seaStar)
+    levels.attach(module, session, getState, report, room, seaStar, highlights)
 end
 
 return acquisitions

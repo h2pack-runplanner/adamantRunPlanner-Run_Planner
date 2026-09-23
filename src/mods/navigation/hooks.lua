@@ -35,12 +35,18 @@ local function withForcedAnomaly(base, currentRun, args, otherDoors, anomaly)
 end
 
 function hooks.attach(module, session, getState, report, routeSession, room, transformationScope,
-    nestedRewardContext, generatedEncounter)
+    nestedRewardContext, generatedEncounter, highlights)
     exitProtection.attach(module, getState, routeSession)
     local doorScope
     local rewardChoiceScope
     local ephyraDoorScope
     local dreamBiomeScope
+
+    module.hooks.wrap("DestroyDoorRewardPresenation", "run-planner-highlight-door-preview-retire", function(_, _, base,
+        door, args)
+        if highlights then highlights.retireWorld(door) end
+        return base(door, args)
+    end)
 
     local function dreamNextBiome(state)
         if state == nil or (state.state ~= "starting" and state.state ~= "synchronized")
@@ -281,6 +287,7 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
                 room.window(state, "postOutgoing")
             end
             report(runtime)
+            if highlights then highlights.hub(runtime, state, realizedDoors, ephyraScope.hub) end
             return result
         end
         if expected and expected.resolvedSharedRewardStoreKey then
@@ -296,6 +303,10 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
         room.checkpoint(state, "outgoingGeneration")
         if state.state == "synchronized" then room.window(state, "postOutgoing") end
         report(runtime)
+        if highlights then
+            local realizedNormal = doors.partition(occurrence, offeredDoors())
+            highlights.doors(runtime, state, realizedNormal, routeSession.next(state.route), occurrence)
+        end
         return result
     end)
 

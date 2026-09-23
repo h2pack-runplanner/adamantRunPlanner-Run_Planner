@@ -58,7 +58,7 @@ local function isNativeLastRunBoonMenu(source)
     return type(source) == "table" and source.OnPressedFunctionNameOverride == "SelectEchoBoon"
 end
 
-function echo.attach(module, session, report, npcScope, traitScopes)
+function echo.attach(module, session, report, npcScope, traitScopes, highlights, getState)
     local pendingBoon
     local activeBoon
     local boonMenus = setmetatable({}, { __mode = "k" })
@@ -90,7 +90,7 @@ function echo.attach(module, session, report, npcScope, traitScopes)
         return result
     end)
 
-    module.hooks.wrap("OpenUpgradeChoiceMenu", "run-planner-echo-last-run-rows", function(_, _,
+    module.hooks.wrap("OpenUpgradeChoiceMenu", "run-planner-echo-last-run-rows", function(_, runtime,
         base, source, args)
         local scope = activeBoon
         if scope == nil or not isNativeLastRunBoonMenu(source) then return base(source, args) end
@@ -110,7 +110,11 @@ function echo.attach(module, session, report, npcScope, traitScopes)
             }
         end
         boonMenus[source] = scope
-        return base(source, args)
+        local selected = nestedSelected(offer)
+        if highlights and selected then highlights.bindSource(runtime,
+            getState and getState(runtime) or scope.state, source, selected.key, false) end
+        local result = base(source, args)
+        return result
     end)
 
     module.hooks.wrap("SelectEchoBoon", "run-planner-echo-last-run-selection", function(_, runtime,

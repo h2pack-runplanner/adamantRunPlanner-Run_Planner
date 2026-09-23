@@ -22,6 +22,7 @@ function composition.bind(root)
     local hexTree = import("mods/spells/hex_tree.lua").create()
     local shipCombat = import("mods/room/timeline/encounters/thessaly.lua").create()
     local generatedEncounter = import("mods/room/timeline/encounters/generated.lua").create()
+    local highlights = import("mods/guidance/highlights.lua").create(route)
     local loadoutHooks = import("mods/loadout/hooks.lua")
     local acquisitionHooks = import("mods/room/timeline/acquisitions/hooks.lua")
     local loadoutRuntime = {
@@ -225,25 +226,30 @@ function composition.bind(root)
                         .. tostring(admission.slot))
                 end
             end
+            highlights.refresh(runtime, state)
         end
 
         hexTree.attach(module)
         local loadoutScope = loadoutHooks.attach(module, loadoutRuntime, getState, report, room, hexTree)
 
         acquisitionHooks.attach(module, session, getState, report, room, hexTree,
-            shipCombat.takeRewardProducer)
+            shipCombat.takeRewardProducer, highlights)
         local transformationScope = transformationHooks.attach(module, session, getState, report, room)
         local featureScope = roomFeatureHooks.attach(module, session, getState, report, room)
         local navigation = navigationHooks.attach(module, session, getState, report, route, room,
-            transformationScope, shipCombat.rewardContext, generatedEncounter)
+            transformationScope, shipCombat.rewardContext, generatedEncounter, highlights)
+        highlights.attach(module, getState)
         roomHooks.attach(module, session, getState, report, route, room, featureScope, navigation,
             loadoutScope, {
                 inbox = inbox,
                 activePlanSlot = loadoutRuntime.activePlanSlot,
             })
-        encounterHooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter)
+        encounterHooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter, highlights)
         featureInventory.attach(module, session, getState, report, room, route)
         interactionHooks.attach(module, session, getState, report, room)
+        if module.overlays then
+            module.overlays.onCommit(function(_, runtime) highlights.refresh(runtime, getState(runtime)) end)
+        end
     end
 
     return bound

@@ -95,7 +95,7 @@ function levels.visibleRole(transaction, contact)
     return nil
 end
 
-function levels.attach(module, session, getState, report, room, seaStar)
+function levels.attach(module, session, getState, report, room, seaStar, highlights)
     assert(type(seaStar) == "table", "level acquisition Sea Star instance is required")
     local roomCoordinator = room
     local suppressFatedPomBonus = 0
@@ -178,6 +178,10 @@ function levels.attach(module, session, getState, report, room, seaStar)
             end)
         else
             result = base(screen, loot, reroll, args)
+        end
+        local selected = resolution(payload) and resolution(payload).selectedTarget
+        if highlights and type(selected) == "string" then
+            highlights.screen(runtime, state, screen, selected, false)
         end
         if initial then
             local seaStarScope = seaStar.scope(state, payload)

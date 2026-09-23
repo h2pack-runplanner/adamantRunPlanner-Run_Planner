@@ -30,9 +30,9 @@ local function boundNormal(room, state, current, native)
     return handle, room.begin(state, handle)
 end
 
-function hooks.attach(module, session, getState, report, room, seaStar)
+function hooks.attach(module, session, getState, report, room, seaStar, highlights)
     assert(type(seaStar) == "table", "trait acquisition Sea Star instance is required")
-    chaosOffer.attach(module, session, getState, report, room)
+    chaosOffer.attach(module, session, getState, report, room, highlights)
     local allTogetherPending = {}
     local activeAllTogether = nil
     local naturalSelectionPending = {}
@@ -440,6 +440,10 @@ function hooks.attach(module, session, getState, report, room, seaStar)
             end
         end
         local result = base(screen, loot, reroll, args)
+        if highlights and ordinary.isCarrier(loot, offer) then
+            local selected = ordinary.selectedKey(payload)
+            if selected then highlights.screen(runtime, state, screen, selected, false) end
+        end
         if completeAfterInstall then
             completeOuter(state, handle)
             report(runtime)

@@ -51,9 +51,9 @@ function TestStatusUi:tearDown()
     self.restore()
 end
 
-function TestStatusUi.testStorageIncludesTheDefaultDisabledRoomGuideSetting()
+function TestStatusUi.testStorageIncludesIndependentDefaultDisabledGuidanceSettings()
     local storage = hostData.buildStorage()
-    lu.assertEquals(#storage, 2)
+    lu.assertEquals(#storage, 3)
     lu.assertEquals(storage[1].alias, "ActivePlanSlot")
     lu.assertEquals(storage[1].default, 1)
     lu.assertEquals(storage[1].min, 1)
@@ -62,6 +62,10 @@ function TestStatusUi.testStorageIncludesTheDefaultDisabledRoomGuideSetting()
     lu.assertEquals(storage[2], {
         type = "bool", alias = "ShowRoomGuide", label = "Show room guide",
         tooltip = "Show read-only planned room instructions on the HUD.", default = false,
+    })
+    lu.assertEquals(storage[3], {
+        type = "bool", alias = "HighlightPlannedChoices", label = "Highlight planned choices",
+        tooltip = "Mark the next planned door or choice when it is available.", default = false,
     })
 end
 
@@ -78,17 +82,20 @@ function TestStatusUi.testInspectionUsesTheBoundInboxCapabilityDirectly()
         end,
     }
     local ui = statusUi.bind(inbox, inactive)
-    local field, guideField, checkbox = { read = function() return 1 end }, { read = function() return false end }, nil
+    local field, guideField, highlightField, checkbox = { read = function() return 1 end },
+        { read = function() return false end }, { read = function() return false end }, nil
     local widgets = {
         dropdown = function(target) lu.assertEquals(target, field) end,
-        checkbox = function(target, opts) checkbox = { target = target, opts = opts } end,
+        checkbox = function(target, opts)
+            if opts.id == "show_room_guide" then checkbox = { target = target, opts = opts } end
+        end,
         button = function() return true end,
         text = function(value) drawn[#drawn + 1] = value end,
     }
 
     ui.drawTab(nil, {
         data = { get = function(alias)
-            return alias == "ActivePlanSlot" and field or guideField
+            return alias == "ActivePlanSlot" and field or alias == "ShowRoomGuide" and guideField or highlightField
         end },
         draw = { widgets = widgets, imgui = canvas(drawn) },
     })
