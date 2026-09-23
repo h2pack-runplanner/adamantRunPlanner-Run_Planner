@@ -167,9 +167,13 @@ local function guideDescription(value, label)
         return p.exact(record, { "kind" }, {}, label)
     end
     if kind == "completeFieldsCage" then
-        local row, rowError = p.exact(record, { "kind", "phaseKey" }, {}, label)
+        local row, rowError = p.exact(record, { "kind", "phaseKey" }, { "reward" }, label)
         if not row then return nil, rowError end
         if not p.str(row.phaseKey, label .. ".phaseKey") then return p.fail(label .. " has invalid phaseKey") end
+        if row.reward ~= nil then
+            local _, rewardError = rewards.reward(row.reward, label .. ".reward")
+            if rewardError then return nil, rewardError end
+        end
         return row
     end
     if kind == "interactIncomingReward" or kind == "interactLocalReward" then

@@ -9,7 +9,12 @@ local function displayName(key, fallback)
     local ok, label = pcall(function()
         return _G.GetDisplayName and _G.GetDisplayName({ Text = key }) or nil
     end)
-    if ok and type(label) == "string" and label ~= "" and label ~= key then return label end
+    if ok and type(label) == "string" and label ~= "" and label ~= key then
+        -- Native names may contain resource icons and formatting commands.
+        -- The compact guide deliberately renders plain text only.
+        label = label:gsub("{![^}]*}", ""):gsub("%s+", " "):match("^%s*(.-)%s*$")
+        if label ~= "" then return label end
+    end
     return fallback
 end
 
@@ -25,25 +30,31 @@ local function roomName(gameName)
     return displayName(gameName, type(gameName) == "string" and gameName or "room")
 end
 
-local function rewardName(reward)
-    if type(reward) ~= "table" then return "reward" end
-    local common = {
-        RandomLoot = "boon", MaxHealthDrop = "health", MaxManaDrop = "mana",
-        HealBigDrop = "healing", ArmorDrop = "armor", RoomMoneyDrop = "gold",
-    }
-    if common[reward.rewardType] ~= nil then return common[reward.rewardType] end
-    if reward.source ~= nil then return displayName(reward.source, "reward") end
-    return displayName(reward.rewardType, "reward")
+local function sourceName(source)
+    if type(source) ~= "string" then return nil end
+    local god = source:match("^(.-)Upgrade$")
+    local gods = { Aphrodite = true, Apollo = true, Ares = true, Demeter = true,
+        Hephaestus = true, Hera = true, Hestia = true, Poseidon = true, Zeus = true, Hermes = true }
+    return gods[god] and god or nil
 end
 
-local function sourceName(source)
-    local label = displayName(source, nil)
-    if label ~= nil then return label end
-    if type(source) == "string" then
-        local god = source:match("^(.-)Upgrade$")
-        if god and god ~= "" then return god end
+local function rewardName(reward, boosted)
+    if type(reward) ~= "table" then return "reward" end
+    local common = {
+        StackUpgrade = "Pom", StackUpgradeBig = "Double Pom", StackUpgradeTriple = "Triple Pom",
+        StoreRewardRandomStack = "Pom Slice", WeaponUpgrade = "Hammer", WeaponUpgradeDrop = "Hammer",
+        SpellDrop = "Hex", TalentDrop = "Path of Stars", ChaosWeaponUpgrade = "Anvil of Fates",
+        MetaCurrencyDrop = "Bones", MetaCardPointsCommonDrop = "Ashes", MemPointsCommonDrop = "Psyche",
+        MaxHealthDrop = "Max Health", MaxManaDrop = "Max Magick", RoomMoneyDrop = "Gold",
+    }
+    local god = sourceName(reward.source) or sourceName(reward.rewardType)
+    local mystery = reward.rewardType == "BlindBoxLoot" or reward.rewardType == "RandomLootGiftItem"
+    if mystery or god or reward.rewardType == "RandomLoot" or reward.rewardType == "Boon" then
+        local label = mystery and "Mystery Boon" or boosted and "Boosted Boon" or "Boon"
+        return god and (label .. " — " .. god) or label
     end
-    return nil
+    if common[reward.rewardType] ~= nil then return common[reward.rewardType] end
+    return displayName(reward.rewardType, "reward")
 end
 
 local function shopOffer(occurrence, offerKey)
@@ -55,32 +66,56 @@ end
 
 local function cageName(phaseKey)
     local index = type(phaseKey) == "string" and phaseKey:match("^Cage0*(%d+)$") or nil
-    return index and "cage " .. index or "cage"
+    return index and "Cage " .. index or "Cage"
 end
 
-local function instruction(description, occurrence)
+local function instruction(description, occurrence, transaction)
     if type(description) ~= "table" then return "Complete planned action" end
     local kind = description.kind
-    if kind == "collectRequiredReward" then return "Collect required reward" end
-    if kind == "completeFieldsCage" then return "Clear " .. cageName(description.phaseKey) end
-    if kind == "interactIncomingReward" or kind == "interactLocalReward" then
-        if description.conversion == "timePiece" then return "Destroy reward with Time Piece" end
-        return "Collect " .. rewardName(description.reward)
+    local reward = description.reward or (transaction and transaction.reward)
+    if transaction and transaction.kind == "acquisition" then
+        for _, role in ipairs(transaction.roles or {}) do
+            if role.disposition == "artificer" then return "Use Artificer on " .. rewardName(reward) end
+        end
     end
-    if kind == "chooseRewardWheel" then return "Choose " .. readableKey(description.wheelKey, "reward wheel") end
+    if kind == "collectRequiredReward" then return "Collect required reward" end
+    if kind == "completeFieldsCage" then
+        local label = "Clear " .. cageName(description.phaseKey)
+        if reward ~= nil then
+            local name = sourceName(reward.source) or sourceName(reward.rewardType) or rewardName(reward)
+            return label .. " — " .. name
+        end
+        return label
+    end
+    if kind == "interactIncomingReward" or kind == "interactLocalReward" then
+        if description.conversion == "timePiece" then return "Use Time Piece on " .. rewardName(reward) end
+        return "Collect " .. rewardName(reward)
+    end
+    if kind == "chooseRewardWheel" then
+        for _, wheel in ipairs(occurrence.overview and occurrence.overview.rewardWheels or {}) do
+            if wheel.wheelKey == description.wheelKey then
+                for _, offer in ipairs(wheel.offers or {}) do
+                    if offer.offerKey == wheel.pickedOfferKey then
+                        return "Choose " .. rewardName(offer.reward) .. " at wheel"
+                    end
+                end
+            end
+        end
+        return "Choose wheel reward"
+    end
     if kind == "interactWheelReward" then
-        if description.conversion == "timePiece" then return "Destroy wheel reward with Time Piece" end
-        return "Collect " .. readableKey(description.wheelKey, "wheel") .. " " .. rewardName(description.reward)
+        if description.conversion == "timePiece" then return "Use Time Piece on " .. rewardName(reward) end
+        return "Collect " .. rewardName(reward)
     end
     if kind == "interactShopOffer" then
-        if description.conversion == "timePiece" then return "Destroy Shop reward with Time Piece" end
         if description.conversion == "anvilOfFates" then return "Use Anvil of Fates" end
         local offer = shopOffer(occurrence, description.offerKey)
-        local prefix = offer and offer.optionKey == "BoostedRandomLoot" and "boosted " or ""
-        local source = offer and sourceName(offer.source) or nil
-        local reward = offer and rewardName(offer) or rewardName({ rewardType = description.rewardType })
-        if source ~= nil then return "Buy " .. prefix .. source .. " " .. reward end
-        return "Buy " .. readableKey(description.offerKey, "Shop offer") .. " " .. reward
+        -- The acquisition owns the resolved Mystery Boon god; the inventory
+        -- can still describe only its box carrier.
+        local label = rewardName(reward or offer or { rewardType = description.rewardType },
+            offer and offer.optionKey == "BoostedRandomLoot")
+        if description.conversion == "timePiece" then return "Use Time Piece on " .. label end
+        return "Buy " .. label
     end
     if kind == "purchaseStygianWellOffer" then
         return "Buy " .. readableKey(description.itemKey or description.twistResultKey, "Well item")
@@ -92,9 +127,9 @@ local function instruction(description, occurrence)
         return "Complete " .. readableKey(description.encounterKey, "encounter")
     end
     if kind == "interactAcquisitionEntry" then
-        if description.conversion == "timePiece" then return "Destroy reward with Time Piece" end
+        if description.conversion == "timePiece" then return "Use Time Piece on " .. rewardName(reward) end
         if description.conversion == "anvilOfFates" then return "Use Anvil of Fates" end
-        return "Collect " .. rewardName(description.reward)
+        return "Collect " .. rewardName(reward)
     end
     if kind == "useFountain" then return "Use fountain" end
     if kind == "interactKeepsakeRack" then
@@ -161,7 +196,9 @@ function guide.project(snapshot)
     for _, item in ipairs(displayed) do
         projected[#projected + 1] = {
             number = tostring(item.ordinal) .. ".",
-            instruction = instruction(item.row.description, snapshot.occurrence),
+            instruction = instruction(item.row.description, snapshot.occurrence,
+                snapshot.occurrence.transactionsByOwner
+                    and snapshot.occurrence.transactionsByOwner[item.row.transactionOwner]),
         }
     end
     local footer = navigationFooter(snapshot.navigation)

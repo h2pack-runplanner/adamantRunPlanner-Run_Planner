@@ -4195,7 +4195,15 @@
       "roomGuide": [
         {
           "key": "[\"completeFieldsCage\",\"Cage02\"]",
-          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage02" }
+          "description": {
+            "kind": "completeFieldsCage",
+            "phaseKey": "Cage02",
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
         },
         {
           "key": "[\"interactLocalReward\",\"cages\",\"cage2\"]",
@@ -4211,7 +4219,15 @@
         },
         {
           "key": "[\"completeFieldsCage\",\"Cage01\"]",
-          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage01" }
+          "description": {
+            "kind": "completeFieldsCage",
+            "phaseKey": "Cage01",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
         },
         {
           "key": "[\"interactLocalReward\",\"cages\",\"cage1\"]",
@@ -4430,7 +4446,15 @@
       "roomGuide": [
         {
           "key": "[\"completeFieldsCage\",\"Cage02\"]",
-          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage02" }
+          "description": {
+            "kind": "completeFieldsCage",
+            "phaseKey": "Cage02",
+            "reward": {
+              "rewardType": "WeaponUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
         },
         {
           "key": "[\"interactLocalReward\",\"cages\",\"cage2\"]",
@@ -4446,7 +4470,15 @@
         },
         {
           "key": "[\"completeFieldsCage\",\"Cage01\"]",
-          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage01" }
+          "description": {
+            "kind": "completeFieldsCage",
+            "phaseKey": "Cage01",
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
         },
         {
           "key": "[\"interactLocalReward\",\"cages\",\"cage1\"]",
@@ -4978,7 +5010,16 @@
       "roomGuide": [
         {
           "key": "[\"completeFieldsCage\",\"Cage03\"]",
-          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage03" }
+          "description": {
+            "kind": "completeFieldsCage",
+            "phaseKey": "Cage03",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HestiaUpgrade"
+            }
+          }
         },
         {
           "key": "[\"interactLocalReward\",\"cages\",\"cage3\"]",
@@ -4995,7 +5036,16 @@
         },
         {
           "key": "[\"completeFieldsCage\",\"Cage02\"]",
-          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage02" }
+          "description": {
+            "kind": "completeFieldsCage",
+            "phaseKey": "Cage02",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ApolloUpgrade"
+            }
+          }
         },
         {
           "key": "[\"interactLocalReward\",\"cages\",\"cage2\"]",
@@ -5012,7 +5062,15 @@
         },
         {
           "key": "[\"completeFieldsCage\",\"Cage01\"]",
-          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage01" }
+          "description": {
+            "kind": "completeFieldsCage",
+            "phaseKey": "Cage01",
+            "reward": {
+              "rewardType": "RoomMoneyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          }
         },
         {
           "key": "[\"interactLocalReward\",\"cages\",\"cage1\"]",
@@ -5944,5 +6002,5 @@
       }
     }
   ],
-  "planFingerprint": "e594c197"
+  "planFingerprint": "76d693eb"
 }

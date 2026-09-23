@@ -7,6 +7,10 @@ local route = require("mods.route.session")
 
 TestRoomGuide = {}
 
+function TestRoomGuide.tearDown()
+    _G.GetDisplayName = nil
+end
+
 local function row(kind, owner, extra)
     local value = { key = kind, description = { kind = kind } }
     if owner ~= nil then value.transactionOwner = owner end
@@ -23,6 +27,76 @@ local function room(rows, completed, nextOccurrence)
     }
 end
 
+function TestRoomGuide.testConversionsDescribeTheSourceAndKeepReplacementSeparate()
+    for _, kind in ipairs({ "interactIncomingReward", "interactLocalReward", "interactWheelReward",
+        "interactAcquisitionEntry" }) do
+        local snapshot = room({
+            row(kind, "convert", { reward = { rewardType = "MetaCardPointsCommonDrop" } }),
+            row("interactAcquisitionEntry", "replacement", { reward = { rewardType = "WeaponUpgrade" } }),
+            row(kind, nil, { conversion = "timePiece", reward = { rewardType = "StackUpgrade" } }),
+        })
+        snapshot.occurrence.transactionsByOwner = {
+            convert = { kind = "acquisition", roles = { { disposition = "artificer" } } },
+            replacement = { kind = "acquisition", roles = { { disposition = "normal",
+                producer = { kind = "artificerReplacement" } } } },
+        }
+        lu.assertEquals(guide.project(snapshot).rows, {
+            { number = "1.", instruction = "Use Artificer on Ashes" },
+            { number = "2.", instruction = "Collect Hammer" },
+            { number = "3.", instruction = "Use Time Piece on Pom" },
+        })
+    end
+end
+
+function TestRoomGuide.testShopLabelsUseResolvedGodWithoutDuplicatingCarrierName()
+    for _, case in ipairs({
+        { "BlindBoxLoot", "DemeterUpgrade", "RandomLootGiftItem", "Buy Mystery Boon — Demeter" },
+        { "RandomLoot", "HeraUpgrade", "BoostedRandomLoot", "Buy Boosted Boon — Hera" },
+        { "StackUpgradeBig", nil, "StackUpgradeBig", "Buy Double Pom" },
+    }) do
+        local snapshot = room({ row("interactShopOffer", "buy", { offerKey = "slot" }) })
+        snapshot.occurrence.overview = { shop = { offers = {
+            { offerKey = "slot", optionKey = case[3], rewardType = case[1], source = "BlindBoxLoot" },
+        } } }
+        snapshot.occurrence.transactionsByOwner = { buy = {
+            kind = "acquisition", reward = { rewardType = case[1], source = case[2] }, roles = {},
+        } }
+        lu.assertEquals(guide.project(snapshot).rows[1].instruction, case[4])
+    end
+    local snapshot = room({ row("interactShopOffer", nil, { offerKey = "slot", conversion = "timePiece" }) })
+    snapshot.occurrence.overview = { shop = { offers = {
+        { offerKey = "slot", rewardType = "StackUpgrade" },
+    } } }
+    lu.assertEquals(guide.project(snapshot).rows[1].instruction, "Use Time Piece on Pom")
+end
+
+function TestRoomGuide.testNativeMarkupIsRemovedFromRowsAndNavigation()
+    _G.GetDisplayName = function(args)
+        return ({ GiftDrop = "{!Icons.Gift} {!Format.Bold}Nectar{!Format.Reset}",
+            ExampleWellItem = "{!Icons.Health} Well Item",
+            ExampleRoom = "{!Format.Bold}Next Room{!Format.Reset}" })[args.Text]
+    end
+    local snapshot = room({
+        row("interactLocalReward", nil, { reward = { rewardType = "GiftDrop" } }),
+        row("purchaseStygianWellOffer", nil, { itemKey = "ExampleWellItem" }),
+    }, nil, { gameName = "ExampleRoom", overview = { incomingReward = { rewardType = "GiftDrop" } } })
+    local projection = guide.project(snapshot)
+    lu.assertEquals(projection.rows[1].instruction, "Collect Nectar")
+    lu.assertEquals(projection.rows[2].instruction, "Buy Well Item")
+    lu.assertEquals(projection.footer, "Next: Next Room — Nectar")
+end
+
+function TestRoomGuide.testWheelChoiceUsesThePublishedPickedReward()
+    local snapshot = room({ row("chooseRewardWheel", "wheel", { wheelKey = "wheel2" }) })
+    snapshot.occurrence.overview = { rewardWheels = {
+        { wheelKey = "wheel2", pickedOfferKey = "offer2", offers = {
+            { offerKey = "offer1", reward = { rewardType = "WeaponUpgrade" } },
+            { offerKey = "offer2", reward = { rewardType = "Boon", source = "ZeusUpgrade" } },
+        } },
+    } }
+    lu.assertEquals(guide.project(snapshot).rows[1].instruction, "Choose Boon — Zeus at wheel")
+end
+
 function TestRoomGuide.testHidesOutOfOrderCompletedOwnersWithoutCompletingInformation()
     local projection = guide.project(room({
         row("completeFieldsCage", nil, { phaseKey = "Cage01" }),
@@ -31,9 +105,9 @@ function TestRoomGuide.testHidesOutOfOrderCompletedOwnersWithoutCompletingInform
         row("interactLocalReward", "later"),
     }, { later = true }))
     lu.assertEquals(projection.rows, {
-        { number = "1.", instruction = "Clear cage 1" },
+        { number = "1.", instruction = "Clear Cage 1" },
         { number = "2.", instruction = "Collect reward" },
-        { number = "3.", instruction = "Clear cage 2" },
+        { number = "3.", instruction = "Clear Cage 2" },
     })
 end
 
@@ -62,7 +136,7 @@ function TestRoomGuide.testTimePieceWordingAndGenericFallbackNeverExposeOpaqueKe
         row("sellPurgingPoolTrait", nil, { traitKey = "OpaqueTrait" }),
     }))
     lu.assertEquals(projection.rows, {
-        { number = "1.", instruction = "Destroy reward with Time Piece" },
+        { number = "1.", instruction = "Use Time Piece on reward" },
         { number = "2.", instruction = "Sell trait at Pool" },
     })
     local shop = guide.project({
@@ -76,7 +150,7 @@ function TestRoomGuide.testTimePieceWordingAndGenericFallbackNeverExposeOpaqueKe
         },
         isCompleted = function() return false end,
     })
-    lu.assertEquals(shop.rows, { { number = "1.", instruction = "Buy boosted Apollo boon" } })
+    lu.assertEquals(shop.rows, { { number = "1.", instruction = "Buy Boosted Boon — Apollo" } })
 end
 
 function TestRoomGuide.testRoomReplacementNavigationAndSessionLossReplaceRatherThanReplayRows()
@@ -90,7 +164,7 @@ function TestRoomGuide.testRoomReplacementNavigationAndSessionLossReplaceRatherT
     })
     lu.assertEquals(first.rows[1].number, "1.")
     lu.assertEquals(first.header, "Room guide: N_Combat01")
-    lu.assertEquals(first.footer, "Next: N_Combat02 — reward")
+    lu.assertEquals(first.footer, "Next: N_Combat02 — Boon")
     lu.assertEquals(replacement.rows, { { number = "1.", instruction = "Use fountain" } })
     lu.assertEquals(restored.rows, {})
     lu.assertEquals(restored.footer, "Next: N_Combat02")
@@ -152,7 +226,7 @@ function TestRoomGuide.testOPhaseProgressKeepsOneGuideAndTerminalPrefixHasNoFoot
     local later = guide.project(snapshot)
     lu.assertEquals(first.header, later.header)
     lu.assertEquals(later.rows, {
-        { number = "2.", instruction = "Collect wheel reward" },
+        { number = "2.", instruction = "Collect reward" },
         { number = "3.", instruction = "Complete encounter" },
     })
     lu.assertNil(later.footer)
@@ -172,6 +246,25 @@ function TestRoomGuide.testRealFieldsSixRowGuideFitsTheCompactWindow()
     })
     lu.assertEquals(#projection.rows, 6)
     lu.assertNil(projection.footer)
+    local reversed = assert(plan.occurrencesById["golden-h-combat02"])
+    local reversedProjection = guide.project({
+        kind = "room", occurrence = reversed, isCompleted = function() return false end,
+    })
+    lu.assertEquals(reversedProjection.rows[1].instruction, "Clear Cage 2 — Max Magick")
+    lu.assertEquals(reversedProjection.rows[3].instruction, "Clear Cage 1 — Max Health")
+end
+
+function TestRoomGuide.testCageRewardNamesDoNotDependOnPickupTransactions()
+    local snapshot = room({
+        row("completeFieldsCage", nil, { phaseKey = "Cage01", reward = { rewardType = "Boon", source = "HeraUpgrade" } }),
+        row("completeFieldsCage", nil, { phaseKey = "Cage02", reward = { rewardType = "StackUpgrade" } }),
+        row("interactLocalReward", nil, { conversion = "timePiece", reward = { rewardType = "StackUpgrade" } }),
+    })
+    lu.assertEquals(guide.project(snapshot).rows, {
+        { number = "1.", instruction = "Clear Cage 1 — Hera" },
+        { number = "2.", instruction = "Clear Cage 2 — Pom" },
+        { number = "3.", instruction = "Use Time Piece on Pom" },
+    })
 end
 
 function TestRoomGuide.testOverlayRefreshesOnlyOnProjectionChangesAndClearsOnToggle()
