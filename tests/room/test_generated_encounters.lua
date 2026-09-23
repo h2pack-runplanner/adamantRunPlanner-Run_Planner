@@ -32,7 +32,7 @@ function TestGeneratedEncounters.testGeneratedResultSnapshotsAllocationWithoutTr
     local callbacks, generated, state, room, destination = fixture()
     local encounter = { Name = "Generated" }
     local authored = phase(decision({ waveCount = 1, waves = {
-        { waveIndex = 1, types = { { nativeId = "Ash" } }, shares = { 1 } },
+        { waveIndex = 1, types = { { nativeId = "Ash" } } },
     } }))
     local result = generated.withPhase(state, room, authored, destination, function()
         return callbacks.SetupEncounter(nil, {}, function()
@@ -50,8 +50,8 @@ function TestGeneratedEncounters.testGeneratedResultSnapshotsAllocationWithoutTr
     lu.assertEquals(state.state, "synchronized")
     lu.assertEquals(state.diagnostics[1].observed, {
         kind = "generated-result", phase = "Combat", encounterKey = "Generated",
-        requestedWaveCount = 1, waveCount = 1, waves = {
-            { wave = 1, requested = { { name = "Ash", share = 1 } }, spawns = {
+        requestedWaveCount = 1, baseRollUsed = false, nativeHardEncounter = false, waveCount = 1, waves = {
+            { wave = 1, requested = { { name = "Ash" } }, spawns = {
                 { name = "Ash", count = 4 }, { name = "Template", countMin = 1, countMax = 2 },
             } },
         },
@@ -124,12 +124,12 @@ function TestGeneratedEncounters.testInvalidTypeIsDiagnosticAndScopeRestoresAfte
         { "native" }), "native")
 end
 
-function TestGeneratedEncounters.testFixedFirstSpawnMapsSharesByGeneratedIdentityAtTheNativeSampleBranch()
+function TestGeneratedEncounters.testFixedFirstSpawnMapsAllocationByGeneratedIdentityAtTheNativeSampleBranch()
     local callbacks, generated, state, room, destination = fixture()
     local selected = phase(decision({ waves = {
         { waveIndex = 1, types = {
             { choiceKey = "Brine", nativeId = "Brine" }, { choiceKey = "Cinder", nativeId = "Cinder" },
-        }, shares = { .2, .8 } },
+        }, allocations = { Cinder = 16 } },
     } }))
     local wave = { WaveIndex = 1, Spawns = {
         { Name = "Ash", TotalCount = 2 }, { Name = "Brine" }, { Name = "Cinder" },
@@ -146,6 +146,26 @@ function TestGeneratedEncounters.testFixedFirstSpawnMapsSharesByGeneratedIdentit
         end, { Name = "Generated" }, destination)
     end)
     -- Spawn index three is the proven sample branch here; it maps to Cinder's
-    -- generated-only second share, not the full-array index.
+    -- explicit identity allocation, not a full-array position.
     lu.assertEquals(requested, 16)
+end
+
+function TestGeneratedEncounters.testBaseRollSteersOnlyTheBoundEncounterBaseRange()
+    local callbacks, generated, state, room, destination = fixture()
+    local selected = phase(decision({ baseRoll = 412 }))
+    local encounter = { Name = "Generated", BaseDifficultyMin = 340, BaseDifficultyMax = 500,
+        SpawnWaves = {} }
+    local value, incidental
+    generated.withPhase(state, room, selected, destination, function()
+        callbacks.SetupEncounter(nil, {}, function()
+            callbacks.GenerateEncounter(nil, {}, function()
+                incidental = callbacks.RandomInt(nil, {}, function() return 7 end, 1, 10)
+                value = callbacks.RandomInt(nil, {}, function() return 340 end, 340, 500)
+            end, {}, destination, encounter)
+        end, encounter, destination)
+    end)
+    lu.assertEquals(incidental, 7)
+    lu.assertEquals(value, 412)
+    lu.assertEquals(state.diagnostics[1].observed.baseRoll, 412)
+    lu.assertTrue(state.diagnostics[1].observed.baseRollUsed)
 end

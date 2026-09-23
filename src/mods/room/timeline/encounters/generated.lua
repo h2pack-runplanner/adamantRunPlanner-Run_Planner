@@ -37,10 +37,9 @@ local function additionsFor(decision, index)
 end
 
 -- FillEnemyCounts uses the full spawn-array index against generated-entry
--- count to identify the native remainder branch. Its preceding RandomNormal
--- calls each begin at the equal native slice, so multiplying that slice by the
--- generated-entry count restores the full wave budget before the published
--- relative share is applied.
+-- count to identify its RandomNormal branches. Sparse absolute allocations
+-- bind only those calls; the native remainder, rounding, caps and
+-- redistribution stay untouched.
 local function countSampleBranches(wave)
     local generatedCount, result = 0, {}
     for _, spawn in ipairs(wave.Spawns or {}) do
@@ -56,11 +55,8 @@ local function countSampleBranches(wave)
     return generatedCount, result
 end
 
-local function shareFor(wave, enemyName)
-    for index, entry in ipairs(wave and wave.types or {}) do
-        if nativeId(entry) == enemyName then return wave.shares and wave.shares[index] end
-    end
-    return nil
+local function allocationFor(wave, enemyName)
+    return wave and wave.allocations and wave.allocations[enemyName] or nil
 end
 
 local function withScope(stack, scope, action)
@@ -128,6 +124,7 @@ function generated.create()
                 end)
             end
             local owner, decision = parent.owner, parent.owner.decision
+            owner.baseRollUsed = false
             if decision.waveCount ~= nil then
                 encounter.MinWaves, encounter.MaxWaves = decision.waveCount, decision.waveCount
                 -- GenerateEncounter applies this copied table before reading
@@ -154,9 +151,9 @@ function generated.create()
                         }
                     end
                     local authored = waveFor(decision, index)
-                    for position, entry in ipairs(authored and authored.types or {}) do
+                    for _, entry in ipairs(authored and authored.types or {}) do
                         requested[#requested + 1] = {
-                            name = nativeId(entry), share = authored.shares and authored.shares[position],
+                            name = nativeId(entry), allocation = authored.allocations and authored.allocations[nativeId(entry)],
                         }
                     end
                     waves[#waves + 1] = { wave = index, spawns = spawns, requested = requested }
@@ -164,6 +161,8 @@ function generated.create()
                 diagnostic(owner, {
                     kind = "generated-result", phase = owner.phase.slotKey,
                     encounterKey = owner.encounterKey, requestedWaveCount = decision.waveCount,
+                    baseRoll = decision.baseRoll, baseRollUsed = owner.baseRollUsed,
+                    nativeHardEncounter = encounter.IsHardEncounter == true,
                     waveCount = #waves, waves = waves,
                 })
                 return result
@@ -242,9 +241,25 @@ function generated.create()
             scope.sampleIndex = scope.sampleIndex + 1
             local branch = scope.samples[scope.sampleIndex]
             local wave = waveFor(scope.owner.decision, scope.wave.WaveIndex)
-            local share = branch and shareFor(wave, branch.enemyName)
-            if share == nil then return base(mean, deviation, ...) end
-            return mean * scope.generatedCount * share
+            local allocation = branch and allocationFor(wave, branch.enemyName)
+            if allocation == nil then return base(mean, deviation, ...) end
+            return allocation
+        end)
+        module.hooks.wrap("RandomInt", "run-planner-generated-encounter-base-roll", function(_, _, base,
+            minimum, maximum, ...)
+            local scope = current()
+            if scope and scope.kind == "generate" then
+                local requested = scope.owner.decision.baseRoll
+                -- Bind only the declared encounter's own BaseDifficulty
+                -- range; an incidental RandomInt inside generation remains
+                -- native even when its numeric bounds coincide.
+                if requested ~= nil and scope.encounter.BaseDifficultyMin == minimum
+                    and scope.encounter.BaseDifficultyMax == maximum then
+                    scope.owner.baseRollUsed = true
+                    return requested
+                end
+            end
+            return base(minimum, maximum, ...)
         end)
     end
 

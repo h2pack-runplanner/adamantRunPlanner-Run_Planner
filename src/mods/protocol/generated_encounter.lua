@@ -17,13 +17,16 @@ local function enemy(value, label)
 end
 
 function generated.decode(value, label)
-    local row, err = p.exact(value, { "decisionKey", "kind" }, { "waveCount", "highlight", "waves" }, label)
+    local row, err = p.exact(value, { "decisionKey", "kind" }, { "baseRoll", "waveCount", "highlight", "waves" }, label)
     if not row then return nil, err end
     if row.kind ~= "generated" or not p.str(row.decisionKey, label .. ".decisionKey") then
         return p.fail(label .. " has invalid generated decision")
     end
     if row.waveCount ~= nil and not ordinal(row.waveCount, label .. ".waveCount") then
         return p.fail(label .. " has invalid wave count")
+    end
+    if row.baseRoll ~= nil and (not p.int(row.baseRoll, label .. ".baseRoll", 0) or row.baseRoll > 10000) then
+        return p.fail(label .. " has invalid base roll")
     end
     if row.highlight ~= nil then
         local highlight, highlightError = enemy(row.highlight, label .. ".highlight")
@@ -37,7 +40,7 @@ function generated.decode(value, label)
         local seen = {}
         for index, valueWave in ipairs(waves) do
             local path = label .. ".waves[" .. index .. "]"
-            local wave, waveError = p.exact(valueWave, { "waveIndex", "types" }, { "shares" }, path)
+            local wave, waveError = p.exact(valueWave, { "waveIndex", "types" }, { "allocations" }, path)
             if not wave then return nil, waveError end
             if not ordinal(wave.waveIndex, path .. ".waveIndex") or seen[wave.waveIndex]
                 or (row.waveCount ~= nil and wave.waveIndex > row.waveCount) then
@@ -60,22 +63,18 @@ function generated.decode(value, label)
                 or types[1].nativeId ~= row.highlight.nativeId) then
                 return p.fail(path .. " must seed its declared highlight first")
             end
-            if wave.shares ~= nil then
-                local shares, sharesError = p.arr(wave.shares, path .. ".shares", 5)
-                if not shares then return nil, sharesError end
-                if #types < 2 or #shares ~= #types then return p.fail(path .. " shares must match types") end
-                local sum = 0
-                for _, share in ipairs(shares) do
-                    if not p.num(share, path .. ".shares") or share <= 0 or share > 1 then
-                        return p.fail(path .. " shares must be positive fractions")
+            if wave.allocations ~= nil then
+                if type(wave.allocations) ~= "table" then return p.fail(path .. " allocations must be an object") end
+                for name, allocation in pairs(wave.allocations) do
+                    if type(name) ~= "string" or not p.num(allocation, path .. ".allocations") or allocation < 0
+                        or nativeIds[name] == nil then
+                        return p.fail(path .. " allocations must name generated types with nonnegative values")
                     end
-                    sum = sum + share
                 end
-                if math.abs(sum - 1) > 1e-9 then return p.fail(path .. " shares must sum to one") end
             end
         end
     end
-    if row.waveCount == nil and row.highlight == nil and row.waves == nil then
+    if row.baseRoll == nil and row.waveCount == nil and row.highlight == nil and row.waves == nil then
         return p.fail(label .. " has no active override")
     end
     return row

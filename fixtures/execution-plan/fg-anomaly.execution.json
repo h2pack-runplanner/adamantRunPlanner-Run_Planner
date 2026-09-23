@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 44,
+  "protocolVersion": 45,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "golden-fg",
   "routeKey": "Underworld",
@@ -3821,5 +3821,5 @@
       }
     }
   ],
-  "planFingerprint": "fc0efed4"
+  "planFingerprint": "2528544c"
 }

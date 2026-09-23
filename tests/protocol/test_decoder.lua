@@ -29,7 +29,7 @@ function TestProtocol.testGeneratedEncounterSparseOperands()
             "waves":[{"waveIndex":3,"types":[
                 {"choiceKey":"Guard","nativeId":"Guard"},
                 {"choiceKey":"Mage","nativeId":"Mage"}
-            ],"shares":[0.4,0.6]}]
+            ],"allocations":{"Mage":12}}]
         }]]))
     end
     lu.assertNotNil(generated.decode(value(), "generated"))
@@ -39,8 +39,8 @@ function TestProtocol.testGeneratedEncounterSparseOperands()
         function(row) row.unknown = true end,
         function(row) row.waves[2] = row.waves[1] end,
         function(row) row.waves[1].waveIndex = 4 end,
-        function(row) row.waves[1].shares[1] = 0 end,
-        function(row) row.waves[1].shares[1] = 0.2 end,
+        function(row) row.waves[1].allocations.Unknown = 0 end,
+        function(row) row.waves[1].allocations.Mage = -1 end,
         function(row) row.waves[1].types[2] = row.waves[1].types[1] end,
         function(row) row.waves[1].types[1], row.waves[1].types[2] = row.waves[1].types[2], row.waves[1].types[1] end,
     }) do
