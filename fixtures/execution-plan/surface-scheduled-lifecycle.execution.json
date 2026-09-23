@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 43,
+  "protocolVersion": 44,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "surface-4",
   "routeKey": "Surface",
@@ -590,6 +590,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ApolloUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-opening\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"N\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-n-opening\"}]",
         "kind": "batch",
@@ -1020,6 +1035,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "AresUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-prehub\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-prehub\"]",
         "kind": "terminal"
@@ -1224,6 +1254,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05\"]",
         "kind": "terminal"
@@ -1392,6 +1436,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxHealthDropSmall",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05-sideDoor2\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor2\"]",
         "kind": "terminal"
@@ -1467,6 +1525,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxManaDropSmall",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05-sideDoor1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor1\"]",
         "kind": "terminal"
@@ -1562,6 +1634,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HephaestusUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-miniBoss01\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-miniBoss01\"]",
         "kind": "terminal"
@@ -1750,6 +1837,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxManaDropBig",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat02\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02\"]",
         "kind": "terminal"
@@ -1881,6 +1982,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "RoomMoneyTinyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat02-sideDoor1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02-sideDoor1\"]",
         "kind": "terminal"
@@ -1985,6 +2100,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards",
+              "source": "AresUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat11\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat11\"]",
         "kind": "terminal"
@@ -2141,6 +2271,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "EarthBoost",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat11-sideDoor1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat11-sideDoor1\"]",
         "kind": "terminal"
@@ -2254,6 +2398,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards",
+              "source": "DemeterUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat23\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat23\"]",
         "kind": "terminal"
@@ -2447,6 +2606,20 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "WeaponUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat03\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat03\"]",
         "kind": "terminal"
@@ -2580,6 +2753,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss\"]",
         "kind": "fixed",
@@ -2630,6 +2804,9 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss:boss\"]",
         "kind": "fixed",
@@ -2785,6 +2962,24 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"useFountain\"]",
+          "description": { "kind": "useFountain" },
+          "transactionOwner": "[\"roomAction\",\"Surface\",\"N\",\"surface-n-preboss:postboss\",\"[\\\"useFountain\\\"]\"]"
+        },
+        {
+          "key": "[\"interactAcquisitionEntry\",\"hermesShrineDelivery\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22N%22%2C%22surface-n-preboss%3Apostboss%22%2C%22initial%3Afirst%22%5D\"]",
+          "description": {
+            "kind": "interactAcquisitionEntry",
+            "reward": {
+              "rewardType": "HealBigDrop",
+              "producerLifecycleKey": "HermesShrineDelivery"
+            }
+          },
+          "transactionOwner": "[\"acquisitionEntry\",\"Surface\",\"N\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"N\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"N\\\\\\\",\\\\\\\"surface-n-preboss:postboss\\\\\\\"]\\\",\\\"hermesShrineDelivery\\\"]\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22N%22%2C%22surface-n-preboss%3Apostboss%22%2C%22initial%3Afirst%22%5D\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss:postboss\"]",
         "kind": "fixed",
@@ -2868,6 +3063,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-intro\"}]",
         "kind": "batch",
@@ -3030,6 +3226,37 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
+          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
+          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\"]"
+        },
+        {
+          "key": "[\"interactWheelReward\",\"wheel1\"]",
+          "description": {
+            "kind": "interactWheelReward",
+            "wheelKey": "wheel1",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\",\"offer1\"]"
+        },
+        {
+          "key": "[\"interactAcquisitionEntry\",\"hermesShrineDelivery\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22N%22%2C%22surface-n-preboss%3Apostboss%22%2C%22initial%3AsecondLeft%22%5D\"]",
+          "description": {
+            "kind": "interactAcquisitionEntry",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "HermesShrineDelivery"
+            }
+          },
+          "transactionOwner": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-combat04\\\\\\\"]\\\",\\\"hermesShrineDelivery\\\"]\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22N%22%2C%22surface-n-preboss%3Apostboss%22%2C%22initial%3AsecondLeft%22%5D\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat04\"}]",
         "kind": "batch",
@@ -3217,6 +3444,26 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
+          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
+          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\"]"
+        },
+        {
+          "key": "[\"interactWheelReward\",\"wheel1\"]",
+          "description": {
+            "kind": "interactWheelReward",
+            "wheelKey": "wheel1",
+            "reward": {
+              "rewardType": "MetaCurrencyBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\",\"offer1\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat07\"}]",
         "kind": "batch",
@@ -3417,6 +3664,35 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
+          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
+          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\"]"
+        },
+        {
+          "key": "[\"interactWheelReward\",\"wheel1\"]",
+          "description": {
+            "kind": "interactWheelReward",
+            "wheelKey": "wheel1",
+            "reward": {
+              "rewardType": "RoomMoneyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\",\"offer1\"]"
+        },
+        {
+          "key": "[\"interactEncounter\",\"Combat1\"]",
+          "description": {
+            "kind": "interactEncounter",
+            "phaseKey": "Combat1",
+            "encounterKey": "IcarusCombatO"
+          },
+          "transactionOwner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat01\"},\"Combat1\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat01\"}]",
         "kind": "batch",
@@ -3651,6 +3927,36 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"beforeCombat\",\"chosenSource\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Devotion",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "AresUpgrade",
+              "spurnedSource": "HephaestusUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"chosenSource\"]"
+        },
+        {
+          "key": "[\"interactIncomingReward\",\"afterCombat\",\"spurnedSource\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Devotion",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "AresUpgrade",
+              "spurnedSource": "HephaestusUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"spurnedSource\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-devotion\"}]",
         "kind": "batch",
@@ -3805,6 +4111,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactEncounter\",\"Encounter\"]",
+          "description": { "kind": "interactEncounter", "phaseKey": "Encounter" },
+          "transactionOwner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-story\"},\"Encounter\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-story\"}]",
         "kind": "batch",
@@ -3956,6 +4269,26 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
+          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
+          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\"]"
+        },
+        {
+          "key": "[\"interactWheelReward\",\"wheel1\"]",
+          "description": {
+            "kind": "interactWheelReward",
+            "wheelKey": "wheel1",
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\",\"offer1\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat02\"}]",
         "kind": "batch",
@@ -4106,6 +4439,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss\"]",
         "kind": "fixed",
@@ -4168,6 +4502,9 @@
           }
         ]
       },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss:boss\"]",
         "kind": "fixed",
@@ -4351,6 +4688,24 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"useFountain\"]",
+          "description": { "kind": "useFountain" },
+          "transactionOwner": "[\"roomAction\",\"Surface\",\"O\",\"surface-o-preboss:postboss\",\"[\\\"useFountain\\\"]\"]"
+        },
+        {
+          "key": "[\"interactAcquisitionEntry\",\"hermesShrineDelivery\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22O%22%2C%22surface-o-preboss%3Apostboss%22%2C%22initial%3Afirst%22%5D\"]",
+          "description": {
+            "kind": "interactAcquisitionEntry",
+            "reward": {
+              "rewardType": "HealBigDrop",
+              "producerLifecycleKey": "HermesShrineDelivery"
+            }
+          },
+          "transactionOwner": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-preboss:postboss\\\\\\\"]\\\",\\\"hermesShrineDelivery\\\"]\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22O%22%2C%22surface-o-preboss%3Apostboss%22%2C%22initial%3Afirst%22%5D\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss:postboss\"]",
         "kind": "fixed",
@@ -4435,6 +4790,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-intro\"}]",
         "kind": "batch",
@@ -4659,6 +5015,42 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"P\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"P\\\",\\\"surface-p-1-1-p_combat03\\\"]\",\"self\"]"
+        },
+        {
+          "key": "[\"interactAcquisitionEntry\",\"hermesShrineDelivery\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22O%22%2C%22surface-o-preboss%3Apostboss%22%2C%22initial%3AsecondLeft%22%5D\"]",
+          "description": {
+            "kind": "interactAcquisitionEntry",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "HermesShrineDelivery"
+            }
+          },
+          "transactionOwner": "[\"acquisitionEntry\",\"Surface\",\"P\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"P\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"P\\\\\\\",\\\\\\\"surface-p-1-1-p_combat03\\\\\\\"]\\\",\\\"hermesShrineDelivery\\\"]\",\"hermesShrineDelivery:%5B%22Surface%22%2C%22O%22%2C%22surface-o-preboss%3Apostboss%22%2C%22initial%3AsecondLeft%22%5D\"]"
+        },
+        {
+          "key": "[\"interactAcquisitionEntry\",\"roomExit\",\"clockedTraitGenerated:%5B%22traitOffer%22%2C%22Surface%22%2C%22O%22%2C%22%5B%5C%22encounterPhase%5C%22%2C%5C%22Surface%5C%22%2C%5C%22O%5C%22%2C%7B%5C%22kind%5C%22%3A%5C%22occurrence%5C%22%2C%5C%22occurrenceId%5C%22%3A%5C%22surface-o-combat01%5C%22%7D%2C%5C%22Combat1%5C%22%5D%22%2C%22selection%22%5D:pom1\"]",
+          "description": {
+            "kind": "interactAcquisitionEntry",
+            "reward": {
+              "rewardType": "StoreRewardRandomStack",
+              "producerLifecycleKey": "GeneratedTraitPickup"
+            }
+          },
+          "transactionOwner": "[\"acquisitionEntry\",\"Surface\",\"P\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"P\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"P\\\\\\\",\\\\\\\"surface-p-1-1-p_combat03\\\\\\\"]\\\",\\\"roomExit\\\"]\",\"clockedTraitGenerated:%5B%22traitOffer%22%2C%22Surface%22%2C%22O%22%2C%22%5B%5C%22encounterPhase%5C%22%2C%5C%22Surface%5C%22%2C%5C%22O%5C%22%2C%7B%5C%22kind%5C%22%3A%5C%22occurrence%5C%22%2C%5C%22occurrenceId%5C%22%3A%5C%22surface-o-combat01%5C%22%7D%2C%5C%22Combat1%5C%22%5D%22%2C%22selection%22%5D:pom1\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-1-1-p_combat03\"}]",
         "kind": "batch",
@@ -4841,6 +5233,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"P\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"P\\\",\\\"surface-p-2-1-p_combat02\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-2-1-p_combat02\"}]",
         "kind": "batch",
@@ -5014,6 +5420,20 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"P\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"P\\\",\\\"surface-p-3-1-p_combat04\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-3-1-p_combat04\"}]",
         "kind": "batch",
@@ -5228,6 +5648,20 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"P\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"P\\\",\\\"surface-p-4-1-p_combat07\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-4-1-p_combat07\"}]",
         "kind": "batch",
@@ -5438,6 +5872,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "DemeterUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"P\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"P\\\",\\\"surface-p-5-1-p_miniboss01\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-5-1-p_miniboss01\"}]",
         "kind": "batch",
@@ -5621,6 +6070,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "RoomMoneyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"P\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"P\\\",\\\"surface-p-6-1-p_combat10\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-6-1-p_combat10\"}]",
         "kind": "batch",
@@ -5777,6 +6240,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactEncounter\",\"Encounter\"]",
+          "description": { "kind": "interactEncounter", "phaseKey": "Encounter" },
+          "transactionOwner": "[\"encounterPhase\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-7-1-p_story01\"},\"Encounter\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-7-1-p_story01\"}]",
         "kind": "batch",
@@ -5942,6 +6412,20 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"P\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"P\\\",\\\"surface-p-8-1-p_combat12\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"P\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-p-8-1-p_combat12\"}]",
         "kind": "batch",
@@ -6116,6 +6600,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-preboss-shop\"]",
         "kind": "fixed",
@@ -6159,6 +6644,9 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-preboss-shop:boss\"]",
         "kind": "fixed",
@@ -6285,6 +6773,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"useFountain\"]",
+          "description": { "kind": "useFountain" },
+          "transactionOwner": "[\"roomAction\",\"Surface\",\"P\",\"surface-p-preboss-shop:postboss\",\"[\\\"useFountain\\\"]\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-preboss-shop:postboss\"]",
         "kind": "fixed",
@@ -6326,6 +6821,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-intro\"}]",
         "kind": "batch",
@@ -6381,6 +6877,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-foyer\"}]",
         "kind": "batch",
@@ -6468,6 +6965,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-first-fork\"}]",
         "kind": "batch",
@@ -6668,6 +7166,21 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards",
+              "source": "AresUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"Q\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-first-miniboss-1\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-first-miniboss-1\"}]",
         "kind": "batch",
@@ -6806,6 +7319,7 @@
           }
         ]
       },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-ordinary\"}]",
         "kind": "batch",
@@ -6893,6 +7407,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-second-fork\"}]",
         "kind": "batch",
@@ -7064,6 +7579,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "WeaponUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "TyphonBossRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"Q\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-second-miniboss-1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-second-miniboss-1\"}]",
         "kind": "batch",
@@ -7215,6 +7744,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-preboss\"]",
         "kind": "fixed",
@@ -7277,6 +7807,9 @@
           }
         ]
       },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-preboss:boss\"]",
         "kind": "terminal"
@@ -7392,6 +7925,7 @@
         "requiredObjects": ["SoulPylon"]
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat01\"]",
         "kind": "terminal"
@@ -7415,6 +7949,7 @@
         "requiredObjects": ["SoulPylon"]
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat09\"]",
         "kind": "terminal"
@@ -7439,6 +7974,7 @@
         "requiredObjects": ["SoulPylon"]
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat10\"]",
         "kind": "terminal"
@@ -7462,6 +7998,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor3\"]",
         "kind": "terminal"
@@ -7485,6 +8022,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02-sideDoor2\"]",
         "kind": "terminal"
@@ -7509,6 +8047,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-1-2-p_combat05\"]",
         "kind": "terminal"
@@ -7533,6 +8072,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-2-2-p_combat06\"]",
         "kind": "terminal"
@@ -7557,6 +8097,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-3-2-p_combat08\"]",
         "kind": "terminal"
@@ -7582,6 +8123,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-4-2-p_combat11\"]",
         "kind": "terminal"
@@ -7606,6 +8148,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-5-2-p_combat09\"]",
         "kind": "terminal"
@@ -7630,6 +8173,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-6-2-p_combat13\"]",
         "kind": "terminal"
@@ -7654,6 +8198,7 @@
         "fountain": {}
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-7-2-p_reprieve01\"]",
         "kind": "terminal"
@@ -7678,6 +8223,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-8-2-p_combat14\"]",
         "kind": "terminal"
@@ -7701,6 +8247,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-preboss-reward\"]",
         "kind": "terminal"
@@ -7725,6 +8272,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-first-miniboss-2\"]",
         "kind": "terminal"
@@ -7748,11 +8296,12 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-second-miniboss-2\"]",
         "kind": "terminal"
       }
     }
   ],
-  "planFingerprint": "a3855d1b"
+  "planFingerprint": "a9ec6964"
 }

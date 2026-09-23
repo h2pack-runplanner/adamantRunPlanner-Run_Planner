@@ -159,6 +159,145 @@ local function validateFieldsCageSlots(row, label)
     return true
 end
 
+local function guideDescription(value, label)
+    local record, errorMessage = p.obj(value, label)
+    if not record then return nil, errorMessage end
+    local kind = record.kind
+    if kind == "collectRequiredReward" then
+        return p.exact(record, { "kind" }, {}, label)
+    end
+    if kind == "completeFieldsCage" then
+        local row, rowError = p.exact(record, { "kind", "phaseKey" }, {}, label)
+        if not row then return nil, rowError end
+        if not p.str(row.phaseKey, label .. ".phaseKey") then return p.fail(label .. " has invalid phaseKey") end
+        return row
+    end
+    if kind == "interactIncomingReward" or kind == "interactLocalReward" then
+        local row, rowError = p.exact(record, { "kind" }, { "reward", "conversion" }, label)
+        if not row then return nil, rowError end
+        if row.reward ~= nil then
+            local _, rewardError = rewards.reward(row.reward, label .. ".reward")
+            if rewardError then return nil, rewardError end
+        end
+        if row.conversion ~= nil and row.conversion ~= "timePiece" then
+            return p.fail(label .. " has invalid reward conversion")
+        end
+        return row
+    end
+    if kind == "chooseRewardWheel" then
+        local row, rowError = p.exact(record, { "kind", "wheelKey" }, {}, label)
+        if not row then return nil, rowError end
+        if not p.str(row.wheelKey, label .. ".wheelKey") then return p.fail(label .. " has invalid wheelKey") end
+        return row
+    end
+    if kind == "interactWheelReward" then
+        local row, rowError = p.exact(record, { "kind", "wheelKey" }, { "reward", "conversion" }, label)
+        if not row then return nil, rowError end
+        if not p.str(row.wheelKey, label .. ".wheelKey") then return p.fail(label .. " has invalid wheelKey") end
+        if row.reward ~= nil then
+            local _, rewardError = rewards.reward(row.reward, label .. ".reward")
+            if rewardError then return nil, rewardError end
+        end
+        if row.conversion ~= nil and row.conversion ~= "timePiece" then
+            return p.fail(label .. " has invalid wheel conversion")
+        end
+        return row
+    end
+    if kind == "interactShopOffer" then
+        local row, rowError = p.exact(record, { "kind", "offerKey" }, { "rewardType", "conversion" }, label)
+        if not row then return nil, rowError end
+        if not p.str(row.offerKey, label .. ".offerKey")
+            or (row.rewardType ~= nil and not p.str(row.rewardType, label .. ".rewardType"))
+            or (row.conversion ~= nil and row.conversion ~= "timePiece" and row.conversion ~= "anvilOfFates") then
+            return p.fail(label .. " has invalid Shop guide operands")
+        end
+        return row
+    end
+    if kind == "purchaseStygianWellOffer" then
+        local row, rowError = p.exact(record, { "kind", "generationKey" }, { "itemKey", "effect", "twistResultKey" }, label)
+        if not row then return nil, rowError end
+        local effects = { neutral = true, spark = true, yarn = true, hymn = true, discount = true, emptySlot = true,
+            extended = true, twist = true, lastStand = true }
+        if not p.one(row.generationKey, { ["initial:healing"] = true, ["initial:secondLeft"] = true,
+            ["initial:secondRight"] = true, travelDealRefill = true }, label .. ".generationKey")
+            or (row.itemKey ~= nil and not p.str(row.itemKey, label .. ".itemKey"))
+            or (row.effect ~= nil and not p.one(row.effect, effects, label .. ".effect"))
+            or (row.twistResultKey ~= nil and not p.str(row.twistResultKey, label .. ".twistResultKey")) then
+            return p.fail(label .. " has invalid Well guide operands")
+        end
+        return row
+    end
+    if kind == "sellPurgingPoolTrait" then
+        local row, rowError = p.exact(record, { "kind", "slotKey", "traitKey" }, {}, label)
+        if not row then return nil, rowError end
+        if not p.one(row.slotKey, { left = true, middle = true, right = true }, label .. ".slotKey")
+            or not p.str(row.traitKey, label .. ".traitKey") then
+            return p.fail(label .. " has invalid Pool guide operands")
+        end
+        return row
+    end
+    if kind == "interactEncounter" or kind == "interactGorgon" then
+        local row, rowError = p.exact(record, { "kind", "phaseKey" }, { "encounterKey" }, label)
+        if not row then return nil, rowError end
+        if not p.str(row.phaseKey, label .. ".phaseKey")
+            or (row.encounterKey ~= nil and not p.str(row.encounterKey, label .. ".encounterKey")) then
+            return p.fail(label .. " has invalid encounter guide operands")
+        end
+        return row
+    end
+    if kind == "interactAcquisitionEntry" then
+        local row, rowError = p.exact(record, { "kind" }, { "reward", "conversion" }, label)
+        if not row then return nil, rowError end
+        if row.reward ~= nil then
+            local _, rewardError = rewards.reward(row.reward, label .. ".reward")
+            if rewardError then return nil, rewardError end
+        end
+        if row.conversion ~= nil and row.conversion ~= "timePiece" and row.conversion ~= "anvilOfFates" then
+            return p.fail(label .. " has invalid acquisition conversion")
+        end
+        return row
+    end
+    if kind == "useFountain" then
+        local row, rowError = p.exact(record, { "kind" }, { "aromaticPhialTarget" }, label)
+        if not row then return nil, rowError end
+        if row.aromaticPhialTarget ~= nil and not p.str(row.aromaticPhialTarget, label .. ".aromaticPhialTarget") then
+            return p.fail(label .. " has invalid fountain guide operand")
+        end
+        return row
+    end
+    if kind == "interactKeepsakeRack" then
+        local row, rowError = p.exact(record, { "kind" }, { "keepsakeKey" }, label)
+        if not row then return nil, rowError end
+        if row.keepsakeKey ~= nil and not p.str(row.keepsakeKey, label .. ".keepsakeKey") then
+            return p.fail(label .. " has invalid keepsake guide operand")
+        end
+        return row
+    end
+    return p.fail(label .. ".kind is unsupported")
+end
+
+local function roomGuide(value, transactionsByOwner, label)
+    local rows, errorMessage = p.arr(value, label)
+    if not rows then return nil, errorMessage end
+    local keys = {}
+    for index, valueRow in ipairs(rows) do
+        local row, rowError = p.exact(valueRow, { "key", "description" }, { "transactionOwner" }, label .. "[" .. index .. "]")
+        if not row then return nil, rowError end
+        if not p.str(row.key, label .. "[" .. index .. "].key", p.MAX_OWNER_STRING) or keys[row.key] then
+            return p.fail(label .. " has invalid or duplicate action key")
+        end
+        keys[row.key] = true
+        if row.transactionOwner ~= nil and (not p.str(row.transactionOwner,
+            label .. "[" .. index .. "].transactionOwner", p.MAX_OWNER_STRING)
+            or transactionsByOwner[row.transactionOwner] == nil) then
+            return p.fail(label .. ".transactionOwner must name one occurrence transaction")
+        end
+        local _, descriptionError = guideDescription(row.description, label .. "[" .. index .. "].description")
+        if descriptionError then return nil, descriptionError end
+    end
+    return rows
+end
+
 local function anomaly(value, biomeKey, label)
     local record, errorMessage = p.exact(
         value,
@@ -304,7 +443,7 @@ function occurrences.decode(value, selected, label)
     for index, valueRow in ipairs(rows) do
         local row, rowError = p.exact(
             valueRow,
-            { "id", "owner", "biomeKey", "gameName", "kind", "overview", "timeline", "doors" },
+            { "id", "owner", "biomeKey", "gameName", "kind", "overview", "timeline", "roomGuide", "doors" },
             { "anomaly", "resumeBoundary", "roomExitConformance", "diagnostics" },
             label .. "[" .. index .. "]"
         )
@@ -342,6 +481,8 @@ function occurrences.decode(value, selected, label)
         )
         if type(byOwnerOrError) == "string" then return nil, byOwnerOrError end
         row.transactionsByOwner = byOwnerOrError
+        local _, guideError = roomGuide(row.roomGuide, row.transactionsByOwner, label .. "[" .. index .. "].roomGuide")
+        if guideError then return nil, guideError end
         for _, offer in ipairs((row.overview.shop and row.overview.shop.offers) or {}) do
             if offer.transactionOwner ~= nil and row.transactionsByOwner[offer.transactionOwner] == nil then
                 return p.fail(label .. ".overview.shop transaction owner must name one occurrence transaction")

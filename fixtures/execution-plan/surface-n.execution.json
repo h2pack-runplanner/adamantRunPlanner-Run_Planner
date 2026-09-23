@@ -1,8 +1,8 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 43,
+  "protocolVersion": 44,
   "catalogVersion": "0.55.0-anvil-of-fates",
-  "projectId": "surface-2",
+  "projectId": "surface-1",
   "routeKey": "Surface",
   "startingLoadout": {
     "weaponKey": "WeaponStaffSwing",
@@ -268,6 +268,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ApolloUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-opening\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Surface\",\"N\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-n-opening\"}]",
         "kind": "batch",
@@ -313,7 +328,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": [],
@@ -412,11 +428,11 @@
                 "callingCard": null,
                 "timePiece": null,
                 "figLeaf": null,
-                "gorgon": null,
                 "phial": null,
                 "figurine": null,
                 "stone": null,
-                "transcendentEmbryo": null
+                "transcendentEmbryo": null,
+                "gorgon": null
               },
               "steadyGrowth": [],
               "hermesShrineDeliveries": [],
@@ -453,7 +469,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "godPool": {
               "acquiredSourceKeys": ["ApolloUpgrade"],
@@ -649,6 +666,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "AresUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-prehub\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-prehub\"]",
         "kind": "terminal"
@@ -816,6 +848,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05\"]",
         "kind": "terminal"
@@ -846,7 +892,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         },
@@ -872,7 +919,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "traits": {
               "equipped": [
@@ -945,6 +993,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxHealthDropSmall",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05-sideDoor2\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor2\"]",
         "kind": "terminal"
@@ -1020,6 +1082,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxManaDropSmall",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat05-sideDoor1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor1\"]",
         "kind": "terminal"
@@ -1115,6 +1191,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HephaestusUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-miniBoss01\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-miniBoss01\"]",
         "kind": "terminal"
@@ -1266,6 +1357,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxManaDropBig",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat02\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02\"]",
         "kind": "terminal"
@@ -1307,7 +1412,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ]
           }
         }
@@ -1361,6 +1467,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "RoomMoneyTinyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat02-sideDoor1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02-sideDoor1\"]",
         "kind": "terminal"
@@ -1465,6 +1585,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards",
+              "source": "AresUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat11\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat11\"]",
         "kind": "terminal"
@@ -1508,7 +1643,8 @@
                 "remaining": { "kind": "exact", "count": 19 }
               },
               { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } }
+              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
+              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
             ],
             "traits": {
               "equipped": [
@@ -1583,6 +1719,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "EarthBoost",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "SubRoomRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat11-sideDoor1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat11-sideDoor1\"]",
         "kind": "terminal"
@@ -1605,6 +1755,27 @@
               "biomeEncounterDepth": 6,
               "routeEncounterDepth": 6,
               "roomHistoryOrdinal": 17
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
+                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
+                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
+                { "slot": "Rush", "traitKey": "AresSprintBoon" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 5, "Air": 1, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Common": 5 },
+              "upgradableCount": 4,
+              "bannedTraitKeys": []
             }
           }
         }
@@ -1675,6 +1846,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards",
+              "source": "ApolloUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat23\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat23\"]",
         "kind": "terminal"
@@ -1724,7 +1910,7 @@
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
                 { "slot": "Spell" }
               ],
-              "elements": { "Aether": 0, "Earth": 4, "Air": 2, "Fire": 0, "Water": 0 },
+              "elements": { "Aether": 0, "Earth": 5, "Air": 2, "Fire": 0, "Water": 0 },
               "godRarityCounts": { "Common": 6 },
               "upgradableCount": 5,
               "bannedTraitKeys": []
@@ -1782,15 +1968,19 @@
                   "kind": "traits",
                   "giver": "SpellDrop",
                   "options": [
+                    { "key": "SpellLaserTrait" },
                     { "key": "SpellSummonTrait" },
-                    { "key": "SpellTimeSlowTrait" },
-                    { "key": "SpellPotionTrait" }
+                    { "key": "SpellTimeSlowTrait" }
                   ],
                   "selected": "option1",
                   "hexTree": {
                     "layoutKey": "Lung",
-                    "rareTalentKeys": ["SummonSpeedTalent", "SummonTeleportTalent"],
-                    "epicTalentKeys": ["SummonDamageSplitTalent"]
+                    "rareTalentKeys": ["LaserAoETalent", "LaserStartAoETalent"],
+                    "epicTalentKeys": ["LaserTripleTalent"],
+                    "godSent": {
+                      "olympianTalentKey": "LaserApolloTalent",
+                      "lineageTalentKey": "OlympianSpellCountTalent"
+                    }
                   }
                 }
               }
@@ -1801,6 +1991,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "SpellDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "HubRewards"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"N\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"N\\\",\\\"surface-n-combat09\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat09\"]",
         "kind": "terminal"
@@ -1845,7 +2049,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellSummonTrait" }
+                { "traitKey": "SpellLaserTrait" }
               ],
               "slots": [
                 { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
@@ -1853,20 +2057,22 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellSummonTrait" }
+                { "slot": "Spell", "traitKey": "SpellLaserTrait" }
               ],
-              "elements": { "Aether": 0, "Earth": 4, "Air": 2, "Fire": 0, "Water": 0 },
+              "elements": { "Aether": 0, "Earth": 5, "Air": 2, "Fire": 0, "Water": 0 },
               "godRarityCounts": { "Common": 6 },
               "upgradableCount": 5,
               "bannedTraitKeys": []
             },
             "hexProgress": {
-              "spellTraitKey": "SpellSummonTrait",
+              "spellTraitKey": "SpellLaserTrait",
               "layoutKey": "Lung",
               "talentKeys": [
-                "SummonSpeedTalent",
-                "SummonTeleportTalent",
-                "SummonDamageSplitTalent"
+                "LaserAoETalent",
+                "LaserStartAoETalent",
+                "LaserTripleTalent",
+                "LaserApolloTalent",
+                "OlympianSpellCountTalent"
               ],
               "closed": false,
               "bankedPathPoints": 0,
@@ -1907,6 +2113,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss\"]",
         "kind": "fixed",
@@ -1957,6 +2164,9 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss:boss\"]",
         "kind": "fixed",
@@ -2044,6 +2254,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"useFountain\"]",
+          "description": { "kind": "useFountain" },
+          "transactionOwner": "[\"roomAction\",\"Surface\",\"N\",\"surface-n-preboss:postboss\",\"[\\\"useFountain\\\"]\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss:postboss\"]",
         "kind": "terminal"
@@ -2089,6 +2306,7 @@
         "requiredObjects": ["SoulPylon"]
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat01\"]",
         "kind": "terminal"
@@ -2112,6 +2330,7 @@
         "requiredObjects": ["SoulPylon"]
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat03\"]",
         "kind": "terminal"
@@ -2136,6 +2355,7 @@
         "requiredObjects": ["SoulPylon"]
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat10\"]",
         "kind": "terminal"
@@ -2159,6 +2379,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat05-sideDoor3\"]",
         "kind": "terminal"
@@ -2182,11 +2403,12 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-combat02-sideDoor2\"]",
         "kind": "terminal"
       }
     }
   ],
-  "planFingerprint": "55fea3cc"
+  "planFingerprint": "a35f4e1c"
 }

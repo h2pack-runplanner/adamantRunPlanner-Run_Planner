@@ -1,6 +1,6 @@
 {
   "format": "run-planner-execution",
-  "protocolVersion": 43,
+  "protocolVersion": 44,
   "catalogVersion": "0.55.0-anvil-of-fates",
   "projectId": "golden-fg",
   "routeKey": "Underworld",
@@ -532,6 +532,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ApolloUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-start\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-start\"}]",
         "kind": "batch",
@@ -802,6 +817,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MetaCurrencyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b1-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b1-e1\"}]",
         "kind": "batch",
@@ -929,6 +958,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ZeusUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b2-e1\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b2-e1\"}]",
         "kind": "batch",
@@ -1048,6 +1092,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b2-e2\"]",
         "kind": "terminal"
@@ -1101,6 +1146,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b3-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b3-e1\"}]",
         "kind": "batch",
@@ -1185,6 +1244,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b3-e2\"]",
         "kind": "terminal"
@@ -1243,6 +1303,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "StackUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b4-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b4-e1\"}]",
         "kind": "batch",
@@ -1347,6 +1421,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b4-e2\"]",
         "kind": "terminal"
@@ -1400,6 +1475,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MetaCardPointsCommonDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b5-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b5-e1\"}]",
         "kind": "batch",
@@ -1486,6 +1575,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b5-e2\"]",
         "kind": "terminal"
@@ -1551,6 +1641,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HeraUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b6-e1\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b6-e1\"}]",
         "kind": "batch",
@@ -1661,6 +1766,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b6-e2\"]",
         "kind": "terminal"
@@ -1714,6 +1820,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b7-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b7-e1\"}]",
         "kind": "batch",
@@ -1838,6 +1958,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "WeaponUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b8-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b8-e1\"}]",
         "kind": "batch",
@@ -1944,6 +2078,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b8-e2\"]",
         "kind": "terminal"
@@ -1997,6 +2132,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MetaCardPointsCommonDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b9-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b9-e1\"}]",
         "kind": "batch",
@@ -2081,6 +2230,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b9-e2\"]",
         "kind": "terminal"
@@ -2134,6 +2284,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "RoomMoneyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"F\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"F\\\",\\\"golden-f-b10-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"F\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-f-b10-e1\"}]",
         "kind": "batch",
@@ -2218,6 +2382,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-b10-e2\"]",
         "kind": "terminal"
@@ -2258,6 +2423,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-preboss-shop\"]",
         "kind": "fixed",
@@ -2305,6 +2471,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-preboss-free\"]",
         "kind": "terminal"
@@ -2324,6 +2491,9 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-preboss-shop:boss\"]",
         "kind": "fixed",
@@ -2391,6 +2561,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"useFountain\"]",
+          "description": { "kind": "useFountain" },
+          "transactionOwner": "[\"roomAction\",\"Underworld\",\"F\",\"golden-f-preboss-shop:postboss\",\"[\\\"useFountain\\\"]\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"F\",\"golden-f-preboss-shop:postboss\"]",
         "kind": "fixed",
@@ -2432,6 +2609,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-intro\"}]",
         "kind": "batch",
@@ -2542,6 +2720,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MetaCurrencyBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b1-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b1-e1\"}]",
         "kind": "batch",
@@ -2656,6 +2848,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MetaCurrencyBigDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "MetaProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b2-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b2-e1\"}]",
         "kind": "batch",
@@ -2751,6 +2957,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-b2-e2\"]",
         "kind": "terminal"
@@ -2803,6 +3010,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactEncounter\",\"Encounter\"]",
+          "description": { "kind": "interactEncounter", "phaseKey": "Encounter" },
+          "transactionOwner": "[\"encounterPhase\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b3-e1\"},\"Encounter\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b3-e1\"}]",
         "kind": "batch",
@@ -2899,6 +3113,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-b3-e2\"]",
         "kind": "terminal"
@@ -2922,6 +3137,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-b3-e3\"]",
         "kind": "terminal"
@@ -2975,6 +3191,20 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b4-e1\\\"]\",\"self\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b4-e1\"}]",
         "kind": "batch",
@@ -3076,6 +3306,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b5-e1\"}]",
         "kind": "batch",
@@ -3162,6 +3393,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-b5-e2\"]",
         "kind": "terminal"
@@ -3227,6 +3459,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HestiaUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b6-e1\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b6-e1\"}]",
         "kind": "batch",
@@ -3352,6 +3599,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-b6-e2\"]",
         "kind": "terminal"
@@ -3428,6 +3676,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HestiaUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"G\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"G\\\",\\\"golden-g-b7-e1\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"G\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-g-b7-e1\"}]",
         "kind": "batch",
@@ -3536,6 +3799,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-b7-e2\"]",
         "kind": "terminal"
@@ -3576,6 +3840,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-preboss-shop\"]",
         "kind": "fixed",
@@ -3623,6 +3888,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-preboss-free-2\"]",
         "kind": "terminal"
@@ -3642,6 +3908,9 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-preboss-shop:boss\"]",
         "kind": "fixed",
@@ -3709,6 +3978,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"useFountain\"]",
+          "description": { "kind": "useFountain" },
+          "transactionOwner": "[\"roomAction\",\"Underworld\",\"G\",\"golden-g-preboss-shop:postboss\",\"[\\\"useFountain\\\"]\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"G\",\"golden-g-preboss-shop:postboss\"]",
         "kind": "fixed",
@@ -3750,6 +4026,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"H\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-h-intro\"}]",
         "kind": "batch",
@@ -3915,6 +4192,40 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"completeFieldsCage\",\"Cage02\"]",
+          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage02" }
+        },
+        {
+          "key": "[\"interactLocalReward\",\"cages\",\"cage2\"]",
+          "description": {
+            "kind": "interactLocalReward",
+            "reward": {
+              "rewardType": "MaxManaDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"localReward\",\"Underworld\",\"H\",\"golden-h-combat02\",\"cages\",\"cage2\"]"
+        },
+        {
+          "key": "[\"completeFieldsCage\",\"Cage01\"]",
+          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage01" }
+        },
+        {
+          "key": "[\"interactLocalReward\",\"cages\",\"cage1\"]",
+          "description": {
+            "kind": "interactLocalReward",
+            "reward": {
+              "rewardType": "MaxHealthDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"localReward\",\"Underworld\",\"H\",\"golden-h-combat02\",\"cages\",\"cage1\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"H\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-h-combat02\"}]",
         "kind": "batch",
@@ -4116,6 +4427,40 @@
         ],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"completeFieldsCage\",\"Cage02\"]",
+          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage02" }
+        },
+        {
+          "key": "[\"interactLocalReward\",\"cages\",\"cage2\"]",
+          "description": {
+            "kind": "interactLocalReward",
+            "reward": {
+              "rewardType": "WeaponUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"localReward\",\"Underworld\",\"H\",\"golden-h-combat09\",\"cages\",\"cage2\"]"
+        },
+        {
+          "key": "[\"completeFieldsCage\",\"Cage01\"]",
+          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage01" }
+        },
+        {
+          "key": "[\"interactLocalReward\",\"cages\",\"cage1\"]",
+          "description": {
+            "kind": "interactLocalReward",
+            "reward": {
+              "rewardType": "HermesUpgrade",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"localReward\",\"Underworld\",\"H\",\"golden-h-combat09\",\"cages\",\"cage1\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"H\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-h-combat09\"}]",
         "kind": "batch",
@@ -4224,6 +4569,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"H\",\"golden-h-combat03\"]",
         "kind": "terminal"
@@ -4300,6 +4646,21 @@
         "dependencies": [],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
+          "description": {
+            "kind": "interactIncomingReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HestiaUpgrade"
+            }
+          },
+          "transactionOwner": "[\"acquisitionRole\",\"Underworld\",\"H\",\"[\\\"incomingReward\\\",\\\"Underworld\\\",\\\"H\\\",\\\"golden-h-miniboss01\\\"]\",\"source\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"H\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-h-miniboss01\"}]",
         "kind": "batch",
@@ -4435,6 +4796,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"H\",\"golden-h-bridge01\"]",
         "kind": "terminal"
@@ -4613,6 +4975,58 @@
         ],
         "obligations": []
       },
+      "roomGuide": [
+        {
+          "key": "[\"completeFieldsCage\",\"Cage03\"]",
+          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage03" }
+        },
+        {
+          "key": "[\"interactLocalReward\",\"cages\",\"cage3\"]",
+          "description": {
+            "kind": "interactLocalReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "HestiaUpgrade"
+            }
+          },
+          "transactionOwner": "[\"localReward\",\"Underworld\",\"H\",\"golden-h-combat05\",\"cages\",\"cage3\"]"
+        },
+        {
+          "key": "[\"completeFieldsCage\",\"Cage02\"]",
+          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage02" }
+        },
+        {
+          "key": "[\"interactLocalReward\",\"cages\",\"cage2\"]",
+          "description": {
+            "kind": "interactLocalReward",
+            "reward": {
+              "rewardType": "Boon",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress",
+              "source": "ApolloUpgrade"
+            }
+          },
+          "transactionOwner": "[\"localReward\",\"Underworld\",\"H\",\"golden-h-combat05\",\"cages\",\"cage2\"]"
+        },
+        {
+          "key": "[\"completeFieldsCage\",\"Cage01\"]",
+          "description": { "kind": "completeFieldsCage", "phaseKey": "Cage01" }
+        },
+        {
+          "key": "[\"interactLocalReward\",\"cages\",\"cage1\"]",
+          "description": {
+            "kind": "interactLocalReward",
+            "reward": {
+              "rewardType": "RoomMoneyDrop",
+              "producerLifecycleKey": "RoomReward",
+              "resolvedStoreKey": "RunProgress"
+            }
+          },
+          "transactionOwner": "[\"localReward\",\"Underworld\",\"H\",\"golden-h-combat05\",\"cages\",\"cage1\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"H\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-h-combat05\"}]",
         "kind": "batch",
@@ -4722,6 +5136,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"H\",\"golden-h-combat04\"]",
         "kind": "terminal"
@@ -4762,6 +5177,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"H\",\"golden-h-preboss-shop\"]",
         "kind": "fixed",
@@ -4809,6 +5225,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"H\",\"golden-h-preboss-free\"]",
         "kind": "terminal"
@@ -4828,6 +5245,9 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"H\",\"golden-h-preboss-shop:boss\"]",
         "kind": "fixed",
@@ -4895,6 +5315,13 @@
           }
         ]
       },
+      "roomGuide": [
+        {
+          "key": "[\"useFountain\"]",
+          "description": { "kind": "useFountain" },
+          "transactionOwner": "[\"roomAction\",\"Underworld\",\"H\",\"golden-h-preboss-shop:postboss\",\"[\\\"useFountain\\\"]\"]"
+        }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"H\",\"golden-h-preboss-shop:postboss\"]",
         "kind": "fixed",
@@ -4936,6 +5363,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"I\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-i-intro\"}]",
         "kind": "batch",
@@ -4997,6 +5425,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"I\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-i-combat01\"}]",
         "kind": "batch",
@@ -5066,6 +5495,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"I\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-i-combat03\"}]",
         "kind": "batch",
@@ -5146,6 +5576,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"I\",\"golden-i-story01\"]",
         "kind": "terminal"
@@ -5172,6 +5603,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"I\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-i-combat05\"}]",
         "kind": "batch",
@@ -5227,6 +5659,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"I\",\"golden-i-combat02\"]",
         "kind": "terminal"
@@ -5249,6 +5682,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"I\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-i-combat06\"}]",
         "kind": "batch",
@@ -5303,6 +5737,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"exitDecision\",\"Underworld\",\"I\",{\"kind\":\"occurrence\",\"occurrenceId\":\"golden-i-combat09\"}]",
         "kind": "batch",
@@ -5409,6 +5844,7 @@
         }
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"I\",\"golden-i-preboss\"]",
         "kind": "fixed",
@@ -5457,6 +5893,7 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"I\",\"golden-i-miniboss01\"]",
         "kind": "terminal"
@@ -5476,6 +5913,9 @@
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
+      "roomGuide": [
+        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
+      ],
       "doors": {
         "owner": "[\"occurrence\",\"Underworld\",\"I\",\"golden-i-preboss:boss\"]",
         "kind": "terminal"
@@ -5504,5 +5944,5 @@
       }
     }
   ],
-  "planFingerprint": "2e6dd060"
+  "planFingerprint": "e594c197"
 }

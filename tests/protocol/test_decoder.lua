@@ -242,6 +242,7 @@ local arrayFields = {
     transactions = true,
     dependencies = true,
     obligations = true,
+    roomGuide = true,
     roles = true,
     options = true,
     arcana = true,
@@ -294,12 +295,41 @@ local function minimalPlan(transactions)
                 kind = "opening",
                 overview = { encounterPhases = {}, requiredObjects = {} },
                 timeline = { transactions = transactions, dependencies = {}, obligations = obligations },
+                roomGuide = {},
                 doors = { kind = "terminal", owner = "doors-owner" },
             },
         },
     })
     refreshFingerprint(plan)
     return plan
+end
+
+function TestProtocol.testRoomGuideRequiresUniqueKeysAndLocalTransactionOwners()
+    local plan = minimalPlan({ {
+        kind = "acquisition", owner = "source", sourceOwner = "source", reward = reward(),
+        producerLifecycleKey = "pickup", roles = { role() }, window = window(),
+    } })
+    plan.occurrences[1].roomGuide = tagged({ {
+        key = "incoming", transactionOwner = "source",
+        description = { kind = "interactIncomingReward", reward = reward() },
+    } }, "roomGuide", true)
+    refreshFingerprint(plan)
+    local decoded, errorMessage = protocol.decode(plan)
+    lu.assertNotNil(decoded, errorMessage)
+
+    plan.occurrences[1].roomGuide[1].transactionOwner = "missing"
+    refreshFingerprint(plan)
+    lu.assertNil(protocol.decode(plan))
+
+    plan.occurrences[1].roomGuide[1].transactionOwner = "source"
+    plan.occurrences[1].roomGuide[2] = plan.occurrences[1].roomGuide[1]
+    refreshFingerprint(plan)
+    lu.assertNil(protocol.decode(plan))
+
+    plan.occurrences[1].roomGuide[2] = nil
+    plan.occurrences[1].roomGuide[1].description.unexpected = true
+    refreshFingerprint(plan)
+    lu.assertNil(protocol.decode(plan))
 end
 
 local function minimalShrinePlan()
