@@ -17,6 +17,7 @@ local function initialize()
     local data = import("mods/host/data.lua")
     local runtime = import("mods/runtime/composition.lua").bind(_PLUGIN.config_mod_folder_path)
     local ui = import("mods/host/status_ui.lua").bind(runtime.inboxInspection, runtime.sessionInspection)
+    local guide = import("mods/room/guide.lua")
     local module = lib.createModule({
         pluginGuid = _PLUGIN.guid,
         modpack = "run-planner",
@@ -30,6 +31,7 @@ local function initialize()
     module.status.define(data.buildStatus())
     module.ui.tab(ui.drawTab)
     module.ui.quickContent(ui.drawQuickContent)
+    guide.attach(module, runtime.roomGuideInspection)
     runtime.attach(module)
     module.fallbackUi.attachGuiOnce(function(fallbackUi)
         rom.gui.add_imgui(fallbackUi.renderWindow)

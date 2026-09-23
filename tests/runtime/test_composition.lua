@@ -11,6 +11,9 @@ local nativeGame = require("tests.harness.native_game")
 local traitAcquisitions = require("mods.room.timeline.acquisitions.traits.hooks")
 local hexTreeDefinition = require("mods.spells.hex_tree")
 local loadoutHooks = require("mods.loadout.hooks")
+local roomSession = require("mods.room.session")
+local routeSession = require("mods.route.session")
+local roomGuide = require("mods.room.guide")
 local support = require("tests.harness.hook_composition")
 local capture, stub = support.capture, support.stub
 local attachFeatureHooks = support.attachFeatureHooks
@@ -36,6 +39,82 @@ local function generatedEncounterStub()
 end
 
 TestRuntimeComposition = {}
+
+function TestRuntimeComposition.testGuideInspectionProjectsActualRoomCompletionWithoutMutatingExecution()
+    local priorImport, priorRom = _G.import, _G.rom
+    local transaction = { owner = "guide-owner", kind = "fountainUse" }
+    local occurrence = {
+        id = "guide-room", gameName = "F_Combat01", overview = {},
+        roomGuide = { { key = "fountain", transactionOwner = "guide-owner", description = { kind = "useFountain" } } },
+        transactionsByOwner = { ["guide-owner"] = transaction },
+        timeline = { transactions = { transaction }, dependencies = {}, obligations = {} },
+    }
+    local plan = { selectedOccurrenceIds = { "guide-room" }, occurrencesById = { ["guide-room"] = occurrence } }
+    local route = routeSession.new(plan)
+    assert(routeSession.enter(route, "guide-room", "F_Combat01"))
+    local active = roomSession.new(occurrence, { owner = { ["guide-owner"] = { transaction = transaction } } })
+    local state = { state = "synchronized", reason = "ready", plan = plan, route = route,
+        room = { current = active }, diagnostics = {} }
+    local function actual(name)
+        local saved = _G.import
+        _G.import = nil
+        local value = require(name)
+        _G.import = saved
+        return value
+    end
+    local function freshImport(path)
+        if path == "mods/runtime/composition.lua" then return assert(loadfile("src/" .. path))() end
+        if path == "mods/protocol/json.lua" or path == "mods/protocol/decoder.lua" then
+            return { decode = function(value) return value end }
+        end
+        if path == "mods/host/inbox.lua" then
+            return { create = function() return {
+                activeSlot = function() return 1 end, select = function() end, load = function() end,
+                status = function() return {} end, plan = function() return plan end,
+            } end }
+        end
+        if path == "mods/runtime/session.lua" then
+            return { create = function() return state end,
+                status = function() return { state = state.state, reason = state.reason } end }
+        end
+        if path == "mods/route/session.lua" then return actual("mods.route.session") end
+        if path == "mods/room/coordinator.lua" then return actual("mods.room.coordinator") end
+        if path == "mods/spells/hex_tree.lua" then return { create = function() return { attach = function() end } end } end
+        if path == "mods/room/timeline/encounters/thessaly.lua" then return { create = shipCombatStub } end
+        if path == "mods/room/timeline/encounters/generated.lua" then return { create = generatedEncounterStub } end
+        return { attach = function() end }
+    end
+    _G.import, _G.rom = freshImport, { path = {} }
+    local runtime = freshImport("mods/runtime/composition.lua").bind("/tmp/run-planner-test")
+    local callbacks, tables = {}, {}
+    roomGuide.attach({ overlays = {
+        order = { module = 30 }, createLine = function() end,
+        createTable = function(name) tables[name] = true end,
+        onCommit = function(callback) callbacks.commit = callback end,
+        onInterval = function(_, _, callback) callbacks.interval = callback end,
+    } }, runtime.roomGuideInspection)
+    local overlay = {
+        setLine = function() end,
+        setTable = function(_, rows) tables.rows = rows end,
+        refreshOwned = function() end,
+    }
+    local overlayRuntime = { data = { read = function(alias)
+        lu.assertEquals(alias, "ShowRoomGuide")
+        return true
+    end } }
+    callbacks.interval(nil, overlayRuntime, overlay)
+    lu.assertEquals(tables.rows, { { number = "1.", instruction = "Use fountain" } })
+    local handle = assert(roomSession.resolve(active, function(index) return index.owner["guide-owner"] end, "test"))
+    assert(roomSession.complete(active, handle))
+    callbacks.interval(nil, overlayRuntime, overlay)
+    lu.assertEquals(tables.rows, {})
+    lu.assertTrue(roomSession.isCompleted(active, "guide-owner"))
+    state.state = "desynchronized"
+    callbacks.interval(nil, overlayRuntime, overlay)
+    lu.assertEquals(tables.rows, {})
+    lu.assertTrue(roomSession.isCompleted(active, "guide-owner"))
+    _G.import, _G.rom = priorImport, priorRom
+end
 
 function TestRuntimeComposition.testSuccessfulPostbossAdmissionIsLoggedOnce()
     local priorImport, priorRom = _G.import, _G.rom

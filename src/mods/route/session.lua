@@ -57,6 +57,60 @@ function routeSession.next(route)
     return id and route.plan.occurrencesById[id] or nil
 end
 
+local function parentForSide(route, occurrenceId)
+    for _, parent in pairs(route and route.plan.occurrencesById or {}) do
+        for _, slot in ipairs(parent.overview and parent.overview.localSlots or {}) do
+            if slot.room and slot.room.id == occurrenceId then return parent end
+        end
+    end
+    return nil
+end
+
+local function hubForRoom(route, occurrenceId)
+    for _, occurrence in pairs(route and route.plan.occurrencesById or {}) do
+        local hub = occurrence.overview and occurrence.overview.hub
+        if hub and hub.room and hub.room.gameName then
+            if occurrence.id == occurrenceId then return hub end
+            for _, slot in ipairs(hub.slots or {}) do
+                if slot.room and slot.room.id == occurrenceId then return hub end
+            end
+        end
+    end
+    return nil
+end
+
+-- The guide consumes this bounded navigation projection rather than inferring
+-- a new cursor from room names. Side rooms return to their native parent;
+-- after a transparent parent restore N returns to its Hub before another visit.
+function routeSession.guideNavigation(route)
+    if route == nil then return nil end
+    local current = route.currentOccurrence
+    if current ~= nil then
+        local parent = parentForSide(route, current.id)
+        if parent ~= nil then return { kind = "return", gameName = parent.gameName } end
+        local nextOccurrence = routeSession.next(route)
+        if nextOccurrence ~= nil and parentForSide(route, nextOccurrence.id) == current then
+            return { kind = "next", occurrence = nextOccurrence }
+        end
+        local hub = hubForRoom(route, current.id)
+        if hub ~= nil then return { kind = "return", gameName = hub.room.gameName } end
+        return { kind = "next", occurrence = nextOccurrence }
+    end
+    local native = route.transparentNativeRoom
+    if native == nil then return nil end
+    if native == "N_Hub" then return { kind = "next", occurrence = routeSession.next(route) } end
+    local parent = route.lastExitedOccurrence and parentForSide(route, route.lastExitedOccurrence.id)
+    if parent ~= nil and parent.gameName == native then
+        local nextOccurrence = routeSession.next(route)
+        if nextOccurrence ~= nil and parentForSide(route, nextOccurrence.id) == parent then
+            return { kind = "next", occurrence = nextOccurrence }
+        end
+        local hub = hubForRoom(route, parent.id)
+        return hub ~= nil and { kind = "return", gameName = hub.room.gameName } or { kind = "none" }
+    end
+    return { kind = "none" }
+end
+
 function routeSession.enter(route, occurrenceId, gameName)
     if route.firstFault then return nil, route.firstFault end
     if route.firstMismatch then return nil, route.firstMismatch end

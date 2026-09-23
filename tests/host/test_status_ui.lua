@@ -51,14 +51,18 @@ function TestStatusUi:tearDown()
     self.restore()
 end
 
-function TestStatusUi.testActivePlanSlotIsOnePersistedBoundedSetting()
+function TestStatusUi.testStorageIncludesTheDefaultDisabledRoomGuideSetting()
     local storage = hostData.buildStorage()
-    lu.assertEquals(#storage, 1)
+    lu.assertEquals(#storage, 2)
     lu.assertEquals(storage[1].alias, "ActivePlanSlot")
     lu.assertEquals(storage[1].default, 1)
     lu.assertEquals(storage[1].min, 1)
     lu.assertEquals(storage[1].max, 6)
     lu.assertNil(storage[1].persist)
+    lu.assertEquals(storage[2], {
+        type = "bool", alias = "ShowRoomGuide", label = "Show room guide",
+        tooltip = "Show read-only planned room instructions on the HUD.", default = false,
+    })
 end
 
 function TestStatusUi.testInspectionUsesTheBoundInboxCapabilityDirectly()
@@ -74,17 +78,17 @@ function TestStatusUi.testInspectionUsesTheBoundInboxCapabilityDirectly()
         end,
     }
     local ui = statusUi.bind(inbox, inactive)
-    local field = { read = function() return 1 end }
+    local field, guideField, checkbox = { read = function() return 1 end }, { read = function() return false end }, nil
     local widgets = {
         dropdown = function(target) lu.assertEquals(target, field) end,
+        checkbox = function(target, opts) checkbox = { target = target, opts = opts } end,
         button = function() return true end,
         text = function(value) drawn[#drawn + 1] = value end,
     }
 
     ui.drawTab(nil, {
         data = { get = function(alias)
-            lu.assertEquals(alias, "ActivePlanSlot")
-            return field
+            return alias == "ActivePlanSlot" and field or guideField
         end },
         draw = { widgets = widgets, imgui = canvas(drawn) },
     })
@@ -92,6 +96,8 @@ function TestStatusUi.testInspectionUsesTheBoundInboxCapabilityDirectly()
     lu.assertEquals(loads, 1)
     lu.assertEquals(statusReads, 2)
     lu.assertEquals(selections, {})
+    lu.assertEquals(checkbox.target, guideField)
+    lu.assertEquals(checkbox.opts, { id = "show_room_guide", label = "Show room guide" })
     lu.assertStrContains(table.concat(drawn, "\n"), "File: present | Protocol: 10")
 end
 
@@ -112,13 +118,13 @@ function TestStatusUi.testActivePlanSlotIsSelectedFromThePersistentUiField()
         dropdown = function(target, opts)
             dropdown = { target = target, opts = opts }
         end,
+        checkbox = function() end,
         button = function() return false end,
         text = function() end,
     }
 
     ui.drawTab(nil, { data = { get = function(alias)
-        lu.assertEquals(alias, "ActivePlanSlot")
-        return field
+        return alias == "ActivePlanSlot" and field or { read = function() return false end }
     end }, draw = { widgets = widgets, imgui = canvas({}) } })
 
     lu.assertEquals(dropdown.target, field)
@@ -140,7 +146,7 @@ local function inspect(plan, snapshot, tab, detailTab)
         data = { get = function() return { read = function() return 6 end } end },
         draw = { imgui = canvas(lines, tab, detailTab), widgets = {
             text = function(text) lines[#lines + 1] = text end,
-            dropdown = function() end,
+            dropdown = function() end, checkbox = function() end,
             button = function() return false end,
         } },
     }
@@ -243,7 +249,7 @@ function TestStatusUi.testBadPreviewReportsDecoderReasonWithoutChangingRunStatus
         data = { get = function() return { read = function() return 1 end } end },
         draw = { imgui = canvas(lines), widgets = {
             text = function(line) lines[#lines + 1] = line end,
-            dropdown = function() end, button = function() return true end,
+            dropdown = function() end, checkbox = function() end, button = function() return true end,
         } },
     })
     local text = table.concat(lines, "\n")

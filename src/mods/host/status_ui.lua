@@ -168,11 +168,17 @@ function ui.bind(inbox, inspectSession)
         assert(ctx.data and type(ctx.data.get) == "function", "status UI data dependency is required")
         local field = ctx.data.get("ActivePlanSlot")
         assert(field ~= nil, "status UI ActivePlanSlot data field is required")
+        local showGuide = ctx.data.get("ShowRoomGuide")
+        assert(showGuide ~= nil, "status UI ShowRoomGuide data field is required")
         drawApi.widgets.dropdown(field, {
             id = "active_plan_slot",
             label = "Plan for next run / resync",
             values = SLOT_VALUES,
             displayValues = SLOT_LABELS,
+        })
+        drawApi.widgets.checkbox(showGuide, {
+            id = "show_room_guide",
+            label = "Show room guide",
         })
         local selectedSlot = field:read()
         if inbox.activeSlot() ~= selectedSlot then inbox.select(selectedSlot) end

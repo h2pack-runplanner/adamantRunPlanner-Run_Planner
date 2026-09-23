@@ -139,6 +139,14 @@ function room.complete(session, handle)
     if session.closed then return fault(session, "room-session", "open session", "closed") end
     return delegate(session, "complete", handle)
 end
+
+-- Presentation consumers may ask only whether one published owner completed;
+-- Timeline state itself remains room-private.
+function room.isCompleted(session, owner)
+    local inner = innerFor(session)
+    return inner ~= nil and inner.completedOwners[owner] == true
+end
+
 function room.incidental(session) return delegate(session, "incidental") end
 function room.checkpoint(session, checkpoint) return delegate(session, "checkpoint", checkpoint) end
 function room.activePhase(session, kind) return timeline.activePhase(innerFor(session), kind) end

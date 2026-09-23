@@ -86,6 +86,10 @@ steering status stay visible in either tab.
 
 **Synchronized | Steering: active** means the mod is following your plan.
 
+The optional **Show room guide** setting is off by default. Enable it in the
+in-game inspector to show read-only, numbered guidance for the current planned
+room; it does not make choices or change steering.
+
 ![A synchronized run with steering active](https://raw.githubusercontent.com/h2pack-runplanner/adamantRunPlanner-Run_Planner/main/docs/images/run-synchronized.webp)
 
 Follow the rooms and choices you planned in the app. If the run no longer

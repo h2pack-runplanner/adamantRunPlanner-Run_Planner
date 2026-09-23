@@ -62,6 +62,19 @@ function coordinator.current(state)
     return roomState and roomState.current or nil
 end
 
+-- Narrow guide capability: callers receive the immutable occurrence and an
+-- owner-completion query, never the Timeline session or its mutable maps.
+function coordinator.guide(state)
+    local active = coordinator.current(state)
+    if active == nil then return nil end
+    return {
+        occurrence = active.occurrence,
+        isCompleted = function(owner)
+            return session.isCompleted(active, owner)
+        end,
+    }
+end
+
 function coordinator.prepare(state, occurrence)
     local roomState = stateOf(state)
     local active = coordinator.current(state)

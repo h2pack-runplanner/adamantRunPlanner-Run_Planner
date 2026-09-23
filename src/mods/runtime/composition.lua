@@ -58,6 +58,29 @@ function composition.bind(root)
         return snapshot
     end
 
+    function bound.roomGuideInspection()
+        if executionState.state ~= "synchronized" then return nil end
+        local active = room.guide(executionState)
+        local navigation = route.guideNavigation(executionState.route)
+        if active ~= nil then
+            return {
+                kind = "room",
+                occurrence = active.occurrence,
+                isCompleted = active.isCompleted,
+                navigation = navigation,
+            }
+        end
+        local routeState = executionState.route
+        if routeState and routeState.transparentNativeRoom ~= nil then
+            return {
+                kind = "navigation",
+                nativeRoomName = routeState.transparentNativeRoom,
+                navigation = navigation,
+            }
+        end
+        return nil
+    end
+
     function bound.attach(module)
         local roomHooks = import("mods/room/hooks.lua")
         local encounterHooks = import("mods/room/timeline/encounters/hooks.lua")

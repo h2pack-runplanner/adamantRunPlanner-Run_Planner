@@ -11,6 +11,13 @@ function data.buildStorage()
             min = 1,
             max = 6,
         },
+        {
+            type = "bool",
+            alias = "ShowRoomGuide",
+            label = "Show room guide",
+            tooltip = "Show read-only planned room instructions on the HUD.",
+            default = false,
+        },
     }
 end
 

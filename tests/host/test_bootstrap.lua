@@ -10,6 +10,11 @@ function TestHostBootstrap.testInspectorAttachesStandaloneGuiBeforeActivation()
         data = { define = function() end },
         status = { define = function() end },
         ui = { tab = function() end, quickContent = function() end },
+        overlays = {
+            order = { module = 30 },
+            createLine = function() end, createTable = function() end,
+            onCommit = function() end, onInterval = function() end,
+        },
         fallbackUi = { attachGuiOnce = function(register) register(bridge) end },
         activate = function()
             lu.assertEquals(registered.window, bridge.renderWindow)
@@ -17,11 +22,18 @@ function TestHostBootstrap.testInspectorAttachesStandaloneGuiBeforeActivation()
             registered.activated = true
         end,
     }
-    local runtime = { attach = function(target) lu.assertIs(target, module) end }
+    local runtime = {
+        attach = function(target) lu.assertIs(target, module) end,
+        roomGuideInspection = function() end,
+    }
     local imports = {
         ["mods/host/data.lua"] = { buildStorage = function() return {} end, buildStatus = function() return {} end },
         ["mods/runtime/composition.lua"] = { bind = function() return runtime end },
         ["mods/host/status_ui.lua"] = { bind = function() return { drawTab = function() end, drawQuickContent = function() end } end },
+        ["mods/room/guide.lua"] = { attach = function(target, inspection)
+            lu.assertIs(target, module)
+            lu.assertIsFunction(inspection)
+        end },
     }
     local environment = setmetatable({
         _PLUGIN = { guid = "adamantRunPlanner-Run_Planner", config_mod_folder_path = "unused" },
