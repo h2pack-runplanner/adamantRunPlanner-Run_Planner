@@ -12,7 +12,9 @@ function poolInventory.steer(occurrence, nativeRoom)
     -- GenerateSellTraitShop removes random selections from SellValues after
     -- placing them in SellOptions. Together they are one legal candidate set.
     for _, option in pairs(nativeRoom.SellOptions or {}) do
-        if type(option) == "table" and option.Name ~= nil then available[option.Name] = option end
+        if type(option) == "table" and option.Name ~= nil and available[option.Name] == nil then
+            available[option.Name] = option
+        end
     end
     local selected = {}
     for _, slot in ipairs(pool.traits or {}) do
