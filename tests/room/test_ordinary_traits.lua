@@ -176,7 +176,7 @@ function TestOrdinaryTraits.testUnboundAthenaUsesTheOrdinaryOfferLifecycle()
         { "InvulnerabilityCastBoon", "RetaliateInvulnerabilityBoon", "FocusLastStandBoon" })
 end
 
-function TestOrdinaryTraits.testAthenaClaimRequiresItsWindowAndDependencies()
+function TestOrdinaryTraits.testAthenaClaimRequiresDependenciesButNotItsAuthoredWindow()
     local timeline = require("mods.room.timeline.session")
     local transaction = {
         owner = "athena", kind = "encounterInteraction", phaseKey = "Cage02",
@@ -193,8 +193,6 @@ function TestOrdinaryTraits.testAthenaClaimRequiresItsWindowAndDependencies()
     local function claim()
         return timeline.claimReady(active, contact, native, ordinary.encounterTraitOffer)
     end
-    lu.assertNil(claim())
-    lu.assertTrue(timeline.open(active, "encounterEnd:Cage02"))
     lu.assertNil(claim())
     active.completedOwners.earlier = true
     local handle = claim()

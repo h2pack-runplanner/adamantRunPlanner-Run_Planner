@@ -12,7 +12,7 @@ local function nativeName(value)
 end
 
 local function normalRole(transaction, contact)
-    if type(transaction) ~= "table" then return nil end
+    if type(transaction) ~= "table" or transaction.kind ~= "acquisition" then return nil end
     for _, role in ipairs(transaction.roles or {}) do
         if role.gameName == contact.gameName and role.disposition == "normal"
             and role.traitOffer ~= nil then

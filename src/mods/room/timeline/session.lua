@@ -169,7 +169,8 @@ function timeline.sourceRole(session, handle, gameName)
 end
 
 -- Claim one ready action in published transaction order.  The caller owns
--- structural contact semantics; returning a role table supplies the payload
+-- structural contact semantics and native availability; published placement
+-- windows do not constrain discovery. Returning a role table supplies the payload
 -- detail that the claimed native carrier will consume.
 function timeline.claimReady(session, contact, native, compatible)
     if session.closed or terminal(session) ~= nil then return nil end
@@ -180,25 +181,29 @@ function timeline.claimReady(session, contact, native, compatible)
     for _, row in ipairs(session.transactionOrder or {}) do
         local transaction = row.transaction
         local owner = transaction.owner
-        if not session.completedOwners[owner] and not session.claimedOwners[owner] then
-            local open = lifecycle.accepts(session.capabilities, transaction.window)
-            if open then
-                local ready = true
-                for prerequisite in pairs(session.prerequisites[owner] or {}) do
-                    if not session.completedOwners[prerequisite] then ready = false; break end
-                end
-                if ready then
-                    local detail = compatible(transaction, contact)
-                    if detail ~= nil and detail ~= false then
-                        if detail == true then detail = nil end
-                        local claimedRow = { transaction = transaction, detail = detail, claimed = true }
-                        local handle = handleFor(session, claimedRow)
-                        local bound, errorValue = timeline.bind(session, handle, native)
-                        if bound == nil then return nil, errorValue end
-                        session.claimedOwners[owner] = true
-                        session.claimedHandles[owner] = handle
-                        return handle, bindings.payload(claimedRow)
-                    end
+        local boundOwner = false
+        for _, handle in pairs(session.nativeHandles) do
+            if session.handles[handle].transaction.owner == owner then boundOwner = true; break end
+        end
+        if not session.completedOwners[owner] and not session.claimedOwners[owner] and not boundOwner then
+            local ready = true
+            for prerequisite in pairs(session.prerequisites[owner] or {}) do
+                if not session.completedOwners[prerequisite] then ready = false; break end
+            end
+            if ready then
+                local detail = compatible(transaction, contact)
+                -- Nested results are reached through their exact producer
+                -- binding, never by an unrelated matching pickup.
+                local nested = type(detail) == "table" and detail.lifecyclePoint == "afterUnwrap"
+                if detail ~= nil and detail ~= false and not nested then
+                    if detail == true then detail = nil end
+                    local claimedRow = { transaction = transaction, detail = detail, claimed = true }
+                    local handle = handleFor(session, claimedRow)
+                    local bound, errorValue = timeline.bind(session, handle, native)
+                    if bound == nil then return nil, errorValue end
+                    session.claimedOwners[owner] = true
+                    session.claimedHandles[owner] = handle
+                    return handle, bindings.payload(claimedRow)
                 end
             end
         end
@@ -226,8 +231,8 @@ local function beginOwner(session, owner)
     if terminal(session) ~= nil then return nil, terminal(session) end
     local transaction = session.occurrence.transactionsByOwner[owner]
     if transaction == nil then return fault(session, "transaction-owner", "published owner", owner) end
-    -- Lifecycle windows guide discovery, not permission to steer an exact
-    -- bound owner. Its DAG prerequisites remain the ordering authority.
+    -- Native availability owns pickup timing. DAG prerequisites remain the
+    -- ordering authority for an exact bound owner.
     for prerequisite in pairs(session.prerequisites[owner] or {}) do
         if not session.completedOwners[prerequisite] then
             return mismatch(session, "transaction-prerequisite", prerequisite, owner)

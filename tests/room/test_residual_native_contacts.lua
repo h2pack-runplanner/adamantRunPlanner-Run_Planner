@@ -163,6 +163,17 @@ function TestResidualNativeContacts.testSteadyGrowthSteersOnceAndCompletedOwnerC
     end
 
     withCurrentRun({ Hero = { Traits = { target, nativeFallback } } }, function()
+        -- Discovery of ordinary pickups is window-independent, but this
+        -- encounter-owned automatic outcome still needs its exact contact.
+        lu.assertTrue(coordinator.window(fixture.state, "encounterEnd:other"))
+        local wrongPhase = fixture.callbacks.AddRarityToTraits(nil, {}, nativeRarity,
+            { Name = "BoonGrowthBoon" }, args)
+        lu.assertEquals(wrongPhase.Name, "ZeusWeaponBoon")
+        fixture.encounterEnd()
+        lu.assertTrue(coordinator.window(fixture.state, "afterCombat"))
+        local expiredPhase = fixture.callbacks.AddRarityToTraits(nil, {}, nativeRarity,
+            { Name = "BoonGrowthBoon" }, args)
+        lu.assertEquals(expiredPhase.Name, "ZeusWeaponBoon")
         fixture.encounterEnd()
         local incidental = fixture.callbacks.AddRarityToTraits(nil, {}, nativeRarity,
             { Name = "OtherRaritySource" }, args)
@@ -177,7 +188,9 @@ function TestResidualNativeContacts.testSteadyGrowthSteersOnceAndCompletedOwnerC
         lu.assertEquals(repeated.Name, "ZeusWeaponBoon")
     end)
 
-    lu.assertEquals(forced, { "ZeusWeaponBoon", "ApolloWeaponBoon", "ZeusWeaponBoon" })
+    lu.assertEquals(forced, {
+        "ZeusWeaponBoon", "ZeusWeaponBoon", "ZeusWeaponBoon", "ApolloWeaponBoon", "ZeusWeaponBoon",
+    })
     lu.assertTrue(rawequal(args.ForceUpgrade, nativeForceUpgrade))
     lu.assertEquals(fixture.state.state, "synchronized")
     lu.assertTrue(fixture.close())

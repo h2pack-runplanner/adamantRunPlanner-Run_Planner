@@ -330,9 +330,9 @@ function TestEncounters.testEncounterLifecycleUsesExactNativeIdentity()
         events[#events + 1] = "native-end:first"
         return true
     end, run, nativeRoom, first)
-    lu.assertTrue(lifecycle.accepts(capabilities, { kind = "encounterEnd", phaseKey = "first" }))
+    lu.assertEquals(lifecycle.activePhase(capabilities, "encounterEnd"), "first")
     callbacks.StartEncounter(nil, {}, function() return true end, run, nativeRoom, second)
-    lu.assertFalse(lifecycle.accepts(capabilities, { kind = "encounterEnd", phaseKey = "first" }))
+    lu.assertNil(lifecycle.activePhase(capabilities, "encounterEnd"))
     callbacks.EndEncounterEffects(nil, {}, function()
         events[#events + 1] = "native-end:second"
         return true

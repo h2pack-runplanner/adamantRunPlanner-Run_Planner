@@ -380,7 +380,7 @@ function TestRouteRoomSessions.testPhaseCapabilityIsTransientAndRoomCloseDispose
     lu.assertTrue(room.close(session, function() return true end))
 end
 
-function TestRouteRoomSessions.testEncounterEndPickupDiscoverySurvivesTheCallbackButDoesNotLeakAcrossPhases()
+function TestRouteRoomSessions.testPickupDiscoveryDoesNotRequireAuthoredEncounterPlacement()
     local first = { owner = "first", window = { kind = "encounterEnd", phaseKey = "one" } }
     local second = { owner = "second", window = { kind = "encounterEnd", phaseKey = "two" } }
     local entry = {
@@ -391,25 +391,66 @@ function TestRouteRoomSessions.testEncounterEndPickupDiscoverySurvivesTheCallbac
     local function claim()
         return timeline.claimReady(port, {}, {}, function() return true end)
     end
-    lu.assertNil(claim())
+    local earlyHandle, earlyPayload = claim()
+    lu.assertNotNil(earlyHandle)
+    lu.assertEquals(earlyPayload.transaction.owner, "first")
     lu.assertTrue(timeline.open(port, "encounterEnd:one"))
     lu.assertEquals(timeline.activePhase(port, "encounterEnd"), "one")
     lu.assertTrue(timeline.open(port, "afterCombat"))
     lu.assertNil(timeline.activePhase(port, "encounterEnd"))
     local handle, payload = claim()
     lu.assertNotNil(handle)
-    lu.assertEquals(payload.transaction.owner, "first")
+    lu.assertEquals(payload.transaction.owner, "second")
     lu.assertNil(claim())
 
     local nextPhase = timeline.new(entry)
     lu.assertTrue(timeline.open(nextPhase, "encounterEnd:one"))
     lu.assertTrue(timeline.startEncounter(nextPhase))
     lu.assertNil(timeline.activePhase(nextPhase, "encounterEnd"))
-    lu.assertNil(timeline.claimReady(nextPhase, {}, {}, function() return true end))
+    local earlierHandle, earlierPayload = timeline.claimReady(nextPhase, {}, {}, function() return true end)
+    lu.assertNotNil(earlierHandle)
+    lu.assertEquals(earlierPayload.transaction.owner, "first")
     lu.assertTrue(timeline.open(nextPhase, "encounterEnd:two"))
     local nextHandle, nextPayload = timeline.claimReady(nextPhase, {}, {}, function() return true end)
     lu.assertNotNil(nextHandle)
     lu.assertEquals(nextPayload.transaction.owner, "second")
+    local freshRoom = timeline.new(entry)
+    lu.assertNotNil(timeline.claimReady(freshRoom, {}, {}, function() return true end))
+end
+
+function TestRouteRoomSessions.testRealFieldsRewardsCanBeCollectedAfterBothCagesWithDagOrderingIntact()
+    local json = require("mods.protocol.json")
+    local protocol = require("mods.protocol.decoder")
+    local ordinary = require("mods.room.timeline.acquisitions.traits.ordinary")
+    local file = assert(io.open("fixtures/execution-plan/underworld-fgh.execution.json", "rb"))
+    local raw = file:read("*a")
+    file:close()
+    local plan = assert(protocol.decode(assert(json.decode(raw))))
+    local entry = assert(plan.occurrencesById["golden-h-combat09"])
+    local port = timeline.new(entry)
+    local function claim(name)
+        return timeline.claimReady(port, { kind = "ordinaryTrait", gameName = name },
+            { Name = name, GodLoot = true }, ordinary.normalRole)
+    end
+    lu.assertTrue(timeline.open(port, "encounterEnd:Cage02"))
+    lu.assertTrue(timeline.startEncounter(port))
+    lu.assertNil(timeline.activePhase(port, "encounterEnd"))
+    lu.assertTrue(timeline.open(port, "encounterEnd:Cage01"))
+    lu.assertEquals(timeline.activePhase(port, "encounterEnd"), "Cage01")
+    lu.assertTrue(timeline.open(port, "afterCombat"))
+    lu.assertNil(timeline.activePhase(port, "encounterEnd"))
+    lu.assertNil(claim("HermesUpgrade")) -- Its planned Hammer dependency is still required.
+    local hammer, hammerPayload = claim("WeaponUpgrade")
+    lu.assertNotNil(hammer)
+    lu.assertNotNil(ordinary.offer(hammerPayload))
+    lu.assertTrue(timeline.complete(port, hammer))
+    local hermes, hermesPayload = claim("HermesUpgrade")
+    lu.assertNotNil(hermes)
+    lu.assertNotNil(ordinary.offer(hermesPayload))
+    lu.assertTrue(timeline.complete(port, hermes))
+    lu.assertNil(claim("WeaponUpgrade"))
+    lu.assertNil(claim("HermesUpgrade"))
+    lu.assertNil(port.firstMismatch)
 end
 
 function TestRouteRoomSessions.testDeclaredInteractionContactResolvesWithoutTransactionKindMatching()

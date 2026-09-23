@@ -5,6 +5,75 @@ local timelineSession = require("mods.room.timeline.session")
 
 TestTimelineBindings = {}
 
+function TestTimelineBindings.testNativePickupsRespectTheCompleteDependencyChainWithoutWindows()
+    local transactions, byOwner = {}, {}
+    for _, owner in ipairs({ "one", "two", "three" }) do
+        local row = { owner = owner, kind = "acquisition",
+            window = { kind = "encounterEnd", phaseKey = owner } }
+        transactions[#transactions + 1], byOwner[owner] = row, row
+    end
+    local session = timelineSession.new({ transactionsByOwner = byOwner,
+        timeline = { transactions = transactions, obligations = {}, dependencies = {
+            { owner = "two", afterOwner = "one" }, { owner = "three", afterOwner = "two" },
+        } } })
+    local function claim(owner)
+        return timelineSession.claimReady(session, { owner = owner }, {}, function(row, contact)
+            return row.owner == contact.owner
+        end)
+    end
+    lu.assertNil(claim("three"))
+    lu.assertNil(claim("two"))
+    lu.assertTrue(timelineSession.complete(session, assert(claim("one"))))
+    lu.assertNil(claim("three"))
+    local second = assert(claim("two"))
+    lu.assertNil(claim("three"))
+    lu.assertTrue(timelineSession.complete(session, second))
+    lu.assertNotNil(claim("three"))
+    lu.assertNil(session.firstMismatch)
+end
+
+function TestTimelineBindings.testNestedMysteryOfferCannotBeClaimedButExactBindingStillSteers()
+    local ordinary = require("mods.room.timeline.acquisitions.traits.ordinary")
+    local hidden = { role = "hiddenSource", lifecyclePoint = "afterUnwrap", gameName = "ApolloUpgrade",
+        disposition = "normal", traitOffer = { kind = "traits", options = {} } }
+    local transaction = { owner = "box", sourceOwner = "box-source", kind = "acquisition",
+        window = { kind = "standard", phase = "afterCombat" },
+        roles = { { role = "box", gameName = "BlindBoxLoot" }, hidden } }
+    local session = timelineSession.new({ transactionsByOwner = { box = transaction },
+        timeline = { transactions = { transaction }, dependencies = {}, obligations = {} } })
+    local native = { Name = "ApolloUpgrade" }
+    lu.assertNil(timelineSession.claimReady(session, { gameName = native.Name }, native, ordinary.normalRole))
+    local handle = assert(timelineSession.resolve(session, function(index) return index.owner.box end, {}))
+    lu.assertNotNil(timelineSession.bind(session, handle, native))
+    local payload = timelineSession.begin(session, handle)
+    lu.assertIs(payload.detail, hidden)
+    lu.assertNotNil(ordinary.offer(payload))
+end
+
+function TestTimelineBindings.testBoundShopOfferIsNotReassignedToMatchingFreeLoot()
+    local ordinary = require("mods.room.timeline.acquisitions.traits.ordinary")
+    local function transaction(owner)
+        return { owner = owner, kind = "acquisition",
+            window = { kind = "standard", phase = "afterCombat" }, roles = {
+            { role = "self", gameName = "ApolloUpgrade", disposition = "normal",
+                traitOffer = { kind = "traits", options = {} } },
+        } }
+    end
+    local shop, free = transaction("shop"), transaction("free")
+    local session = timelineSession.new({ transactionsByOwner = { shop = shop, free = free },
+        timeline = { transactions = { shop, free }, dependencies = {}, obligations = {} } })
+    local shopHandle = assert(timelineSession.resolve(session, function(index) return index.owner.shop end, {}))
+    local shopNative = { Name = "ApolloUpgrade", __runPlannerWorldShop = true }
+    lu.assertNotNil(timelineSession.bind(session, shopHandle, shopNative))
+    local freeNative = { Name = "ApolloUpgrade" }
+    local freeHandle, payload = timelineSession.claimReady(session,
+        { gameName = freeNative.Name }, freeNative, ordinary.normalRole)
+    lu.assertNotNil(freeHandle)
+    lu.assertEquals(payload.transaction.owner, "free")
+    lu.assertIs(timelineSession.bound(session, shopNative), shopHandle)
+    lu.assertEquals(timelineSession.begin(session, shopHandle).transaction.owner, "shop")
+end
+
 local function resolved(index, contact)
     return assert(bindings.resolve(index, contact))
 end
