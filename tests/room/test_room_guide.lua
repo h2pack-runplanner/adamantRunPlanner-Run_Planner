@@ -363,7 +363,7 @@ function TestRoomGuide.testHubVisitUsesBoardRewardAndSpecialDestinationsKeepThei
     } })
     state.transparentNativeRoom = "N_Hub"
     local snapshot = { kind = "navigation", nativeRoomName = "N_Hub", navigation = route.guideNavigation(state) }
-    lu.assertEquals(guide.project(snapshot).footer, "Next visit: Room 12 — Hera boon")
+    lu.assertEquals(guide.project(snapshot).footer, "Next visit: Room 12 — Hera")
     for _, case in ipairs({
         { "F_Shop01", { shop = {} }, "Next: Shop" },
         { "F_Reprieve01", {}, "Next: Fountain" },
@@ -398,8 +398,32 @@ function TestRoomGuide.testStoryAndMinibossTitlesNameTheirOccupants()
         local projection = guide.project({ kind = "navigation", nativeRoomName = "N_Hub",
             navigation = { kind = "next", hubVisit = name == "N_MiniBoss02",
                 occurrence = { gameName = name }, reward = { rewardType = "Boon", source = "HeraUpgrade" } } })
-        lu.assertEquals(projection.footer, "Next door: Hera boon")
+        lu.assertEquals(projection.footer, "Next door: Hera")
     end
+end
+
+function TestRoomGuide.testFooterNamesStoryAndRewardlessDestinationsAndShortensCages()
+    local function footer(name, reward, cages)
+        return guide.project({ kind = "navigation", nativeRoomName = "H_Combat02",
+            navigation = { kind = "next", occurrence = { gameName = name },
+                reward = reward, cageRewards = cages } }).footer
+    end
+    for name, npc in pairs({ F_Story01 = "Arachne", G_Story01 = "Narcissus", H_Bridge01 = "Echo",
+        I_Story01 = "Hades", N_Story01 = "Medea", O_Story01 = "Circe", P_Story01 = "Dionysus" }) do
+        lu.assertEquals(footer(name, { rewardType = "Story" }), "Next: " .. npc)
+        lu.assertEquals(footer(name), "Next: " .. npc)
+    end
+    lu.assertEquals(footer("I_Combat05", { rewardType = "ClockworkGoal" }), "Next: Tartarus · Combat 05")
+    lu.assertEquals(footer("O_Combat04"), "Next: Thessaly · Combat 04")
+    lu.assertEquals(footer("Q_Combat11"), "Next: Summit · Combat 11")
+    lu.assertEquals(footer("H_Combat02", nil, {
+        { rewardType = "Boon", source = "DemeterUpgrade" },
+        { rewardType = "Boon", source = "HeraUpgrade" },
+        { rewardType = "Boon", source = "AphroditeUpgrade" },
+    }), "Next door: Demeter / Hera / Aphrodite")
+    lu.assertEquals(footer("H_Combat02", nil, {
+        { rewardType = "WeaponUpgrade" }, { rewardType = "StackUpgrade" }, { rewardType = "MaxHealthDrop" },
+    }), "Next door: Hammer / Pom / Max Health")
 end
 
 function TestRoomGuide.testOverlayRefreshesOnlyOnProjectionChangesAndClearsOnToggle()

@@ -187,6 +187,13 @@ local function instruction(description, occurrence, transaction)
     return "Complete planned action"
 end
 
+local function doorRewardName(reward)
+    if reward.rewardType == "BlindBoxLoot" or reward.rewardType == "RandomLootGiftItem" then
+        return rewardName(reward)
+    end
+    return sourceName(reward.source) or sourceName(reward.rewardType) or rewardName(reward)
+end
+
 local function navigationFooter(navigation)
     if type(navigation) ~= "table" then return nil end
     if navigation.kind == "return" and navigation.gameName ~= nil then
@@ -197,19 +204,23 @@ local function navigationFooter(navigation)
     local gameName = nextOccurrence.gameName or ""
     local overview = nextOccurrence.overview
     local reward = navigation.reward
+    if roomOccupants[gameName] and (gameName:match("_Story%d+$") or gameName == "H_Bridge01") then
+        return "Next: " .. roomOccupants[gameName]
+    end
+    if reward and reward.rewardType == "ClockworkGoal" then reward = nil end
     if navigation.hubVisit and not gameName:match("_MiniBoss%d+$") then
         local number = gameName:match("^N_Combat(%d+)$")
         local label = number and ("Room " .. number) or roomName(gameName)
-        return "Next visit: " .. label .. (reward and (" — " .. rewardName(reward)) or "")
+        return "Next visit: " .. label .. (reward and (" — " .. doorRewardName(reward)) or "")
     end
     if gameName:match("^Chaos_") then return "Next: Chaos" end
     if gameName:match("^C_Boss") then return "Next: Zagreus" end
     if overview and overview.shop then return "Next: Shop" end
     if gameName:match("_Reprieve") then return "Next: Fountain" end
-    if reward ~= nil then return "Next door: " .. rewardName(reward) end
+    if reward ~= nil then return "Next door: " .. doorRewardName(reward) end
     if navigation.cageRewards and #navigation.cageRewards > 0 then
         local labels = {}
-        for _, cageReward in ipairs(navigation.cageRewards) do labels[#labels + 1] = rewardName(cageReward) end
+        for _, cageReward in ipairs(navigation.cageRewards) do labels[#labels + 1] = doorRewardName(cageReward) end
         return "Next door: " .. table.concat(labels, " / ")
     end
     return "Next: " .. roomName(gameName)
