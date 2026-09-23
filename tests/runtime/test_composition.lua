@@ -111,7 +111,7 @@ function TestRuntimeComposition.testGuideInspectionProjectsActualRoomCompletionW
         return true
     end } }
     callbacks.interval(nil, overlayRuntime, overlay)
-    lu.assertEquals(tables.rows, { { number = "1.", instruction = "Use fountain" } })
+    lu.assertEquals(tables.rows, { { instruction = "Use fountain" } })
     local handle = assert(roomSession.resolve(active, function(index) return index.owner["guide-owner"] end, "test"))
     assert(roomSession.complete(active, handle))
     callbacks.interval(nil, overlayRuntime, overlay)

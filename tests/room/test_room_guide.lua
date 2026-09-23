@@ -41,9 +41,9 @@ function TestRoomGuide.testConversionsDescribeTheSourceAndKeepReplacementSeparat
                 producer = { kind = "artificerReplacement" } } } },
         }
         lu.assertEquals(guide.project(snapshot).rows, {
-            { number = "1.", instruction = "Use Artificer on Ashes" },
-            { number = "2.", instruction = "Collect Hammer" },
-            { number = "3.", instruction = "Use Time Piece on Pom" },
+            { instruction = "Use Artificer on Ashes" },
+            { instruction = "Collect Hammer" },
+            { instruction = "Use Time Piece on Pom" },
         })
     end
 end
@@ -80,10 +80,11 @@ function TestRoomGuide.testNativeMarkupIsRemovedFromRowsAndNavigation()
         row("interactLocalReward", nil, { reward = { rewardType = "GiftDrop" } }),
         row("purchaseStygianWellOffer", nil, { itemKey = "ExampleWellItem" }),
     }, nil, { gameName = "ExampleRoom", overview = { incomingReward = { rewardType = "GiftDrop" } } })
+    snapshot.navigation.reward = { rewardType = "GiftDrop" }
     local projection = guide.project(snapshot)
     lu.assertEquals(projection.rows[1].instruction, "Collect Nectar")
     lu.assertEquals(projection.rows[2].instruction, "Buy Well Item")
-    lu.assertEquals(projection.footer, "Next: Next Room — Nectar")
+    lu.assertEquals(projection.footer, "Next door: Nectar")
 end
 
 function TestRoomGuide.testWheelChoiceUsesThePublishedPickedReward()
@@ -94,7 +95,7 @@ function TestRoomGuide.testWheelChoiceUsesThePublishedPickedReward()
             { offerKey = "offer2", reward = { rewardType = "Boon", source = "ZeusUpgrade" } },
         } },
     } }
-    lu.assertEquals(guide.project(snapshot).rows[1].instruction, "Choose Boon — Zeus at wheel")
+    lu.assertEquals(guide.project(snapshot).rows[1].instruction, "Wheel: Zeus boon")
 end
 
 function TestRoomGuide.testHidesOutOfOrderCompletedOwnersWithoutCompletingInformation()
@@ -105,9 +106,9 @@ function TestRoomGuide.testHidesOutOfOrderCompletedOwnersWithoutCompletingInform
         row("interactLocalReward", "later"),
     }, { later = true }))
     lu.assertEquals(projection.rows, {
-        { number = "1.", instruction = "Clear Cage 1" },
-        { number = "2.", instruction = "Collect reward" },
-        { number = "3.", instruction = "Clear Cage 2" },
+        { instruction = "Clear Cage 1" },
+        { instruction = "Collect reward" },
+        { instruction = "Clear Cage 2" },
     })
 end
 
@@ -124,10 +125,10 @@ function TestRoomGuide.testLongWindowAnchorsTheFirstPendingOwnerAndCountsOnlyOmi
         row("interactLocalReward", "latest"),
     }
     local projection = guide.project(room(rows))
-    lu.assertEquals(projection.rows[1].number, "4.")
-    lu.assertEquals(projection.rows[2], { number = "5.", instruction = "Collect reward" })
+    lu.assertEquals(projection.rows[1].instruction, "Clear Cage 4")
+    lu.assertEquals(projection.rows[2], { instruction = "Collect reward" })
     lu.assertEquals(#projection.rows, 6)
-    lu.assertEquals(projection.footer, "3 additional reminders")
+    lu.assertEquals(projection.footer, "3 hidden reminders")
 end
 
 function TestRoomGuide.testTimePieceWordingAndGenericFallbackNeverExposeOpaqueKeys()
@@ -136,8 +137,8 @@ function TestRoomGuide.testTimePieceWordingAndGenericFallbackNeverExposeOpaqueKe
         row("sellPurgingPoolTrait", nil, { traitKey = "OpaqueTrait" }),
     }))
     lu.assertEquals(projection.rows, {
-        { number = "1.", instruction = "Use Time Piece on reward" },
-        { number = "2.", instruction = "Sell trait at Pool" },
+        { instruction = "Use Time Piece on reward" },
+        { instruction = "Sell trait" },
     })
     local shop = guide.project({
         kind = "room",
@@ -150,7 +151,7 @@ function TestRoomGuide.testTimePieceWordingAndGenericFallbackNeverExposeOpaqueKe
         },
         isCompleted = function() return false end,
     })
-    lu.assertEquals(shop.rows, { { number = "1.", instruction = "Buy Boosted Boon — Apollo" } })
+    lu.assertEquals(shop.rows, { { instruction = "Buy Boosted Boon — Apollo" } })
 end
 
 function TestRoomGuide.testRoomReplacementNavigationAndSessionLossReplaceRatherThanReplayRows()
@@ -162,12 +163,12 @@ function TestRoomGuide.testRoomReplacementNavigationAndSessionLossReplaceRatherT
         kind = "navigation", nativeRoomName = "N_Hub",
         navigation = { kind = "next", occurrence = { gameName = "N_Combat02", overview = {} } },
     })
-    lu.assertEquals(first.rows[1].number, "1.")
-    lu.assertEquals(first.header, "Room guide: N_Combat01")
-    lu.assertEquals(first.footer, "Next: N_Combat02 — Boon")
-    lu.assertEquals(replacement.rows, { { number = "1.", instruction = "Use fountain" } })
+    lu.assertEquals(first.rows[1].instruction, "Collect reward")
+    lu.assertEquals(first.header, "Ephyra · Combat 01")
+    lu.assertEquals(first.footer, "Next: Ephyra · Combat 02")
+    lu.assertEquals(replacement.rows, { { instruction = "Use fountain" } })
     lu.assertEquals(restored.rows, {})
-    lu.assertEquals(restored.footer, "Next: N_Combat02")
+    lu.assertEquals(restored.footer, "Next: Ephyra · Combat 02")
     lu.assertNil(guide.project(nil))
 end
 
@@ -207,7 +208,7 @@ function TestRoomGuide.testRouteOwnedNavigationUsesPublishedHubAndSideRelationsh
     state.transparentNativeRoom = "N_Combat05"
     lu.assertEquals(route.guideNavigation(state), { kind = "return", gameName = "N_Hub" })
     state.transparentNativeRoom = "N_Hub"
-    lu.assertEquals(route.guideNavigation(state), { kind = "next", occurrence = nextMain })
+    lu.assertEquals(route.guideNavigation(state), { kind = "next", occurrence = nextMain, hubVisit = true })
     assert(route.enter(state, "next-main", "N_Combat02"))
     lu.assertEquals(route.guideNavigation(state), { kind = "return", gameName = "N_Hub" })
     assert(route.exit(state))
@@ -226,8 +227,8 @@ function TestRoomGuide.testOPhaseProgressKeepsOneGuideAndTerminalPrefixHasNoFoot
     local later = guide.project(snapshot)
     lu.assertEquals(first.header, later.header)
     lu.assertEquals(later.rows, {
-        { number = "2.", instruction = "Collect reward" },
-        { number = "3.", instruction = "Complete encounter" },
+        { instruction = "Collect reward" },
+        { instruction = "Complete encounter" },
     })
     lu.assertNil(later.footer)
 end
@@ -261,10 +262,144 @@ function TestRoomGuide.testCageRewardNamesDoNotDependOnPickupTransactions()
         row("interactLocalReward", nil, { conversion = "timePiece", reward = { rewardType = "StackUpgrade" } }),
     })
     lu.assertEquals(guide.project(snapshot).rows, {
-        { number = "1.", instruction = "Clear Cage 1 — Hera" },
-        { number = "2.", instruction = "Clear Cage 2 — Pom" },
-        { number = "3.", instruction = "Use Time Piece on Pom" },
+        { instruction = "Clear Cage 1 — Hera" },
+        { instruction = "Clear Cage 2 — Pom" },
+        { instruction = "Use Time Piece on Pom" },
     })
+end
+
+function TestRoomGuide.testNpcNamesUsePublishedGiverAndGorgonDoesNotBorrowTheRoomEncounter()
+    local snapshot = room({
+        row("interactEncounter", "story"),
+        row("interactEncounter", nil, { encounterKey = "IcarusCombatO" }),
+        row("interactGorgon", nil, { encounterKey = "GeneratedH" }),
+        row("interactEncounter", nil, { encounterKey = "UnknownInternalEncounter" }),
+    })
+    snapshot.occurrence.transactionsByOwner = {
+        story = { kind = "encounterInteraction",
+            resolution = { kind = "traitOffer", offer = { giver = "Narcissus" } } },
+    }
+    lu.assertEquals(guide.project(snapshot).rows, {
+        { instruction = "Talk to Narcissus" },
+        { instruction = "Talk to Icarus" },
+        { instruction = "Talk to Athena" },
+        { instruction = "Complete encounter" },
+    })
+end
+
+function TestRoomGuide.testEquipmentPoolAndPhialCopyUsesDisplayNamesWithoutInternalKeyFallbacks()
+    _G.GetDisplayName = function(args)
+        return ({ KeepsakeKey = "Aromatic Phial", TraitKey = "{#BoldFormat}Nova Strike{#Prev}",
+            TemporaryForcedSecretDoorTrait = "Spark of Ixion" })[args.Text] or args.Text
+    end
+    lu.assertEquals(guide.project(room({
+        row("interactKeepsakeRack", nil, { keepsakeKey = "KeepsakeKey" }),
+        row("sellPurgingPoolTrait", nil, { traitKey = "TraitKey" }),
+        row("useFountain", nil, { aromaticPhialTarget = "TraitKey" }),
+        row("purchaseStygianWellOffer", nil, { itemKey = "TemporaryForcedSecretDoorTrait" }),
+        row("purchaseStygianWellOffer", nil, { itemKey = "UnknownInternalItem" }),
+        row("interactKeepsakeRack", nil, { keepsakeKey = "UnknownInternalKeepsake" }),
+    })).rows, {
+        { instruction = "Equip Aromatic Phial" },
+        { instruction = "Sell Nova Strike" },
+        { instruction = "Use fountain — Phial: Nova Strike" },
+        { instruction = "Buy Spark of Ixion" },
+        { instruction = "Buy Well item" },
+        { instruction = "Equip planned keepsake" },
+    })
+end
+
+function TestRoomGuide.testConciseRoomAndRewardLabelsKeepMeaningfulDistinctions()
+    local snapshot = room({
+        row("interactIncomingReward", nil, { reward = { rewardType = "Boon", source = "HeraUpgrade" } }),
+        row("interactLocalReward", nil, { reward = { rewardType = "MaxManaDropSmall" } }),
+        row("collectRequiredReward"),
+    })
+    snapshot.occurrence.gameName = "H_Combat15"
+    local projection = guide.project(snapshot)
+    lu.assertEquals(projection.header, "Fields · Combat 15")
+    for name, expected in pairs({
+        Chaos_01 = "Chaos · 01", Dream_PostBoss02 = "Dream · Postboss 02",
+        N_Sub03 = "Ephyra · Side room 03", UnknownInternalRoom = "Current room",
+    }) do
+        lu.assertEquals(guide.project({ kind = "navigation", nativeRoomName = name }).header, expected)
+    end
+    lu.assertEquals(projection.rows, {
+        { instruction = "Collect Hera boon" },
+        { instruction = "Collect Max Magick" },
+        { instruction = "Collect boss reward" },
+    })
+    lu.assertEquals(guide.project({
+        kind = "navigation", nativeRoomName = "N_Combat05",
+        navigation = { kind = "return", gameName = "N_Hub" },
+    }).footer, "Return to Hub")
+end
+
+function TestRoomGuide.testNextDoorUsesSelectedDoorPreviewNotTheDestinationAcquisition()
+    local target = { id = "picked", gameName = "F_Combat04",
+        overview = { incomingReward = { rewardType = "WeaponUpgrade" } } }
+    local current = { id = "current", gameName = "F_Combat01", overview = {},
+        doors = { kind = "batch", targets = {
+            { room = { id = "other" }, reward = { rewardType = "MetaCurrencyDrop" } },
+            { room = { id = "picked" }, reward = { rewardType = "MetaCardPointsCommonDrop" } },
+        } } }
+    local state = route.new({ selectedOccurrenceIds = { "current", "picked" },
+        occurrencesById = { current = current, picked = target } })
+    assert(route.enter(state, "current", "F_Combat01"))
+    local snapshot = { kind = "room", occurrence = current, isCompleted = function() return false end,
+        navigation = route.guideNavigation(state) }
+    lu.assertEquals(guide.project(snapshot).footer, "Next door: Ashes")
+    lu.assertEquals(state.index, 1)
+end
+
+function TestRoomGuide.testHubVisitUsesBoardRewardAndSpecialDestinationsKeepTheirNames()
+    local target = { id = "picked", gameName = "N_Combat12", overview = {} }
+    local state = route.new({ selectedOccurrenceIds = { "picked" }, occurrencesById = {
+        picked = target, prehub = { id = "prehub", overview = { hub = {
+            room = { gameName = "N_Hub" }, slots = {
+                { room = { id = "picked" }, reward = { rewardType = "Boon", source = "HeraUpgrade" } },
+            },
+        } } },
+    } })
+    state.transparentNativeRoom = "N_Hub"
+    local snapshot = { kind = "navigation", nativeRoomName = "N_Hub", navigation = route.guideNavigation(state) }
+    lu.assertEquals(guide.project(snapshot).footer, "Next visit: Room 12 — Hera boon")
+    for _, case in ipairs({
+        { "F_Shop01", { shop = {} }, "Next: Shop" },
+        { "F_Reprieve01", {}, "Next: Fountain" },
+        { "Chaos_01", {}, "Next: Chaos" },
+        { "C_Boss01", {}, "Next: Zagreus" },
+    }) do
+        snapshot.navigation = { kind = "next", occurrence = { gameName = case[1], overview = case[2] } }
+        lu.assertEquals(guide.project(snapshot).footer, case[3])
+    end
+end
+
+function TestRoomGuide.testStoryAndMinibossTitlesNameTheirOccupants()
+    local expected = {
+        F_Story01 = "Erebus · Arachne", G_Story01 = "Oceanus · Narcissus",
+        H_Bridge01 = "Fields · Echo", I_Story01 = "Tartarus · Hades",
+        N_Story01 = "Ephyra · Medea", O_Story01 = "Thessaly · Circe", P_Story01 = "Olympus · Dionysus",
+        F_MiniBoss01 = "Erebus · Root-Stalker", F_MiniBoss02 = "Erebus · Shadow-Spiller",
+        F_MiniBoss03 = "Erebus · Master-Slicer", G_MiniBoss01 = "Oceanus · Deep Serpent",
+        G_MiniBoss02 = "Oceanus · King Vermin", G_MiniBoss03 = "Oceanus · Hellifish",
+        H_MiniBoss01 = "Fields · Phantom", H_MiniBoss02 = "Fields · Queen Lamia",
+        I_MiniBoss01 = "Tartarus · The Verminancer", I_MiniBoss02 = "Tartarus · Goldwrath",
+        N_MiniBoss01 = "Ephyra · Satyr Champion", N_MiniBoss02 = "Ephyra · Erymanthian Boar",
+        O_MiniBoss01 = "Thessaly · Charybdis", O_MiniBoss02 = "Thessaly · The Yargonaut",
+        P_MiniBoss01 = "Olympus · Talos", P_MiniBoss02 = "Olympus · Mega-Dracon",
+        Q_MiniBoss02 = "Summit · Brute", Q_MiniBoss03 = "Summit · Tail",
+        Q_MiniBoss04 = "Summit · Eye", Q_MiniBoss05 = "Summit · Stalker",
+    }
+    for name, title in pairs(expected) do
+        lu.assertEquals(guide.project({ kind = "navigation", nativeRoomName = name }).header, title)
+    end
+    for _, name in ipairs({ "F_MiniBoss01", "N_MiniBoss02" }) do
+        local projection = guide.project({ kind = "navigation", nativeRoomName = "N_Hub",
+            navigation = { kind = "next", hubVisit = name == "N_MiniBoss02",
+                occurrence = { gameName = name }, reward = { rewardType = "Boon", source = "HeraUpgrade" } } })
+        lu.assertEquals(projection.footer, "Next door: Hera boon")
+    end
 end
 
 function TestRoomGuide.testOverlayRefreshesOnlyOnProjectionChangesAndClearsOnToggle()
@@ -289,6 +424,7 @@ function TestRoomGuide.testOverlayRefreshesOnlyOnProjectionChangesAndClearsOnTog
     lu.assertEquals(lines["room-guide-header"].hudVisibility, "independent")
     lu.assertEquals(lines["room-guide-footer"].hudVisibility, "independent")
     lu.assertEquals(tables["room-guide-rows"].hudVisibility, "independent")
+    lu.assertEquals(tables["room-guide-rows"].columns, { { key = "instruction", minWidth = 240 } })
     local overlay = {
         setLine = function(name, value) lines[name].value = value end,
         setTable = function(name, value) tables[name].value = value end,
@@ -300,7 +436,7 @@ function TestRoomGuide.testOverlayRefreshesOnlyOnProjectionChangesAndClearsOnTog
     lu.assertEquals(callbacks.seconds, 0.25)
     lu.assertEquals(refreshes, 1)
     lu.assertEquals(tables["room-guide-rows"].value, {
-        { number = "1.", instruction = "Collect reward" },
+        { instruction = "Collect reward" },
     })
     enabled = false
     callbacks.interval(nil, runtime, overlay)

@@ -79,6 +79,17 @@ local function hubForRoom(route, occurrenceId)
     return nil
 end
 
+local function guideNext(current, target)
+    local result = { kind = "next", occurrence = target }
+    for _, door in ipairs(current and current.doors and current.doors.targets or {}) do
+        if target and door.room and door.room.id == target.id then
+            result.reward, result.cageRewards = door.reward, door.cageRewards
+            break
+        end
+    end
+    return result
+end
+
 -- The guide consumes this bounded navigation projection rather than inferring
 -- a new cursor from room names. Side rooms return to their native parent;
 -- after a transparent parent restore N returns to its Hub before another visit.
@@ -94,11 +105,22 @@ function routeSession.guideNavigation(route)
         end
         local hub = hubForRoom(route, current.id)
         if hub ~= nil then return { kind = "return", gameName = hub.room.gameName } end
-        return { kind = "next", occurrence = nextOccurrence }
+        return guideNext(current, nextOccurrence)
     end
     local native = route.transparentNativeRoom
     if native == nil then return nil end
-    if native == "N_Hub" then return { kind = "next", occurrence = routeSession.next(route) } end
+    if native == "N_Hub" then
+        local target = routeSession.next(route)
+        local result = guideNext(nil, target)
+        local hub = target and hubForRoom(route, target.id)
+        for _, slot in ipairs(hub and hub.slots or {}) do
+            if slot.room and slot.room.id == target.id then
+                result.hubVisit, result.reward = true, slot.reward
+                break
+            end
+        end
+        return result
+    end
     local parent = route.lastExitedOccurrence and parentForSide(route, route.lastExitedOccurrence.id)
     if parent ~= nil and parent.gameName == native then
         local nextOccurrence = routeSession.next(route)
