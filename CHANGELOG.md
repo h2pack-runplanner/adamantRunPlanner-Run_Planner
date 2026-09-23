@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-09-23
+
+### Added
+
+- guide: remain visible when combat HUD hides (
+1fd092)
+- guidance: highlight planned doors wheels and trait choices (
+53b30e)
+- hud: add optional compact room guide (
+ff6a1e)
+- protocol: decode published room guide rows (
+df6832)
+
+### Fixed
+
+- guide: clarify story and rewardless door destinations (4cca463)
+- guide: simplify labels and identify selected door rewards (
+b9b5e3)
+- acquisitions: decouple pickup discovery from encounter windows (
+dfb308)
+- guide: clarify conversions purchases and cage rewards (
+247b30)
+
 ## [0.9.1] - 2026-09-23
 
 ### Fixed
