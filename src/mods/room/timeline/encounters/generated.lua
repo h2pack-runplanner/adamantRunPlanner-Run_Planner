@@ -142,7 +142,32 @@ function generated.create()
             end
             return withScope(stack, {
                 kind = "generate", owner = owner, encounter = encounter, nativeRoom = nativeRoom,
-            }, function() return base(currentRun, nativeRoom, encounter) end)
+            }, function()
+                local result = base(currentRun, nativeRoom, encounter)
+                local waves = {}
+                for index, wave in ipairs(encounter.SpawnWaves or {}) do
+                    local spawns, requested = {}, {}
+                    for _, spawn in ipairs(wave.Spawns or {}) do
+                        spawns[#spawns + 1] = {
+                            name = spawn.Name, count = spawn.TotalCount,
+                            countMin = spawn.CountMin, countMax = spawn.CountMax,
+                        }
+                    end
+                    local authored = waveFor(decision, index)
+                    for position, entry in ipairs(authored and authored.types or {}) do
+                        requested[#requested + 1] = {
+                            name = nativeId(entry), share = authored.shares and authored.shares[position],
+                        }
+                    end
+                    waves[#waves + 1] = { wave = index, spawns = spawns, requested = requested }
+                end
+                diagnostic(owner, {
+                    kind = "generated-result", phase = owner.phase.slotKey,
+                    encounterKey = owner.encounterKey, requestedWaveCount = decision.waveCount,
+                    waveCount = #waves, waves = waves,
+                })
+                return result
+            end)
         end)
 
         module.hooks.wrap("FillEnemyTypes", "run-planner-generated-encounter-types", function(_, _, base,

@@ -97,6 +97,19 @@ function hooks.attach(module, session, getState, report, room, shipCombat, gener
                 and gameValue.EncounterData[phase.encounterKey] or nil
         end
         local function choose()
+            local gameValue = _G.game or game
+            local eligible = gameValue and gameValue.IsEncounterEligible
+            if declaration and type(eligible) == "function" and session.diagnostic then
+                local ok, verdict = pcall(eligible, currentRun, nativeRoom, declaration, args)
+                if not ok or not verdict then
+                    session.diagnostic(state, "encounter-eligibility", {
+                        phase = phase.slotKey, encounterKey = phase.encounterKey,
+                        room = nativeRoom and nativeRoom.Name,
+                        reason = ok and "native-ineligible" or "native-check-error",
+                        error = not ok and tostring(verdict) or nil,
+                    }, room.occurrence(state, nativeRoom))
+                end
+            end
             return declaration ~= nil
                 and chooseForcedEncounter(base, currentRun, nativeRoom, args, declaration)
                 or base(currentRun, nativeRoom, args)

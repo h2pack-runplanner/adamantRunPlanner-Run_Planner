@@ -28,6 +28,36 @@ local function decision(values)
     return values
 end
 
+function TestGeneratedEncounters.testGeneratedResultSnapshotsAllocationWithoutTrackingSpawns()
+    local callbacks, generated, state, room, destination = fixture()
+    local encounter = { Name = "Generated" }
+    local authored = phase(decision({ waveCount = 1, waves = {
+        { waveIndex = 1, types = { { nativeId = "Ash" } }, shares = { 1 } },
+    } }))
+    local result = generated.withPhase(state, room, authored, destination, function()
+        return callbacks.SetupEncounter(nil, {}, function()
+            return callbacks.GenerateEncounter(nil, {}, function()
+                encounter.SpawnWaves = { { Spawns = {
+                    { Name = "Ash", TotalCount = 4 },
+                    { Name = "Template", CountMin = 1, CountMax = 2 },
+                } } }
+                return "native-result"
+            end, {}, destination, encounter)
+        end, encounter, destination)
+    end)
+    encounter.SpawnWaves[1].Spawns[1].TotalCount = 99
+    lu.assertEquals(result, "native-result")
+    lu.assertEquals(state.state, "synchronized")
+    lu.assertEquals(state.diagnostics[1].observed, {
+        kind = "generated-result", phase = "Combat", encounterKey = "Generated",
+        requestedWaveCount = 1, waveCount = 1, waves = {
+            { wave = 1, requested = { { name = "Ash", share = 1 } }, spawns = {
+                { name = "Ash", count = 4 }, { name = "Template", countMin = 1, countMax = 2 },
+            } },
+        },
+    })
+end
+
 function TestGeneratedEncounters.testDefaultAndNestedSameNameCallsDelegateWithoutAStaleOverride()
     local callbacks, generated, state, room, destination = fixture()
     local defaultCalls, nestedCalls, outerCalls = 0, 0, 0

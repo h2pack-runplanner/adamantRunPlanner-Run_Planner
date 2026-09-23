@@ -182,11 +182,15 @@ function composition.bind(root)
                 end
             end
             for _, diagnostic in ipairs(state.diagnostics or {}) do
-                if diagnostic.checkpoint == "fields-completed-product" and diagnostic.logged ~= true then
+                local fields = diagnostic.checkpoint == "fields-completed-product"
+                local encounter = diagnostic.checkpoint == "encounter-eligibility"
+                    or diagnostic.checkpoint == "encounter-composition"
+                if (fields or encounter) and diagnostic.logged ~= true then
                     diagnostic.logged = true
                     if rom and rom.log and rom.log.info then
                         rom.log.info("[RunPlanner] diagnostic occurrence=" .. tostring(diagnostic.occurrenceId)
-                            .. " " .. fieldsSnapshot(diagnostic.observed))
+                            .. " " .. (fields and fieldsSnapshot(diagnostic.observed)
+                                or diagnostic.checkpoint .. " " .. diagnosticValue(diagnostic.observed)))
                     end
                 end
             end

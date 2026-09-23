@@ -451,9 +451,22 @@ function TestEncounters.testGeneratedCompositionUsesTheExistingExactPhaseCarrier
             return true
         end,
     }
-    encounterHooks.attach(module, {}, function() return state end, function() end, room, nil, generated)
+    local diagnostics = {}
+    encounterHooks.attach(module, { diagnostic = function(_, checkpoint, observed, owner)
+        diagnostics[#diagnostics + 1] = { checkpoint = checkpoint, observed = observed, owner = owner }
+    end }, function() return state end, function() end, room, nil, generated)
     local priorGame = _G.game
-    _G.game = { EncounterData = { SameGenerated = { Name = "SameGenerated" } } }
+    _G.game = {
+        EncounterData = { SameGenerated = { Name = "SameGenerated" } },
+        IsEncounterEligible = function(currentRun, destination, declaration, args)
+            lu.assertNil(currentRun.ForceNextEncounterData)
+            lu.assertIs(destination, nativeRoom)
+            lu.assertEquals(declaration.Name, "SameGenerated")
+            lu.assertEquals(args, {})
+            if #diagnostics == 1 then error("native eligibility failed") end
+            return false
+        end,
+    }
     local run = {}
     local function choose()
         return callbacks.ChooseEncounter(nil, {}, function(currentRun)
@@ -469,6 +482,12 @@ function TestEncounters.testGeneratedCompositionUsesTheExistingExactPhaseCarrier
     })
     lu.assertEquals(bound, { { native = first, slotKey = "Combat1" }, { native = second, slotKey = "Combat2" } })
     lu.assertNil(run.ForceNextEncounterData)
+    lu.assertEquals(#diagnostics, 2)
+    lu.assertEquals(diagnostics[1].checkpoint, "encounter-eligibility")
+    lu.assertEquals(diagnostics[1].observed.reason, "native-ineligible")
+    lu.assertEquals(diagnostics[2].observed.reason, "native-check-error")
+    lu.assertIs(diagnostics[1].owner, occurrence)
+    lu.assertEquals(state.state, "synchronized")
 end
 
 function TestEncounters.testPEncounterSequenceLeavesHeraclesNativeSuffixTerminationIntact()
