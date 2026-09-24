@@ -39,6 +39,11 @@ function probe.loadBodies(scriptsPath)
         "AddToSpawnTable", "CalculateEnemyDifficultyRating", "FillEnemyCounts", "IsEnemyEligible",
     }) do loadBody(runSource, name, runPath) end
     loadBody(rewardSource, "SetupRoomReward", rewardPath)
+    local encounterPath, shrinePath = scriptsPath .. "/EncounterLogic.lua", scriptsPath .. "/ShrineLogic.lua"
+    loadBody(read(encounterPath), "CalculateActiveEnemyCap", encounterPath)
+    loadBody(read(shrinePath), "IsEliteAttributeEligible", shrinePath)
+    local utilityPath = scriptsPath .. "/UtilityLogic.lua"
+    loadBody(read(utilityPath), "OverwriteTableKeys", utilityPath)
 end
 
 function probe.loadRoomMultipleBody(scriptsPath)

@@ -11,7 +11,7 @@ TestProtocol = {}
 
 function TestProtocol.testMenaceStrictSourceCoverageAndOmittedZero()
     local function value()
-        return assert(json.decode([[{"kind":"generated","decisionKey":"generatedComposition","waveCount":1,"waves":[{"waveIndex":1,"types":[{"choiceKey":"Guard","nativeId":"Guard","source":"addition"}],"counts":{"Guard":4}}]}]]))
+        return assert(json.decode([[{"kind":"generated","decisionKey":"generatedComposition","expectedBudget":40,"waveCount":1,"waves":[{"waveIndex":1,"types":[{"choiceKey":"Guard","nativeId":"Guard","source":"addition"}],"counts":{"Guard":4}}]}]]))
     end
     local function conversion(count)
         local entry = assert(json.decode('{"source":{"choiceKey":"Guard","nativeId":"Guard"},"count":0,"target":{"choiceKey":"Guard2","nativeId":"Guard2"}}'))
@@ -64,7 +64,7 @@ local root = "fixtures/execution-plan/"
 function TestProtocol.testGeneratedEncounterRequiresACompleteProvenancedComposition()
     local function value()
         return assert(json.decode([[{
-            "kind":"generated","decisionKey":"generatedComposition","waveCount":3,
+            "kind":"generated","decisionKey":"generatedComposition","expectedBudget":72.5,"waveCount":3,
             "highlight":{"choiceKey":"Guard","nativeId":"Guard"},
             "waves":[
                 {"waveIndex":1,"types":[{"choiceKey":"Guard","nativeId":"Guard","source":"highlight"},{"choiceKey":"Mage","nativeId":"Mage","source":"addition"}],"counts":{"Guard":2,"Mage":3}},
@@ -78,6 +78,11 @@ function TestProtocol.testGeneratedEncounterRequiresACompleteProvenancedComposit
         function(row) row.waveCount = 6 end,
         function(row) row.waveCount = 1 end,
         function(row) row.unknown = true end,
+        function(row) row.expectedBudget = nil end,
+        function(row) row.expectedBudget = -1 end,
+        function(row) row.expectedBudget = 0 / 0 end,
+        function(row) row.expectedBudget = math.huge end,
+        function(row) row.expectedBudget = "72.5" end,
         function(row) row.waves[2] = row.waves[1] end,
         function(row) row.waves[1].waveIndex = 4 end,
         function(row) row.waves[1].counts.Unknown = 0 end,
@@ -191,6 +196,60 @@ local function decodeWithIndependentJsonModule(name)
     file:close()
     lu.assertFalse(rawequal(independentJson.null, json.null))
     return value
+end
+
+local function mirroredFixtureNames()
+    local listing = assert(io.popen("ls " .. root))
+    local names = {}
+    for file in listing:lines() do
+        local name = file:match("^(.+)%.execution%.json$")
+        if name then names[#names + 1] = name end
+    end
+    listing:close()
+    return names
+end
+
+local function generatedDecisions(plan)
+    local result = {}
+    for _, occurrence in ipairs(plan.occurrences) do
+        for _, phase in ipairs(occurrence.overview.encounterPhases) do
+            for _, decision in ipairs(phase.customization or {}) do
+                if decision.kind == "generated" then result[#result + 1] = decision end
+            end
+        end
+    end
+    return result
+end
+
+function TestProtocol.testEveryMirroredPlannerFixtureDecodes()
+    local names = mirroredFixtureNames()
+    lu.assertTrue(#names >= 16)
+    for _, name in ipairs(names) do
+        local decoded, errorMessage = protocol.decode(decode(name))
+        lu.assertNotNil(decoded, name .. ": " .. tostring(errorMessage))
+    end
+end
+
+function TestProtocol.testMirroredGeneratedCompositionsCarryExpectedBudgetsAndOutcomes()
+    local underworld = generatedDecisions(assert(protocol.decode(decode("underworld-generated-composition"))))
+    lu.assertEquals(#underworld, 4)
+    local budgets, highlight, fangs, template, positiveMenace = {}, false, 0, false, false
+    for _, decision in ipairs(underworld) do
+        budgets[#budgets + 1] = decision.expectedBudget
+        highlight = highlight or decision.highlight ~= nil
+        if decision.fangs then fangs = fangs + 1 end
+        for _, wave in ipairs(decision.waves) do
+            for _, entry in ipairs(wave.types) do template = template or entry.source == "template" end
+        end
+        for _, wave in ipairs(decision.menace or {}) do
+            for _, conversion in ipairs(wave.conversions) do positiveMenace = positiveMenace or conversion.count > 0 end
+        end
+    end
+    lu.assertEquals(budgets, { 100, 130, 160, 782 })
+    lu.assertEquals({ highlight, fangs, template, positiveMenace }, { true, 2, true, true })
+    local precombat = generatedDecisions(assert(protocol.decode(decode("surface-generated-precombat"))))
+    lu.assertEquals(#precombat, 1)
+    lu.assertEquals({ precombat[1].baseRoll, precombat[1].expectedBudget }, { 412, 412 })
 end
 
 function TestProtocol.testScheduledLifecycleKeepsHermesAndEchoStateDiagnosticOnly()

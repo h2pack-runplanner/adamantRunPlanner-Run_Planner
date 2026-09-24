@@ -2,7 +2,7 @@
   "format": "run-planner-execution",
   "protocolVersion": 46,
   "catalogVersion": "0.55.0-anvil-of-fates",
-  "projectId": "surface-4",
+  "projectId": "surface-3",
   "routeKey": "Surface",
   "startingLoadout": {
     "weaponKey": "WeaponStaffSwing",
@@ -50,11 +50,7 @@
     }
   },
   "startingKeepsake": { "keepsakeKey": "ManaOverTimeRefundKeepsake" },
-  "extent": {
-    "kind": "configuredPrefix",
-    "biomeKeys": ["N", "O", "P", "Q"],
-    "terminalBiomeKey": "Q"
-  },
+  "extent": { "kind": "configuredPrefix", "biomeKeys": ["N", "O", "P"], "terminalBiomeKey": "P" },
   "selectedOccurrenceIds": [
     "surface-n-opening",
     "surface-n-prehub",
@@ -92,16 +88,7 @@
     "surface-p-8-1-p_combat12",
     "surface-p-preboss-shop",
     "surface-p-preboss-shop:boss",
-    "surface-p-preboss-shop:postboss",
-    "surface-q-intro",
-    "surface-q-foyer",
-    "surface-q-first-fork",
-    "surface-q-first-miniboss-1",
-    "surface-q-ordinary",
-    "surface-q-second-fork",
-    "surface-q-second-miniboss-1",
-    "surface-q-preboss",
-    "surface-q-preboss:boss"
+    "surface-p-preboss-shop:postboss"
   ],
   "resources": {
     "occurrences": [
@@ -431,87 +418,6 @@
       },
       {
         "occurrenceId": "surface-p-preboss-shop:postboss",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-intro",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-foyer",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-first-fork",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-first-miniboss-1",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-ordinary",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-second-fork",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-second-miniboss-1",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-preboss",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-q-preboss:boss",
         "pointDispositions": {
           "Pickaxe": "native",
           "Exorcism": "native",
@@ -2282,15 +2188,15 @@
                   "kind": "traits",
                   "giver": "SpellDrop",
                   "options": [
+                    { "key": "SpellTimeSlowTrait" },
                     { "key": "SpellPotionTrait" },
-                    { "key": "SpellPolymorphTrait" },
-                    { "key": "SpellMeteorTrait" }
+                    { "key": "SpellPolymorphTrait" }
                   ],
                   "selected": "option1",
                   "hexTree": {
                     "layoutKey": "Lung",
-                    "rareTalentKeys": ["DamageBuffTalent", "ShieldTalent"],
-                    "epicTalentKeys": ["ClearCastTalent"]
+                    "rareTalentKeys": ["TimeSlowDestroyProjectilesTalent", "TimeSlowSpeedTalent"],
+                    "epicTalentKeys": ["TimeSlowCritTalent"]
                   }
                 }
               }
@@ -2359,7 +2265,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" }
+                { "traitKey": "SpellTimeSlowTrait" }
               ],
               "slots": [
                 { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
@@ -2367,7 +2273,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 5, "Air": 2, "Fire": 0, "Water": 0 },
               "godRarityCounts": { "Common": 6 },
@@ -2375,9 +2281,13 @@
               "bannedTraitKeys": []
             },
             "hexProgress": {
-              "spellTraitKey": "SpellPotionTrait",
+              "spellTraitKey": "SpellTimeSlowTrait",
               "layoutKey": "Lung",
-              "talentKeys": ["DamageBuffTalent", "ShieldTalent", "ClearCastTalent"],
+              "talentKeys": [
+                "TimeSlowDestroyProjectilesTalent",
+                "TimeSlowSpeedTalent",
+                "TimeSlowCritTalent"
+              ],
               "closed": false,
               "bankedPathPoints": 0,
               "investedPathPoints": 0
@@ -3273,7 +3183,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 }
               ],
@@ -3283,7 +3193,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 6, "Air": 2, "Fire": 1, "Water": 0 },
               "godRarityCounts": { "Common": 8 },
@@ -3390,7 +3300,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" }
@@ -3401,7 +3311,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 6, "Air": 2, "Fire": 1, "Water": 0 },
               "godRarityCounts": { "Common": 8 },
@@ -3571,7 +3481,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" }
@@ -3582,7 +3492,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 6, "Air": 2, "Fire": 1, "Water": 0 },
               "godRarityCounts": { "Common": 8 },
@@ -4284,7 +4194,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" }
@@ -4295,7 +4205,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 6, "Air": 2, "Fire": 1, "Water": 0 },
               "godRarityCounts": { "Common": 8 },
@@ -4319,7 +4229,31 @@
           "resolvedStoreKey": "RunProgress"
         },
         "encounterPhases": [
-          { "slotKey": "Intro", "encounterKey": "GeneratedP_PreCombat", "kind": "combat" },
+          {
+            "slotKey": "Intro",
+            "encounterKey": "GeneratedP_PreCombat",
+            "kind": "combat",
+            "customization": [
+              {
+                "decisionKey": "generatedComposition",
+                "kind": "generated",
+                "baseRoll": 412,
+                "expectedBudget": 412,
+                "waveCount": 1,
+                "menace": [],
+                "waves": [
+                  {
+                    "waveIndex": 1,
+                    "types": [
+                      { "choiceKey": "SentryBot", "nativeId": "SentryBot", "source": "addition" },
+                      { "choiceKey": "Dragon", "nativeId": "Dragon", "source": "addition" }
+                    ],
+                    "counts": { "SentryBot": 4, "Dragon": 1 }
+                  }
+                ]
+              }
+            ]
+          },
           { "slotKey": "Combat", "encounterKey": "GeneratedP", "kind": "combat" }
         ],
         "requiredObjects": []
@@ -4456,7 +4390,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
@@ -4468,7 +4402,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 7, "Air": 2, "Fire": 1, "Water": 0 },
               "godRarityCounts": { "Common": 9 },
@@ -4641,7 +4575,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
@@ -4654,7 +4588,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 7, "Air": 3, "Fire": 1, "Water": 0 },
               "godRarityCounts": { "Common": 10 },
@@ -4924,7 +4858,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
@@ -4938,7 +4872,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 7, "Air": 3, "Fire": 1, "Water": 1 },
               "godRarityCounts": { "Common": 11 },
@@ -5093,7 +5027,7 @@
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
+                { "traitKey": "SpellTimeSlowTrait" },
                 { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "CirceShrinkTrait" },
@@ -5107,7 +5041,7 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
+                { "slot": "Spell", "traitKey": "SpellTimeSlowTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 7, "Air": 3, "Fire": 1, "Water": 1 },
               "godRarityCounts": { "Common": 11 },
@@ -5296,9 +5230,7 @@
       ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-preboss-shop:postboss\"]",
-        "kind": "fixed",
-        "target": { "id": "surface-q-intro", "biomeKey": "Q", "gameName": "Q_Intro" },
-        "zagreusContractPresent": false
+        "kind": "terminal"
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -5318,897 +5250,6 @@
               "biomeEncounterDepth": 7,
               "routeEncounterDepth": 19,
               "roomHistoryOrdinal": 48
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-intro",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-intro\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_Intro",
-      "kind": "EmptyEncounter",
-      "overview": {
-        "unmodeledEncounterKeys": ["Empty"],
-        "encounterPhases": [],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-intro\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-q-foyer", "biomeKey": "Q", "gameName": "Q_Combat10" },
-            "zagreusContractPresent": false
-          }
-        ]
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 70,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-intro\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 1,
-              "biomeEncounterDepth": 1,
-              "routeEncounterDepth": 19,
-              "roomHistoryOrdinal": 48
-            }
-          }
-        },
-        "beforeRoomExit": {
-          "frame": 71,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-intro\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 2,
-              "biomeEncounterDepth": 1,
-              "routeEncounterDepth": 19,
-              "roomHistoryOrdinal": 49
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-foyer",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-foyer\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_Combat10",
-      "kind": "SingleEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "GeneratedQ_Large", "kind": "combat" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-foyer\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-q-first-fork", "biomeKey": "Q", "gameName": "Q_Combat03" },
-            "zagreusContractPresent": false
-          }
-        ]
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 72,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-foyer\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 73,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-foyer\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 3,
-              "biomeEncounterDepth": 2,
-              "routeEncounterDepth": 20,
-              "roomHistoryOrdinal": 50
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-first-fork",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-first-fork\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_Combat03",
-      "kind": "SingleEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "GeneratedQ_Islands", "kind": "combat" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-first-fork\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": {
-              "id": "surface-q-first-miniboss-1",
-              "biomeKey": "Q",
-              "gameName": "Q_MiniBoss02"
-            },
-            "zagreusContractPresent": false,
-            "reward": {
-              "rewardType": "Boon",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards",
-              "source": "AresUpgrade"
-            }
-          },
-          {
-            "exitKey": "exit2",
-            "index": 2,
-            "room": {
-              "id": "surface-q-first-miniboss-2",
-              "biomeKey": "Q",
-              "gameName": "Q_MiniBoss05"
-            },
-            "zagreusContractPresent": false,
-            "reward": {
-              "rewardType": "Boon",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards",
-              "source": "ApolloUpgrade"
-            }
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "TyphonBossRewards"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 74,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-first-fork\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 75,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-first-fork\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 4,
-              "biomeEncounterDepth": 3,
-              "routeEncounterDepth": 21,
-              "roomHistoryOrdinal": 51
-            },
-            "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 14 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
-              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 17 } },
-              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
-              {
-                "storeKey": "FieldsOptionalRewards",
-                "remaining": { "kind": "exact", "count": 19 }
-              },
-              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 4 } },
-              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-first-miniboss-1",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-first-miniboss-1\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_MiniBoss02",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": {
-          "rewardType": "Boon",
-          "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "TyphonBossRewards",
-          "source": "AresUpgrade"
-        },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "MiniBossBrute", "kind": "miniboss" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "acquisition",
-            "owner": "[\"acquisitionRole\",\"Surface\",\"Q\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-first-miniboss-1\\\"]\",\"source\"]",
-            "sourceOwner": "[\"incomingReward\",\"Surface\",\"Q\",\"surface-q-first-miniboss-1\"]",
-            "reward": {
-              "rewardType": "Boon",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards",
-              "source": "AresUpgrade"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "source",
-                "disposition": "normal",
-                "lifecyclePoint": "roomRewardPickup",
-                "kind": "loot",
-                "gameName": "AresUpgrade",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"Q\",\"[\\\"occurrence\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-first-miniboss-1\\\"]\",\"roomRewardPickup\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"Q\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"Q\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"Q\\\\\\\",\\\\\\\"surface-q-first-miniboss-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"source\"]"
-                },
-                "traitOffer": {
-                  "kind": "traits",
-                  "giver": "Ares",
-                  "options": [
-                    { "key": "RendBloodDropBoon", "rarity": "Rare", "effectiveLevel": 1 },
-                    { "key": "AresStatusDoubleDamageBoon", "rarity": "Rare", "effectiveLevel": 1 },
-                    { "key": "BloodDropRevengeBoon", "rarity": "Rare", "effectiveLevel": 1 }
-                  ],
-                  "selected": "option1"
-                }
-              }
-            ],
-            "window": { "kind": "standard", "phase": "afterCombat" }
-          }
-        ],
-        "dependencies": [],
-        "obligations": []
-      },
-      "roomGuide": [
-        {
-          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"source\"]",
-          "description": {
-            "kind": "interactIncomingReward",
-            "reward": {
-              "rewardType": "Boon",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards",
-              "source": "AresUpgrade"
-            }
-          },
-          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"Q\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-first-miniboss-1\\\"]\",\"source\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-first-miniboss-1\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-q-ordinary", "biomeKey": "Q", "gameName": "Q_Combat01" },
-            "zagreusContractPresent": false
-          }
-        ]
-      },
-      "roomExitConformance": {
-        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
-      },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 76,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-first-miniboss-1\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 77,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-first-miniboss-1\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 5,
-              "biomeEncounterDepth": 4,
-              "routeEncounterDepth": 22,
-              "roomHistoryOrdinal": 52
-            },
-            "traits": {
-              "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 4 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
-                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
-                { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CirceShrinkTrait" },
-                { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "ZeusManaBoltBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CastLobBoon", "rarity": "Common" },
-                { "traitKey": "RendBloodDropBoon", "rarity": "Rare", "level": 1 }
-              ],
-              "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
-                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
-                { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
-              ],
-              "elements": { "Aether": 0, "Earth": 8, "Air": 3, "Fire": 1, "Water": 1 },
-              "godRarityCounts": { "Common": 11, "Rare": 1 },
-              "upgradableCount": 9,
-              "bannedTraitKeys": []
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-ordinary",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-ordinary\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_Combat01",
-      "kind": "SingleEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "GeneratedQ", "kind": "combat" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-ordinary\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-q-second-fork", "biomeKey": "Q", "gameName": "Q_Combat12" },
-            "zagreusContractPresent": false
-          }
-        ]
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 78,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-ordinary\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 79,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-ordinary\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 6,
-              "biomeEncounterDepth": 5,
-              "routeEncounterDepth": 23,
-              "roomHistoryOrdinal": 53
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-second-fork",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-second-fork\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_Combat12",
-      "kind": "SingleEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "GeneratedQ", "kind": "combat" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-second-fork\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": {
-              "id": "surface-q-second-miniboss-1",
-              "biomeKey": "Q",
-              "gameName": "Q_MiniBoss03"
-            },
-            "zagreusContractPresent": false,
-            "reward": {
-              "rewardType": "WeaponUpgrade",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards"
-            }
-          },
-          {
-            "exitKey": "exit2",
-            "index": 2,
-            "room": {
-              "id": "surface-q-second-miniboss-2",
-              "biomeKey": "Q",
-              "gameName": "Q_MiniBoss04"
-            },
-            "zagreusContractPresent": false,
-            "reward": {
-              "rewardType": "StackUpgradeTriple",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards"
-            }
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "TyphonBossRewards"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 80,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-second-fork\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 81,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-second-fork\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 7,
-              "biomeEncounterDepth": 6,
-              "routeEncounterDepth": 24,
-              "roomHistoryOrdinal": 54
-            },
-            "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 14 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
-              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 17 } },
-              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
-              {
-                "storeKey": "FieldsOptionalRewards",
-                "remaining": { "kind": "exact", "count": 19 }
-              },
-              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 2 } },
-              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-second-miniboss-1",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-second-miniboss-1\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_MiniBoss03",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": {
-          "rewardType": "WeaponUpgrade",
-          "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "TyphonBossRewards"
-        },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "BossTyphonTail01", "kind": "miniboss" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "acquisition",
-            "owner": "[\"acquisitionRole\",\"Surface\",\"Q\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-second-miniboss-1\\\"]\",\"self\"]",
-            "sourceOwner": "[\"incomingReward\",\"Surface\",\"Q\",\"surface-q-second-miniboss-1\"]",
-            "reward": {
-              "rewardType": "WeaponUpgrade",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "self",
-                "disposition": "normal",
-                "lifecyclePoint": "roomRewardPickup",
-                "kind": "loot",
-                "gameName": "WeaponUpgrade",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"Q\",\"[\\\"occurrence\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-second-miniboss-1\\\"]\",\"roomRewardPickup\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"Q\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"Q\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"Q\\\\\\\",\\\\\\\"surface-q-second-miniboss-1\\\\\\\"]\\\",\\\"roomRewardPickup\\\"]\",\"self\"]"
-                },
-                "traitOffer": {
-                  "kind": "traits",
-                  "giver": "WeaponUpgrade",
-                  "options": [
-                    { "key": "StaffDoubleAttackTrait" },
-                    { "key": "StaffLongAttackTrait" },
-                    { "key": "StaffDashAttackTrait" }
-                  ],
-                  "selected": "option1"
-                }
-              }
-            ],
-            "window": { "kind": "standard", "phase": "afterCombat" }
-          }
-        ],
-        "dependencies": [],
-        "obligations": []
-      },
-      "roomGuide": [
-        {
-          "key": "[\"interactIncomingReward\",\"roomRewardPickup\",\"self\"]",
-          "description": {
-            "kind": "interactIncomingReward",
-            "reward": {
-              "rewardType": "WeaponUpgrade",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "TyphonBossRewards"
-            }
-          },
-          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"Q\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-second-miniboss-1\\\"]\",\"self\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"Q\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-q-second-miniboss-1\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-q-preboss", "biomeKey": "Q", "gameName": "Q_PreBoss01" },
-            "zagreusContractPresent": false,
-            "reward": { "rewardType": "Shop", "producerLifecycleKey": "RoomReward" }
-          }
-        ]
-      },
-      "roomExitConformance": {
-        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
-      },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 82,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-second-miniboss-1\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 83,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-second-miniboss-1\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 8,
-              "biomeEncounterDepth": 7,
-              "routeEncounterDepth": 25,
-              "roomHistoryOrdinal": 55
-            },
-            "traits": {
-              "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 4 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
-                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
-                { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CirceShrinkTrait" },
-                { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "ZeusManaBoltBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CastLobBoon", "rarity": "Common" },
-                { "traitKey": "RendBloodDropBoon", "rarity": "Rare", "level": 1 },
-                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" }
-              ],
-              "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
-                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
-                { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
-              ],
-              "elements": { "Aether": 0, "Earth": 8, "Air": 3, "Fire": 1, "Water": 1 },
-              "godRarityCounts": { "Common": 11, "Rare": 1 },
-              "upgradableCount": 9,
-              "bannedTraitKeys": []
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-preboss",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-preboss\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_PreBoss01",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": { "rewardType": "Shop", "producerLifecycleKey": "RoomReward" },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "TyphonShop", "kind": "nonCombat" }
-        ],
-        "requiredObjects": [],
-        "shop": {
-          "profileKey": "Q_WorldShop",
-          "offers": [
-            {
-              "offerKey": "MixedProgress1",
-              "transactionOwner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress1\"]",
-              "optionKey": "RandomLoot",
-              "rewardType": "RandomLoot",
-              "source": "ApolloUpgrade"
-            },
-            {
-              "offerKey": "MixedProgress2",
-              "transactionOwner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress2\"]",
-              "optionKey": "BoostedRandomLoot",
-              "rewardType": "RandomLoot",
-              "source": "ApolloUpgrade"
-            },
-            {
-              "offerKey": "LargeSurvival",
-              "optionKey": "HealBigDrop",
-              "rewardType": "HealBigDrop"
-            },
-            { "offerKey": "Survival", "optionKey": "ArmorBigBoost", "rewardType": "ArmorBigBoost" },
-            {
-              "offerKey": "PremiumProgress",
-              "optionKey": "MaxHealthDropBig",
-              "rewardType": "MaxHealthDropBig"
-            },
-            {
-              "offerKey": "MetaProgress",
-              "optionKey": "WeaponPointsRareDrop",
-              "rewardType": "WeaponPointsRareDrop"
-            }
-          ]
-        }
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "acquisition",
-            "owner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress1\"]",
-            "sourceOwner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress1\"]",
-            "reward": {
-              "rewardType": "RandomLoot",
-              "producerLifecycleKey": "Q_WorldShop",
-              "source": "ApolloUpgrade"
-            },
-            "producerLifecycleKey": "Q_WorldShop",
-            "roles": [
-              {
-                "role": "source",
-                "disposition": "normal",
-                "lifecyclePoint": "purchase",
-                "kind": "loot",
-                "gameName": "ApolloUpgrade",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"Q\",\"[\\\"occurrence\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-preboss\\\"]\",\"roomExit\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"Q\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"Q\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"Q\\\\\\\",\\\\\\\"surface-q-preboss\\\\\\\"]\\\",\\\"roomExit\\\"]\",\"MixedProgress1\"]"
-                },
-                "traitOffer": {
-                  "kind": "traits",
-                  "giver": "Apollo",
-                  "options": [
-                    {
-                      "key": "ApolloSpecialBoon",
-                      "rarity": "Rare",
-                      "effectiveLevel": 1,
-                      "replacement": {
-                        "slot": "Secondary",
-                        "replacedTraitKey": "AresSpecialBoon",
-                        "oldRarity": "Common",
-                        "newTraitKey": "ApolloSpecialBoon",
-                        "requiredRarity": "Rare"
-                      }
-                    },
-                    { "key": "ApolloRetaliateBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "PerfectDamageBonusBoon", "rarity": "Common", "effectiveLevel": 1 }
-                  ],
-                  "selected": "option1"
-                }
-              }
-            ],
-            "window": { "kind": "postOutgoing" }
-          },
-          {
-            "kind": "acquisition",
-            "owner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress2\"]",
-            "sourceOwner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress2\"]",
-            "reward": {
-              "rewardType": "RandomLoot",
-              "producerLifecycleKey": "Q_WorldShop",
-              "source": "ApolloUpgrade"
-            },
-            "producerLifecycleKey": "Q_WorldShop",
-            "roles": [
-              {
-                "role": "source",
-                "disposition": "normal",
-                "lifecyclePoint": "purchase",
-                "kind": "loot",
-                "gameName": "ApolloUpgrade",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"Q\",\"[\\\"occurrence\\\",\\\"Surface\\\",\\\"Q\\\",\\\"surface-q-preboss\\\"]\",\"roomExit\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"Q\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"Q\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"Q\\\\\\\",\\\\\\\"surface-q-preboss\\\\\\\"]\\\",\\\"roomExit\\\"]\",\"MixedProgress2\"]"
-                },
-                "traitOffer": {
-                  "kind": "traits",
-                  "giver": "Apollo",
-                  "options": [
-                    {
-                      "key": "ApolloCastBoon",
-                      "rarity": "Rare",
-                      "effectiveLevel": 1,
-                      "replacement": {
-                        "slot": "Ranged",
-                        "replacedTraitKey": "HephaestusCastBoon",
-                        "oldRarity": "Common",
-                        "newTraitKey": "ApolloCastBoon",
-                        "requiredRarity": "Rare"
-                      }
-                    },
-                    { "key": "ApolloRetaliateBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "PerfectDamageBonusBoon", "rarity": "Common", "effectiveLevel": 1 }
-                  ],
-                  "selected": "option1"
-                }
-              }
-            ],
-            "window": { "kind": "postOutgoing" }
-          }
-        ],
-        "dependencies": [
-          {
-            "owner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress2\"]",
-            "afterOwner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress1\"]"
-          }
-        ],
-        "obligations": []
-      },
-      "roomGuide": [
-        {
-          "key": "[\"interactShopOffer\",\"MixedProgress1\"]",
-          "description": {
-            "kind": "interactShopOffer",
-            "offerKey": "MixedProgress1",
-            "rewardType": "RandomLoot"
-          },
-          "transactionOwner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress1\"]"
-        },
-        {
-          "key": "[\"interactShopOffer\",\"MixedProgress2\"]",
-          "description": {
-            "kind": "interactShopOffer",
-            "offerKey": "MixedProgress2",
-            "rewardType": "RandomLoot"
-          },
-          "transactionOwner": "[\"shopOffer\",\"Surface\",\"Q\",\"surface-q-preboss\",\"MixedProgress2\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-preboss\"]",
-        "kind": "fixed",
-        "target": { "id": "surface-q-preboss:boss", "biomeKey": "Q", "gameName": "Q_Boss01" },
-        "zagreusContractPresent": false
-      },
-      "roomExitConformance": {
-        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
-      },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 84,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-preboss\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 85,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-preboss\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 8,
-              "biomeEncounterDepth": 7,
-              "routeEncounterDepth": 25,
-              "roomHistoryOrdinal": 56
-            },
-            "traits": {
-              "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 4 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
-                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellPotionTrait" },
-                { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CirceShrinkTrait" },
-                { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
-                { "traitKey": "ZeusManaBoltBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CastLobBoon", "rarity": "Common" },
-                { "traitKey": "RendBloodDropBoon", "rarity": "Rare", "level": 1 },
-                { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
-                { "traitKey": "ApolloSpecialBoon", "rarity": "Rare", "level": 1 },
-                { "traitKey": "ApolloCastBoon", "rarity": "Rare", "level": 1 }
-              ],
-              "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "ApolloSpecialBoon" },
-                { "slot": "Ranged", "traitKey": "ApolloCastBoon" },
-                { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellPotionTrait" }
-              ],
-              "elements": { "Aether": 0, "Earth": 6, "Air": 4, "Fire": 2, "Water": 1 },
-              "godRarityCounts": { "Common": 9, "Rare": 3 },
-              "upgradableCount": 9,
-              "bannedTraitKeys": []
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-q-preboss:boss",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-preboss:boss\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_Boss01",
-      "kind": "SingleEncounter",
-      "overview": {
-        "effectNeutralRequiredReward": true,
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "BossTyphonHead01", "kind": "boss" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [
-        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
-      ],
-      "doors": {
-        "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-preboss:boss\"]",
-        "kind": "terminal"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 86,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-preboss:boss\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 87,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"Q\",\"surface-q-preboss:boss\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 9,
-              "biomeEncounterDepth": 7,
-              "routeEncounterDepth": 25,
-              "roomHistoryOrdinal": 57
             }
           }
         }
@@ -6559,56 +5600,7 @@
         "owner": "[\"occurrence\",\"Surface\",\"P\",\"surface-p-preboss-reward\"]",
         "kind": "terminal"
       }
-    },
-    {
-      "id": "surface-q-first-miniboss-2",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-first-miniboss-2\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_MiniBoss05",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": {
-          "rewardType": "Boon",
-          "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "TyphonBossRewards",
-          "source": "ApolloUpgrade"
-        },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "MiniBossStalker", "kind": "miniboss" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-first-miniboss-2\"]",
-        "kind": "terminal"
-      }
-    },
-    {
-      "id": "surface-q-second-miniboss-2",
-      "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-second-miniboss-2\"]",
-      "biomeKey": "Q",
-      "gameName": "Q_MiniBoss04",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": {
-          "rewardType": "StackUpgradeTriple",
-          "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "TyphonBossRewards"
-        },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "BossTyphonEye01", "kind": "miniboss" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"occurrence\",\"Surface\",\"Q\",\"surface-q-second-miniboss-2\"]",
-        "kind": "terminal"
-      }
     }
   ],
-  "planFingerprint": "58926738"
+  "planFingerprint": "db3633c5"
 }

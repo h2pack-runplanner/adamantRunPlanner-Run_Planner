@@ -17,13 +17,17 @@ local function enemy(value, label)
 end
 
 function generated.decode(value, label)
-    local row, err = p.exact(value, { "decisionKey", "kind", "waveCount", "waves" }, { "baseRoll", "highlight", "fangs", "menace" }, label)
+    local row, err = p.exact(value, { "decisionKey", "kind", "expectedBudget", "waveCount", "waves" },
+        { "baseRoll", "highlight", "fangs", "menace" }, label)
     if not row then return nil, err end
     if row.kind ~= "generated" or not p.str(row.decisionKey, label .. ".decisionKey") then
         return p.fail(label .. " has invalid generated decision")
     end
     if not ordinal(row.waveCount, label .. ".waveCount") then
         return p.fail(label .. " has invalid wave count")
+    end
+    if not p.num(row.expectedBudget, label .. ".expectedBudget", 0) then
+        return p.fail(label .. " has invalid expected budget")
     end
     if row.baseRoll ~= nil and (not p.int(row.baseRoll, label .. ".baseRoll", 0) or row.baseRoll > 10000) then
         return p.fail(label .. " has invalid base roll")

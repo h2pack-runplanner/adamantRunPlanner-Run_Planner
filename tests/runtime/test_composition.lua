@@ -629,7 +629,7 @@ function TestRuntimeComposition.testRuntimeCompositionInstallsSupportedHookGroup
     for _, name in ipairs({
         "ChooseStartingRoom", "StartRoom", "DoUnlockRoomExits", "LeaveRoom",
         "StartEncounter", "EndEncounterEffects", "SetupRoomMultipleEncountersData",
-        "SetupEncounter", "GenerateEncounter", "FillEnemyTypes",
+        "SetupEncounter", "GenerateEncounter", "CalculateActiveEnemyCap", "FillEnemyTypes",
         "PickEncounterEliteAttributes", "HandleNextSpawn",
         "ShipsEncounterSetup", "ChooseNextRewardStore", "CreateDoorRewardPreview", "UseShipWheel",
         "UseConsumableItem", "AddStackToTraits", "HandleLootPickup",

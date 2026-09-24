@@ -4,6 +4,8 @@
 local generated = {}
 local fangs = type(import) == "function" and import("mods/room/timeline/encounters/fangs.lua")
     or require("mods.room.timeline.encounters.fangs")
+local proof = type(import) == "function" and import("mods/room/conformance/proof.lua")
+    or require("mods.room.conformance.proof")
 
 local function compositionFor(phase)
     for _, decision in ipairs(phase and phase.customization or {}) do
@@ -15,6 +17,12 @@ local function copy(value)
     local result = {}
     for key, entry in pairs(value or {}) do result[key] = entry end
     return result
+end
+
+local function nativeValue(gameValue, name)
+    local value = gameValue[name]
+    if value == nil then value = _G[name] end
+    return value
 end
 
 local function menaceConversion(encounter, decision, spawnInfo)
@@ -42,43 +50,66 @@ local function scoped(stack, scope, action)
     return table.unpack(result, 2, result.n)
 end
 
+-- Native wave template choice over the effective (hard-overridden) encounter.
 local function templateFor(encounter, index, count)
-    local hard = encounter.IsHardEncounter and encounter.HardEncounterOverrideValues or {}
-    local manual = hard.ManualWaveTemplates or encounter.ManualWaveTemplates or {}
-    return manual[index] or manual[-1 * (count - index)] or hard.WaveTemplate or encounter.WaveTemplate
+    local manual = encounter.ManualWaveTemplates or {}
+    return manual[index] or manual[-1 * (count - index)] or encounter.WaveTemplate
 end
 
--- Admission validates the payload. Only live declaration compatibility belongs here.
-local function preflight(decision, encounter, enemies)
+-- GenerateEncounter applies hard overrides before rolling RandomInt(BaseDifficultyMin,
+-- BaseDifficultyMax). A "nil" override clears the range; it fails the numeric check below.
+local function effectiveBase(encounter, key)
+    local hard = encounter.IsHardEncounter and encounter.HardEncounterOverrideValues or {}
+    if hard[key] ~= nil then return hard[key] end
+    return encounter[key]
+end
+
+-- Native still makes exactly one RandomInt call for the base roll, over a
+-- single-value range. The returned function restores native post-generation fields.
+local function supplyBaseRoll(encounter, roll)
+    local minimum, maximum = effectiveBase(encounter, "BaseDifficultyMin"), effectiveBase(encounter, "BaseDifficultyMax")
+    if type(minimum) ~= "number" or type(maximum) ~= "number" or roll < minimum or roll > maximum then
+        return nil, { reason = "base-roll-out-of-range", expected = { min = minimum, max = maximum }, observed = roll }
+    end
+    local priorHard = encounter.HardEncounterOverrideValues
+    encounter.BaseDifficultyMin, encounter.BaseDifficultyMax = roll, roll
+    if encounter.IsHardEncounter and priorHard then
+        encounter.HardEncounterOverrideValues = copy(priorHard)
+        encounter.HardEncounterOverrideValues.BaseDifficultyMin = roll
+        encounter.HardEncounterOverrideValues.BaseDifficultyMax = roll
+    end
+    return function()
+        encounter.HardEncounterOverrideValues = priorHard
+        encounter.BaseDifficultyMin, encounter.BaseDifficultyMax = minimum, maximum
+    end
+end
+
+-- Live declaration facts the installer relies on, read from the effective encounter.
+local function installable(decision, encounter, enemies)
     if encounter.InfiniteSpawns then return "unsupported-infinite-spawns" end
     if encounter.SpawnWaves ~= nil and next(encounter.SpawnWaves) ~= nil then return "preexisting-waves" end
-    for _, wave in ipairs(decision.menace or {}) do
-        for _, conversion in ipairs(wave.conversions) do
-            if conversion.count > 0 and enemies[conversion.target.nativeId] == nil then
-                return "missing-menace-enemy", conversion.target.nativeId
-            end
-        end
-    end
+    if encounter.BuildCustomEnemySet ~= nil then return "unsupported-custom-enemy-set" end
     for index, wave in ipairs(decision.waves) do
         local template = templateFor(encounter, index, decision.waveCount)
-        if type(template) ~= "table" or type(template.Spawns) ~= "table" then return "unsupported-template" end
+        if type(template) ~= "table" or type(template.Spawns) ~= "table" then return "unsupported-template", { wave = index } end
         local templateIndex = 1
         for _, entry in ipairs(wave.types) do
             local name, source = entry.nativeId, entry.source
-            local count = wave.counts[name]
-            if enemies[name] == nil then return "missing-enemy" end
+            if enemies[name] == nil then return "missing-enemy", { wave = index, enemy = name } end
             if source == "fixed" or source == "template" then
                 local seed = template.Spawns[templateIndex]
-                if seed == nil then return "missing-template-entry" end
+                if seed == nil then return "missing-template-entry", { wave = index, enemy = name } end
                 if source == "fixed" then
-                    if seed.Name ~= name or seed.Generated or seed.TotalCount ~= count then
-                        return "fixed-template-changed"
+                    if seed.Name ~= name or seed.Generated or seed.TotalCount ~= wave.counts[name] then
+                        return "fixed-template-changed", { wave = index, enemy = name, observed = seed.Name }
                     end
-                elseif seed.Name ~= nil or not seed.Generated then return "unsupported-placeholder" end
+                elseif seed.Name ~= nil or not seed.Generated then
+                    return "unsupported-placeholder", { wave = index, enemy = name }
+                end
                 templateIndex = templateIndex + 1
             end
         end
-        if templateIndex <= #template.Spawns then return "unowned-template-entry" end
+        if templateIndex <= #template.Spawns then return "unowned-template-entry", { wave = index } end
     end
 end
 
@@ -87,41 +118,34 @@ end
 -- Ordinary candidates are sampled before placeholders/additions in each wave;
 -- fixed seeds and replicated highlight seeds are never sampled again.
 local function eligibleComposition(decision, encounter, nativeRoom, currentRun, gameValue)
-    nativeRoom = nativeRoom or currentRun.CurrentRoom or {}
-    local eligible = gameValue.IsEnemyEligible or _G.IsEnemyEligible
+    local eligible = nativeValue(gameValue, "IsEnemyEligible")
     if type(eligible) ~= "function" then return "missing-enemy-eligibility" end
     local view = copy(encounter)
-    if encounter.IsHardEncounter then
-        for key, value in pairs(encounter.HardEncounterOverrideValues or {}) do view[key] = value end
-    end
-    if view.UseRoomEncounterEnemySet then view.EnemySet = nativeRoom.Encounter and nativeRoom.Encounter.EnemySet end
-    if view.BuildCustomEnemySet then return "unsupported-custom-enemy-set" end
     view.Blacklist = copy(view.Blacklist)
     for name, blocked in pairs(currentRun.Blacklist or {}) do
         if blocked then view.Blacklist[name] = true end
     end
     local enemies = gameValue.EnemyData or {}
     local requireIntro = view.RequireCompletedIntro or nativeRoom.RequireCompletedIntro
-    local roomData = gameValue.RoomData or _G.RoomData
-    local depth = gameValue.GetBiomeDepth or _G.GetBiomeDepth
+    local roomData = nativeValue(gameValue, "RoomData")
+    local depth = nativeValue(gameValue, "GetBiomeDepth")
     local minDepth = nativeRoom.MinDepthBeforeIntros or (roomData and roomData.BaseRoom.MinDepthBeforeIntros)
     if minDepth and depth and depth(currentRun) < minDepth then requireIntro = true end
-    local function check(name, wave, enemySet)
+    local function check(name, index, wave, enemySet)
         local member = false
         for _, candidate in pairs(enemySet or view.EnemySet or {}) do
             if candidate == name then member = true end
         end
-        if not member then return "enemy-set-changed", name end
+        if not member then return "enemy-set-changed", { wave = index, enemy = name } end
         local ok, verdict = pcall(eligible, name, view, wave)
-        if not ok then return "native-enemy-check-error", name end
-        if not verdict then return "native-enemy-ineligible", name end
+        if not ok then return "native-enemy-check-error", { wave = index, enemy = name, observed = tostring(verdict) } end
+        if not verdict then return "native-enemy-ineligible", { wave = index, enemy = name } end
     end
     local function waveView(index)
-        local wave = copy(templateFor(view, index, decision.waveCount))
+        local template = templateFor(view, index, decision.waveCount)
+        local wave = copy(template)
         wave.Spawns = {}
-        for _, spawn in ipairs(templateFor(view, index, decision.waveCount).Spawns) do
-            wave.Spawns[#wave.Spawns + 1] = copy(spawn)
-        end
+        for _, spawn in ipairs(template.Spawns) do wave.Spawns[#wave.Spawns + 1] = copy(spawn) end
         wave.WaveIndex, wave.TypeCount = index, #decision.waves[index].types
         wave.RequireCompletedIntro = wave.RequireCompletedIntro or requireIntro
         if decision.highlight and index == 1 then wave.BlockEliteTypes = view.BlockHighlightEliteTypes end
@@ -131,8 +155,8 @@ local function eligibleComposition(decision, encounter, nativeRoom, currentRun, 
     if highlight then
         local wave = waveView(1)
         wave.TypeCount, wave.BlockEliteTypes = 1, view.BlockHighlightEliteTypes
-        local reason, name = check(highlight, wave)
-        if reason then return reason, name end
+        local reason, evidence = check(highlight, 1, wave)
+        if reason then return reason, evidence end
         view.Blacklist[highlight] = true
     end
     for index, published in ipairs(decision.waves) do
@@ -144,8 +168,8 @@ local function eligibleComposition(decision, encounter, nativeRoom, currentRun, 
         for _, entry in ipairs(published.types) do
             local seed = wave.Spawns[templateIndex]
             if entry.source == "addition" or (entry.source == "template" and not seed.EnemySet) then
-                local reason, name = check(entry.nativeId, wave)
-                if reason then return reason, name end
+                local reason, evidence = check(entry.nativeId, index, wave)
+                if reason then return reason, evidence end
             end
             if entry.source == "fixed" or entry.source == "template" then templateIndex = templateIndex + 1 end
         end
@@ -155,8 +179,8 @@ local function eligibleComposition(decision, encounter, nativeRoom, currentRun, 
                 local seed = wave.Spawns[templateIndex]
                 if entry.source == "template" then
                     if seed.EnemySet then
-                        local reason, name = check(entry.nativeId, wave, seed.EnemySet)
-                        if reason then return reason, name end
+                        local reason, evidence = check(entry.nativeId, index, wave, seed.EnemySet)
+                        if reason then return reason, evidence end
                     end
                     seed.Name = entry.nativeId
                 end
@@ -167,7 +191,7 @@ local function eligibleComposition(decision, encounter, nativeRoom, currentRun, 
         for _, entry in ipairs(published.types) do
             if entry.source == "addition" then
                 local name, enemy = entry.nativeId, enemies[entry.nativeId]
-                if excluded[name] then return "native-enemy-ineligible", name end
+                if excluded[name] then return "native-enemy-ineligible", { wave = index, enemy = name } end
                 if enemy.BlacklistAfterFirstAppearance then view.Blacklist[name] = true end
                 for _, blocked in pairs((enemy.GeneratorData or {}).BlockEnemyTypes or {}) do
                     excluded[blocked] = true
@@ -198,6 +222,89 @@ local function eligibleComposition(decision, encounter, nativeRoom, currentRun, 
     end
 end
 
+-- Native HandleNextSpawn converts only without encounter/source blocks, under an
+-- active vow, once the next biome was visited; targets come from SwapMap, else the
+-- room-set pool. Chance and counts are the planner's; zero conversions need nothing.
+local function menaceAdmissible(decision, encounter, nativeRoom, gameValue)
+    local positive = {}
+    for _, wave in ipairs(decision.menace or {}) do
+        for _, conversion in ipairs(wave.conversions) do
+            if conversion.count > 0 then positive[#positive + 1] = { wave = wave.waveIndex, conversion = conversion } end
+        end
+    end
+    if #positive == 0 then return nil end
+    local encounterData = (nativeValue(gameValue, "EncounterData") or {})[encounter.Name] or encounter
+    if encounterData.BlockNextBiomeEnemyShrineUpgrade then return "menace-encounter-blocked" end
+    local vow = nativeValue(gameValue, "GetShrineUpgradeChangeValue")("NextBiomeEnemyShrineUpgrade")
+    if type(vow) ~= "number" or vow <= 0 then return "menace-vow-inactive", { observed = vow } end
+    local roomSet = nativeRoom.RoomSetName
+    local nextRoomSet = (nativeValue(gameValue, "NextRoomSets") or {})[roomSet]
+    local visits = (nativeValue(gameValue, "GameState") or {}).BiomeVisits or {}
+    if nextRoomSet ~= nil and (visits[nextRoomSet] or 0) <= 0 then
+        return "menace-next-biome-unvisited", { expected = nextRoomSet }
+    end
+    local enemies = gameValue.EnemyData or {}
+    local upgrade = (nativeValue(gameValue, "MetaUpgradeData") or {}).NextBiomeEnemyShrineUpgrade or {}
+    for _, entry in ipairs(positive) do
+        local source, target = entry.conversion.source.nativeId, entry.conversion.target.nativeId
+        if enemies[source].BlockNextBiomeEnemyShrineUpgrade then
+            return "menace-source-blocked", { wave = entry.wave, enemy = source }
+        end
+        local swap, mapped = (upgrade.SwapMap or {})[source], false
+        if swap ~= nil then
+            mapped = swap.Name == target
+        else
+            for _, candidate in pairs((upgrade.BiomeEnemySets or {})[roomSet] or {}) do
+                if candidate == target then mapped = true end
+            end
+        end
+        if not mapped then
+            return "menace-target-unmapped", { wave = entry.wave, enemy = source, expected = swap and swap.Name, observed = target }
+        end
+        if enemies[target] == nil then return "missing-menace-enemy", { wave = entry.wave, enemy = target } end
+    end
+end
+
+-- SetupEncounter replaces a generated encounter afterwards when a spawned enemy's
+-- introduction is incomplete and eligible, unless SkipIntroEncounterCheck is set.
+local function introSubstitution(decision, encounter, gameValue)
+    if encounter.SkipIntroEncounterCheck then return nil end
+    local enemies, encounters = gameValue.EnemyData or {}, nativeValue(gameValue, "EncounterData") or {}
+    local completed, eligible = nativeValue(gameValue, "HasEncounterBeenCompleted"), nativeValue(gameValue, "IsGameStateEligible")
+    for index, wave in ipairs(decision.waves) do
+        for _, entry in ipairs(wave.types) do
+            local intro = enemies[entry.nativeId].IntroEncounterName
+            if intro ~= nil and not completed(intro) then
+                local data = encounters[intro]
+                if data.GameStateRequirements == nil or eligible(data, data.GameStateRequirements) then
+                    return "intro-substitution", { wave = index, enemy = entry.nativeId, observed = intro }
+                end
+            end
+        end
+    end
+end
+
+-- One whole-encounter decision after native DifficultyRating and before wave
+-- construction; nothing live is mutated here.
+local function admission(decision, encounter, nativeRoom, currentRun, gameValue)
+    local enemies = gameValue.EnemyData or {}
+    local _, budget = proof.compare("encounterBudget", decision.expectedBudget, encounter.DifficultyRating)
+    if budget then return "budget-mismatch", { expected = budget.expected, observed = budget.observed } end
+    local minimum, maximum = encounter.MinWaves or 1, encounter.MaxWaves or 1
+    if decision.waveCount < minimum or decision.waveCount > maximum then
+        return "wave-count-out-of-range", { expected = { min = minimum, max = maximum }, observed = decision.waveCount }
+    end
+    local reason, evidence = installable(decision, encounter, enemies)
+    if reason then return reason, evidence end
+    reason, evidence = eligibleComposition(decision, encounter, nativeRoom, currentRun, gameValue)
+    if reason then return reason, evidence end
+    reason, evidence = fangs.admit(decision, encounter, enemies, nativeValue(gameValue, "IsEliteAttributeEligible"))
+    if reason then return reason, evidence end
+    reason, evidence = menaceAdmissible(decision, encounter, nativeRoom, gameValue)
+    if reason then return reason, evidence end
+    return introSubstitution(decision, encounter, gameValue)
+end
+
 function generated.create()
     local instance, stack = {}, {}
     local function current() return stack[#stack] end
@@ -205,6 +312,12 @@ function generated.create()
         if owner and owner.session and owner.state and owner.occurrence then
             owner.session.diagnostic(owner.state, "encounter-composition", observed, owner.occurrence)
         end
+    end
+    local function decline(owner, reason, evidence)
+        owner.declined = reason
+        local observed = copy(evidence)
+        observed.kind, observed.reason = "generated-admission", reason
+        diagnostic(owner, observed)
     end
     function instance.withPhase(state, room, phase, nativeRoom, action)
         local decision = compositionFor(phase)
@@ -245,7 +358,8 @@ function generated.create()
                 end)
             end)
             local actual = type(result) == "table" and (result.GenusName or result.Name or result.EncounterName)
-            if not ok or actual ~= parent.encounterKey then
+            -- A substitution already predicted by the admission decline is native continuation.
+            if (not ok or actual ~= parent.encounterKey) and not (ok and parent.declined == "intro-substitution") then
                 if parent.prepared then
                     parent.prepared.__runPlannerGeneratedComposition = nil
                 end
@@ -262,54 +376,51 @@ function generated.create()
                 return scoped(stack, { kind = "native" }, function() return base(currentRun, nativeRoom, encounter) end)
             end
             local owner, gameValue = parent.owner, _G.game or game or _G
-            local decision, enemies = owner.decision, gameValue.EnemyData or {}
+            local decision = owner.decision
             -- A new owned preparation supersedes any restored realization. A
             -- failed attempt must fall back natively rather than leave a stale
             -- marker for Fangs or zero-Menace spawn interception.
             if encounter.__runPlannerGeneratedComposition ~= nil then
                 encounter.__runPlannerGeneratedComposition = nil
             end
-            local failure, enemy = preflight(decision, encounter, enemies)
-            if not failure then
-                local ok
-                ok, failure, enemy = pcall(eligibleComposition, decision, encounter, nativeRoom, currentRun, gameValue)
-                if not ok then failure, enemy = "native-enemy-check-error", nil end
-            end
-            if failure then
-                diagnostic(owner, { kind = "generated-preflight", reason = failure, enemy = enemy })
-                return scoped(stack, { kind = "native" }, function() return base(currentRun, nativeRoom, encounter) end)
-            end
-            encounter.MinWaves, encounter.MaxWaves = decision.waveCount, decision.waveCount
+            local restoreRoll
             if decision.baseRoll ~= nil then
-                encounter.BaseDifficultyMin, encounter.BaseDifficultyMax = decision.baseRoll, decision.baseRoll
-            end
-            local previousHighlight, previousHard = encounter.BlockHighlightEncounter, encounter.HardEncounterOverrideValues
-            encounter.BlockHighlightEncounter = true
-            if previousHard then
-                encounter.HardEncounterOverrideValues = copy(previousHard)
-                encounter.HardEncounterOverrideValues.MinWaves = decision.waveCount
-                encounter.HardEncounterOverrideValues.MaxWaves = decision.waveCount
-                encounter.HardEncounterOverrideValues.BlockHighlightEncounter = true
-                if decision.baseRoll ~= nil then
-                    encounter.HardEncounterOverrideValues.BaseDifficultyMin = decision.baseRoll
-                    encounter.HardEncounterOverrideValues.BaseDifficultyMax = decision.baseRoll
+                local rejection
+                restoreRoll, rejection = supplyBaseRoll(encounter, decision.baseRoll)
+                if not restoreRoll then
+                    decline(owner, rejection.reason, rejection)
+                    return scoped(stack, { kind = "native" }, function() return base(currentRun, nativeRoom, encounter) end)
                 end
             end
             local scope = { kind = "generate", owner = owner, encounter = encounter, run = currentRun,
-                enemies = enemies, installed = {} }
+                gameValue = gameValue, enemies = gameValue.EnemyData or {}, installed = {} }
             local ok, result = pcall(function()
                 return scoped(stack, scope, function() return base(currentRun, nativeRoom, encounter) end)
             end)
-            encounter.BlockHighlightEncounter, encounter.HardEncounterOverrideValues = previousHighlight, previousHard
+            if restoreRoll then restoreRoll() end
+            if scope.admitted then
+                encounter.BlockHighlightEncounter = scope.priorHighlight
+                encounter.MinWaves, encounter.MaxWaves = scope.priorWaves[1], scope.priorWaves[2]
+            end
             if not ok then
-                diagnostic(owner, { kind = "generated-not-realized", reason = "generation-error" })
+                diagnostic(owner, { kind = "generated-not-realized", reason = "generation-error",
+                    admitted = scope.admitted == true, observed = tostring(result) })
                 error(result, 0)
             end
+            if scope.admission == nil then
+                diagnostic(owner, { kind = "generated-not-realized", reason = "missing-admission-contact" })
+                return result
+            end
+            if not scope.admitted then return result end
+            local missing = {}
             for index = 1, decision.waveCount do
-                if not scope.installed[index] then
-                    diagnostic(owner, { kind = "generated-not-realized", reason = "missing-fill-contact", wave = index })
-                    return result
-                end
+                if not scope.installed[index] then missing[#missing + 1] = index end
+            end
+            if #missing > 0 then
+                -- Admitted roster mutation may already be partial; this is not native fallback.
+                diagnostic(owner, { kind = "generated-not-realized", reason = "missing-fill-contact",
+                    admitted = true, missingWaves = missing })
+                return result
             end
             encounter.__runPlannerGeneratedComposition = {
                 occurrenceId = owner.occurrence.id, slotKey = owner.phase.slotKey, encounterKey = owner.encounterKey,
@@ -327,10 +438,34 @@ function generated.create()
                 encounterKey = owner.encounterKey, waveCount = #waves, waves = waves })
             return result
         end)
+        -- GenerateEncounter calls the cap once after its final DifficultyRating and
+        -- before the wave-count draw; mid-combat recalculations are outside this scope.
+        module.hooks.wrap("CalculateActiveEnemyCap", "run-planner-generated-encounter-admission", function(_, _, base,
+            currentRun, nativeRoom, encounter)
+            local result = base(currentRun, nativeRoom, encounter)
+            local scope = current()
+            if scope == nil or scope.kind ~= "generate" or scope.encounter ~= encounter or scope.admission ~= nil then
+                return result
+            end
+            local decision = scope.owner.decision
+            local ok, reason, evidence = pcall(admission, decision, encounter, nativeRoom or currentRun.CurrentRoom or {},
+                currentRun, scope.gameValue)
+            if not ok then reason, evidence = "admission-check-error", { observed = tostring(reason) } end
+            if reason then
+                scope.admission = reason
+                decline(scope.owner, reason, evidence)
+                return result
+            end
+            scope.admission, scope.admitted = "accepted", true
+            scope.priorWaves = { encounter.MinWaves, encounter.MaxWaves }
+            encounter.MinWaves, encounter.MaxWaves = decision.waveCount, decision.waveCount
+            scope.priorHighlight, encounter.BlockHighlightEncounter = encounter.BlockHighlightEncounter, true
+            return result
+        end)
         module.hooks.wrap("FillEnemyTypes", "run-planner-generated-encounter-types", function(_, _, base,
             encounter, wave, nativeRoom)
             local scope = current()
-            if scope == nil or scope.kind ~= "generate" or scope.encounter ~= encounter
+            if scope == nil or scope.kind ~= "generate" or not scope.admitted or scope.encounter ~= encounter
                 or encounter.SpawnWaves[wave.WaveIndex] ~= wave then return base(encounter, wave, nativeRoom) end
             local index, published = wave.WaveIndex, scope.owner.decision.waves[wave.WaveIndex]
             if scope.installed[index] then return end
@@ -384,7 +519,7 @@ function generated.create()
             local conversion = menaceConversion(encounter, decision, spawnInfo)
             local remaining = spawnInfo and (spawnInfo.RemainingSpawns or spawnInfo.TotalCount) or 0
             local progress = spawnInfo and (spawnInfo.TotalCount or remaining) - remaining or 0
-            if conversion ~= nil and progress < conversion.count and conversion.target ~= nil then
+            if conversion ~= nil and progress < conversion.count then
                 -- Keep the source entry intact: group expansion can yield and
                 -- recurse, so a temporary source rename is unsafe. Native
                 -- decrements the transformed copy; reflect that success back

@@ -29,23 +29,24 @@ local function native(draws)
         RemoveRandomValue = function(values) draws[#draws + 1] = { "remove", table.concat(values, "/") }; return remove(values) end,
         GetRandomValue = function(values) return values[1] end, GetTotalHeroTraitValue = function() return 1 end,
         GetHeroTraitValues = function() return {} end, GetBiomeDepth = function() return 2 end,
-        CalculateActiveEnemyCap = function() return 5 end, IsEmpty = function(values) return next(values) == nil end,
+        GetNumShrineUpgrades = function() return 0 end, GetConfigOptionValue = function() return 0 end,
+        GetShrineUpgradeChangeValue = function() return 0 end, NextRoomSets = {}, IsEmpty = function(values) return next(values) == nil end,
         TableLength = function(values) local count = 0 for _ in pairs(values) do count = count + 1 end return count end,
         CollapseTable = function() end,
         RemoveValue = function(values, value) for i, item in ipairs(values) do if item == value then table.remove(values, i); return end end end,
         RemoveAllValues = function(values, value) for i = #values, 1, -1 do if values[i] == value then table.remove(values, i) end end end,
         Contains = function(values, value) for _, item in pairs(values or {}) do if item == value then return true end end return false end,
         IsGameStateEligible = function(_, requirements) return not (requirements and requirements.Never) end,
-        HasEncounterBeenCompleted = function() return true end, OverwriteTableKeys = function(target, values) for k, v in pairs(values) do target[k] = v end end,
+        HasEncounterBeenCompleted = function() return true end,
         RunEventsGeneric = function() end, CheckPreviousReward = function() return {} end, RecordEncounter = function() end,
         GetInteractedGodThisRun = function() return "Apollo" end, GetInteractedGodsThisRun = function() return {} end,
         GetEligibleLootNames = function() return { "Apollo", "Hera" } end, CallFunctionName = function() end,
         CurrentRun = {
-            Blacklist = {}, Hero = { Traits = {} }, BiomeDepthCache = 2, RunDepthCache = 3,
+            Blacklist = {}, BannedEliteAttributes = {}, Hero = { Traits = {} }, BiomeDepthCache = 2, RunDepthCache = 3,
             EncountersOccurredCache = {}, EncountersOccurredBiomeCache = {}, EncountersDepthCache = {},
         },
-        GameState = { EncountersOccurredCache = {} }, EncounterData = {}, RewardData = {}, game = {},
-        MetaUpgradeData = { EnemyCountShrineUpgrade = { ChangeValue = 1 } }, ConstantsData = { MinimumDifficulty = 1 },
+        GameState = { EncountersOccurredCache = {}, BiomeVisits = {} }, EncounterData = {}, RewardData = {}, game = {},
+        MetaUpgradeData = { EnemyCountShrineUpgrade = { ChangeValue = 1 } }, ConstantsData = { MinimumDifficulty = 1, MaxActiveEnemyCount = 12 },
         RoomData = { BaseRoom = { MinDepthBeforeIntros = 0 } },
         WaveDifficultyPatterns = { [1] = { 1 }, [2] = { .5, .5 }, [3] = { .3, .15, .55 }, [4] = { .3, .1, .2, .4 } },
         EnemyData = {
@@ -81,7 +82,7 @@ local function configuredProduction()
         encounterPhase = function(_, encounter) return runtime.__generatedProbePhases[encounter] end,
         occurrence = function(state) return runtime.__generatedProbeOccurrences[state] end,
     })
-    for _, name in ipairs({ "SetupEncounter", "GenerateEncounter", "FillEnemyTypes" }) do
+    for _, name in ipairs({ "SetupEncounter", "GenerateEncounter", "CalculateActiveEnemyCap", "FillEnemyTypes" }) do
         nativeBodies[name] = _G[name]
         _G[name] = function(...)
             return callbacks[name](nil, {}, nativeBodies[name], ...)
@@ -95,7 +96,7 @@ local function phase(slot, customization)
 end
 local function fullDecision(overrides)
     local result = {
-        kind = "generated", decisionKey = "generatedComposition", waveCount = 1,
+        kind = "generated", decisionKey = "generatedComposition", expectedBudget = 40, waveCount = 1,
         waves = { { waveIndex = 1, types = {
             { choiceKey = "Brine", nativeId = "Brine", source = "addition" },
             { choiceKey = "Cinder", nativeId = "Cinder", source = "addition" },
@@ -114,7 +115,7 @@ end
 
 TestGeneratedEncounterNative = {}
 
-local function ownedSpawnProbe(conversions, roster, fangs)
+local function ownedSpawnProbe(conversions, roster, fangs, swapMap)
     local extraGlobals = { "GetNextSpawn", "HandleNextSpawn", "SpawnUnitGroup", "ShallowCopyTable", "GetIds", "IsAlive", "SelectSpawnPoint", "Destroy", "SpawnUnit", "SpawnObstacle", "CalcOffset", "thread", "SetupUnit", "NextRoomSets", "wait" }
     local prior = {}
     for _, key in ipairs(extraGlobals) do prior[key] = _G[key] end
@@ -126,11 +127,20 @@ local function ownedSpawnProbe(conversions, roster, fangs)
     _G.game.EnemyData = _G.EnemyData
     for name, enemy in pairs(_G.EnemyData) do enemy.Name = name end
     _G.EnemyData.Group = { Name = "Group", IsUnitGroup = true, UnitGroup = { "Ash", "Brine" }, GroupAI = "ProbeAI", GeneratorData = {} }
-    _G.MetaUpgradeData.NextBiomeEnemyShrineUpgrade = { SwapMap = {
+    _G.MetaUpgradeData.NextBiomeEnemyShrineUpgrade = { SwapMap = swapMap or {
         Brine = { Name = "Ash", RequiredSpawnPoint = "MappedPoint", ActiveCapWeight = 3 },
         Cinder = { Name = "Ash" },
-    }, BiomeEnemySets = {} }
-    local occurrence, destination = { id = "menace" }, { Name = "menace", __runPlannerExecutionRoomId = "menace" }
+    }, BiomeEnemySets = { F = { "Ash" } } }
+    _G.GetShrineUpgradeChangeValue = function() return 1 end
+    if fangs then
+        local enemy = _G.EnemyData[fangs.type.nativeId]
+        enemy.EliteAttributeOptions, enemy.EliteAttributeData = {}, {}
+        for index, perk in ipairs(fangs.perks) do
+            enemy.EliteAttributeOptions[index], enemy.EliteAttributeData[perk] = perk, {}
+        end
+    end
+    local occurrence = { id = "menace" }
+    local destination = { Name = "menace", RoomSetName = "F", __runPlannerExecutionRoomId = "menace" }
     local state = { state = "synchronized" }
     local decision = fullDecision({ menace = { { waveIndex = 1, conversions = conversions } }, fangs = fangs })
     if roster then decision.waves = { roster } end
@@ -235,12 +245,13 @@ function TestGeneratedEncounterNative.testDistinctSourcesSharingTargetAndOrigina
     lu.assertEquals(#encounter.SpawnWaves[1].Spawns, 3)
     lu.assertEquals({ spawned[1].Name, spawned[2].Name, spawned[3].Name, spawned[4].Name }, { "Ash", "Ash", "Brine", "Ash" })
     lu.assertNil(spawned[1].IsFromNextBiomeEnemyShrineUpgrade)
-    lu.assertEquals(spawned[4].RequiredSpawnPoint, "nil")
+    lu.assertNil(spawned[4].RequiredSpawnPoint)
     restore()
 end
 
 function TestGeneratedEncounterNative.testMappedGroupRecursionConsumesOneSourceRequestAndPreservesMetadata()
-    local encounter, spawned, _, selections, restore = ownedSpawnProbe({ conversion("Brine", "Group", 1) })
+    local encounter, spawned, _, selections, restore = ownedSpawnProbe({ conversion("Brine", "Group", 1) }, nil, nil,
+        { Brine = { Name = "Group", RequiredSpawnPoint = "MappedPoint", ActiveCapWeight = 3 } })
     local source = encounter.SpawnWaves[1].Spawns[1]
     lu.assertEquals(_G.HandleNextSpawn(encounter, false, source, nil, {}), 1)
     lu.assertEquals(source.Name, "Brine")
@@ -309,7 +320,7 @@ function TestGeneratedEncounterNative.testGroupSourceConversionCountsRequestsNot
     _G.HandleNextSpawn(encounter, false, source, nil, {})
     lu.assertEquals(source.RemainingSpawns, 1)
     lu.assertEquals(#spawned, 1)
-    lu.assertEquals(spawned[1].RequiredSpawnPoint, "nil")
+    lu.assertNil(spawned[1].RequiredSpawnPoint)
     _G.HandleNextSpawn(encounter, false, source, nil, {})
     lu.assertEquals(source.RemainingSpawns, 0)
     lu.assertEquals(#spawned, 3)
@@ -424,7 +435,7 @@ function TestGeneratedEncounterNative.testHardManualAndFixedTemplatesKeepNativeM
     local occurrence, destination = { id = "templates" }, { Name = "templates", __runPlannerExecutionRoomId = "templates" }
     local state = { state = "synchronized" }
     local shared = phase("Combat", {
-        kind = "generated", decisionKey = "generatedComposition", waveCount = 2,
+        kind = "generated", decisionKey = "generatedComposition", expectedBudget = 40, waveCount = 2,
         highlight = { choiceKey = "Brine", nativeId = "Brine" },
         waves = {
             { waveIndex = 1, types = { { choiceKey = "Brine", nativeId = "Brine", source = "highlight" } }, counts = { Brine = 1 } },
@@ -434,7 +445,7 @@ function TestGeneratedEncounterNative.testHardManualAndFixedTemplatesKeepNativeM
             }, counts = { Brine = 1, Cinder = 1 } },
         },
     })
-    local hard = declaration({ IsHardEncounter = true, HardEncounterOverrideValues = {
+    local hard = declaration({ MaxWaves = 2, IsHardEncounter = true, HardEncounterOverrideValues = {
         ManualWaveTemplates = {
             [1] = { Spawns = {}, ForceFirst = true },
             [0] = { Spawns = {}, SkipWait = true },
@@ -449,7 +460,7 @@ function TestGeneratedEncounterNative.testHardManualAndFixedTemplatesKeepNativeM
     lu.assertTrue(_G.CurrentRun.Blacklist.Cinder)
 
     local fixed = phase("Cage", {
-        kind = "generated", decisionKey = "generatedComposition", waveCount = 1,
+        kind = "generated", decisionKey = "generatedComposition", expectedBudget = 40, waveCount = 1,
         waves = { { waveIndex = 1, types = {
             { choiceKey = "Ash", nativeId = "Ash", source = "fixed" },
             { choiceKey = "Brine", nativeId = "Brine", source = "template" },
@@ -499,11 +510,14 @@ function TestGeneratedEncounterNative.testIntroReplacementAndGenerationErrorClea
     _G.game.EnemyData = _G.EnemyData
     local occurrence, destination = { id = "failure" }, { Name = "failure", __runPlannerExecutionRoomId = "failure" }
     local state, selected = { state = "synchronized", diagnostics = {} }, phase("Encounter", fullDecision())
-    local source = declaration({ EnemySet = { "Brine" } })
+    local source = declaration({ EnemySet = { "Brine", "Cinder" } })
     _G.EnemyData.Brine.IntroEncounterName = "Introduction"
     _G.HasEncounterBeenCompleted = function(name) return name ~= "Introduction" end
     _G.EncounterData.Introduction = declaration({ Name = "Introduction", EnemySet = { "Ash" } })
     local intro = install(generated, state, occurrence, selected, destination, source)
+    lu.assertEquals(#state.diagnostics, 1)
+    lu.assertEquals(state.diagnostics[1].observed, { kind = "generated-admission", reason = "intro-substitution",
+        wave = 1, enemy = "Brine", observed = "Introduction" })
     lu.assertEquals(intro.Name, "Introduction")
     lu.assertNil(intro.__runPlannerGeneratedComposition)
     _G.EnemyData.Brine.IntroEncounterName = nil
@@ -522,32 +536,33 @@ function TestGeneratedEncounterNative.testIntroReplacementAndGenerationErrorClea
     restore()
 end
 
-function TestGeneratedEncounterNative.testLiveAdmissionRejectsWholeCompositionBeforeAnyMutation()
+function TestGeneratedEncounterNative.testAllWaveRejectionPrecedesInstallationAndNativeContinues()
     local cases = {
-        function() _G.EnemyData.Brine.GameStateRequirements = { Never = true } end,
-        function() _G.CurrentRun.Blacklist.Brine = true end,
-        function(source) source.Blacklist = { Brine = true } end,
-        function(source) source.EnemySet = { "Ash", "Cinder" } end,
-        function(source)
+        { reason = "native-enemy-ineligible", configure = function() _G.EnemyData.Brine.GameStateRequirements = { Never = true } end },
+        { reason = "native-enemy-ineligible", configure = function() _G.CurrentRun.Blacklist.Brine = true end },
+        { reason = "native-enemy-ineligible", configure = function(source) source.Blacklist = { Brine = true } end },
+        { reason = "enemy-set-changed", configure = function(source) source.EnemySet = { "Ash", "Cinder" } end },
+        { reason = "native-enemy-ineligible", configure = function(source)
             _G.EnemyData.Brine.IsElite = true
             source.WaveTemplate.BlockEliteTypes = true
-        end,
-        function()
+        end },
+        { reason = "native-enemy-ineligible", configure = function()
             _G.EnemyData.Brine.IntroEncounterName = "Unseen"
             _G.EnemyData.Brine.IneligibleIfUncompletedIntroEncounter = true
             _G.HasEncounterBeenCompleted = function() return false end
-        end,
-        function() _G.game.IsEnemyEligible = function() error("predicate failed") end end,
-        function(source)
+        end },
+        { reason = "native-enemy-check-error", configure = function() _G.game.IsEnemyEligible = function() error("predicate failed") end end },
+        { reason = "native-enemy-ineligible", configure = function(source)
             source.MaxEliteTypes = 1
             _G.EnemyData.Brine.IsElite, _G.EnemyData.Cinder.IsElite = true, true
-        end,
-        function(source)
+        end },
+        { reason = "native-enemy-ineligible", configure = function(source)
             source.MaxTypesPerGroup = { cinder = 1 }
             _G.EnemyData.Brine.Groups = { "cinder" }
-        end,
-        function(source, decision)
-            source.BlockTypesAcrossWaves = true
+        end },
+        -- Wave 1's addition blocks wave 2's published member across waves.
+        { reason = "native-enemy-ineligible", configure = function(source, decision)
+            source.BlockTypesAcrossWaves, source.MaxWaves = true, 2
             decision.waveCount = 2
             decision.waves[1] = { waveIndex = 1, types = {
                 { nativeId = "Cinder", source = "addition" },
@@ -555,38 +570,313 @@ function TestGeneratedEncounterNative.testLiveAdmissionRejectsWholeCompositionBe
             decision.waves[2] = { waveIndex = 2, types = {
                 { nativeId = "Ash", source = "addition" },
             }, counts = { Ash = 1 } }
-        end,
-        function(_, decision)
+        end },
+        -- Wave 1's BlacklistAfterFirstAppearance member cannot recur in wave 2.
+        { reason = "native-enemy-ineligible", configure = function(source, decision)
+            source.MaxWaves = 2
             decision.waveCount = 2
             decision.waves[2] = probe.copy(decision.waves[1])
             decision.waves[2].waveIndex = 2
-        end,
+        end },
+        { reason = "wave-count-out-of-range", configure = function(_, decision)
+            decision.waveCount = 2
+            decision.waves[2] = probe.copy(decision.waves[1])
+            decision.waves[2].waveIndex = 2
+        end },
     }
-    for _, configure in ipairs(cases) do
-        local _, instance, callbacks, restore = configuredProduction()
+    for _, case in ipairs(cases) do
+        local rawDraws, _, _, rawRestore = configuredProduction()
+        local rawSource = declaration()
+        case.configure(rawSource, fullDecision())
+        local raw = SetupEncounter(rawSource, { Name = "rejection" })
+        local rawRoster, rawBlacklist = same(raw.SpawnWaves), same(_G.CurrentRun.Blacklist)
+        rawRestore()
+
+        local draws, instance, _, restore = configuredProduction()
         _G.game.EnemyData = _G.EnemyData
         local source, decision = declaration(), fullDecision()
-        configure(source, decision)
-        local original, blacklist = same(source), same(_G.CurrentRun.Blacklist)
-        local state, occurrence = { state = "synchronized" }, { id = "rejection" }
-        local calls = 0
-        instance.withPhase(state, { occurrence = function() return occurrence end }, phase("Combat", decision), {}, function()
-            callbacks.SetupEncounter(nil, {}, function(data, room)
-                return callbacks.GenerateEncounter(nil, {}, function(_, _, encounter)
-                    calls = calls + 1
-                    lu.assertEquals(same(encounter), original)
-                    lu.assertEquals(same(_G.CurrentRun.Blacklist), blacklist)
-                    return encounter
-                end, _G.CurrentRun, room, data)
-            end, source, {})
-        end)
-        lu.assertEquals(calls, 1)
+        case.configure(source, decision)
+        local state = { state = "synchronized", diagnostics = {} }
+        local realized = install(instance, state, { id = "rejection" }, phase("Combat", decision), { Name = "rejection" }, source)
         lu.assertEquals(state.state, "synchronized")
         lu.assertEquals(#state.diagnostics, 1)
-        lu.assertEquals(state.diagnostics[1].observed.kind, "generated-preflight")
-        lu.assertNil(source.__runPlannerGeneratedComposition)
+        lu.assertEquals(state.diagnostics[1].observed.kind, "generated-admission")
+        lu.assertEquals(state.diagnostics[1].observed.reason, case.reason)
+        lu.assertNil(realized.__runPlannerGeneratedComposition)
+        lu.assertEquals(same(realized.SpawnWaves), rawRoster)
+        lu.assertEquals(same(_G.CurrentRun.Blacklist), rawBlacklist)
+        lu.assertEquals(same(draws), same(rawDraws))
         restore()
     end
+end
+
+local function ownedRun(decision, source, destination)
+    local draws, instance, callbacks, restore = configuredProduction()
+    _G.game.EnemyData = _G.EnemyData
+    local state = { state = "synchronized", diagnostics = {} }
+    local target = destination or { Name = "probe", RoomSetName = "F" }
+    local realized = install(instance, state, { id = "probe" }, phase("Combat", decision), target, source)
+    local observed = {}
+    for index, entry in ipairs(state.diagnostics) do observed[index] = entry.observed end
+    return realized, draws, observed, restore, callbacks
+end
+
+local function rawRun(source)
+    local draws, _, _, restore = configuredProduction()
+    local realized = SetupEncounter(source, { Name = "probe" })
+    return realized, draws, restore
+end
+
+function TestGeneratedEncounterNative.testVariableBaseRollUsesTheEffectiveRangeAndLeavesOtherDrawsNative()
+    local variable = { BaseDifficultyMin = 10, BaseDifficultyMax = 30, MoneyDropCapMin = 3, MoneyDropCapMax = 5,
+        ActiveEnemyCapMin = 4, ActiveEnemyCapMax = 6 }
+    local raw, rawDraws, rawRestore = rawRun(declaration(variable))
+    local rawCap = raw.ActiveEnemyCap
+    rawRestore()
+    lu.assertEquals({ rawDraws[1], rawDraws[2], rawDraws[3], rawDraws[4] },
+        { { "int", 3, 5 }, { "int", 10, 30 }, { "int", 4, 6 }, { "int", 1, 1 } })
+
+    local realized, draws, observed, restore = ownedRun(fullDecision({ baseRoll = 15, expectedBudget = 35 }),
+        declaration(variable))
+    lu.assertEquals(observed[1].kind, "generated-installed")
+    lu.assertEquals(realized.DifficultyRating, 35)
+    lu.assertEquals(realized.ActiveEnemyCap, rawCap)
+    lu.assertEquals({ draws[1], draws[2], draws[3], draws[4] },
+        { { "int", 3, 5 }, { "int", 15, 15 }, { "int", 4, 6 }, { "int", 1, 1 } })
+    lu.assertEquals({ realized.BaseDifficultyMin, realized.BaseDifficultyMax }, { 10, 30 })
+    restore()
+
+    -- A nested native generation inside the owned scope keeps its own native roll.
+    local draws2, instance, _, restoreNested = configuredProduction()
+    _G.game.EnemyData = _G.EnemyData
+    local pending, nested = true, nil
+    _G.GetTotalHeroTraitValue = function()
+        if pending then
+            pending = false
+            nested = SetupEncounter(declaration(variable), { Name = "nested" })
+        end
+        return 1
+    end
+    local state = { state = "synchronized", diagnostics = {} }
+    local outer = install(instance, state, { id = "outer" }, phase("Combat", fullDecision({ baseRoll = 15, expectedBudget = 35 })),
+        { Name = "outer" }, declaration(variable))
+    lu.assertEquals(nested.DifficultyRating, 30)
+    lu.assertNil(nested.__runPlannerGeneratedComposition)
+    lu.assertEquals(outer.DifficultyRating, 35)
+    lu.assertNotNil(outer.__runPlannerGeneratedComposition)
+    local rolls = {}
+    for _, draw in ipairs(draws2) do
+        if draw[1] == "int" and (draw[2] == 10 or draw[2] == 15) then rolls[#rolls + 1] = draw[2] .. ":" .. draw[3] end
+    end
+    lu.assertEquals(rolls, { "10:30", "15:15" })
+    restoreNested()
+
+    -- Declined after a valid roll: native continues from that retained legal input.
+    local continued, continuedDraws, declined, restoreDeclined = ownedRun(fullDecision({ baseRoll = 15, expectedBudget = 99 }),
+        declaration(variable))
+    local continuedRoster, continuedList = same(continued.SpawnWaves), same(continuedDraws)
+    lu.assertEquals(declined, { { kind = "generated-admission", reason = "budget-mismatch", expected = 99, observed = 35 } })
+    lu.assertEquals(continued.DifficultyRating, 35)
+    lu.assertNil(continued.__runPlannerGeneratedComposition)
+    restoreDeclined()
+    local fixedRoll = probe.copy(variable)
+    fixedRoll.BaseDifficultyMin, fixedRoll.BaseDifficultyMax = 15, 15
+    local native15, native15Draws, restore15 = rawRun(declaration(fixedRoll))
+    lu.assertEquals(continuedRoster, same(native15.SpawnWaves))
+    lu.assertEquals(continuedList, same(native15Draws))
+    restore15()
+
+    -- Hard overrides own the effective range and cannot erase an in-range roll.
+    local hardValues = probe.copy(variable)
+    hardValues.IsHardEncounter, hardValues.HardEncounterOverrideValues = true, { BaseDifficultyMin = 100, BaseDifficultyMax = 120 }
+    local hardRaw, hardRawDraws, hardRawRestore = rawRun(declaration(hardValues))
+    local hardRawList = same(hardRawDraws)
+    lu.assertEquals(hardRaw.DifficultyRating, 120)
+    hardRawRestore()
+    local outside, outsideDraws, outsideObserved, restoreOutside = ownedRun(fullDecision({ baseRoll = 15, expectedBudget = 35 }),
+        declaration(hardValues))
+    lu.assertEquals(outsideObserved, { { kind = "generated-admission", reason = "base-roll-out-of-range",
+        expected = { min = 100, max = 120 }, observed = 15 } })
+    lu.assertEquals(same(outsideDraws), hardRawList)
+    lu.assertEquals(outside.DifficultyRating, 120)
+    restoreOutside()
+    -- Native OverwriteTableKeys clears a "nil" hard range, so BaseDifficulty applies.
+    local cleared = probe.copy(variable)
+    cleared.IsHardEncounter, cleared.HardEncounterOverrideValues = true, { BaseDifficultyMin = "nil", BaseDifficultyMax = "nil" }
+    local clearedRaw, clearedRawDraws, clearedRawRestore = rawRun(declaration(cleared))
+    local clearedRawList = same(clearedRawDraws)
+    lu.assertEquals(clearedRaw.DifficultyRating, 40)
+    clearedRawRestore()
+    local clearedOwned, clearedDraws, clearedObserved, restoreCleared = ownedRun(
+        fullDecision({ baseRoll = 15, expectedBudget = 35 }), declaration(cleared))
+    lu.assertEquals(clearedObserved, { { kind = "generated-admission", reason = "base-roll-out-of-range",
+        expected = { min = "nil", max = "nil" }, observed = 15 } })
+    lu.assertEquals(same(clearedDraws), clearedRawList)
+    lu.assertEquals(clearedOwned.DifficultyRating, 40)
+    restoreCleared()
+    local inside, _, insideObserved, restoreInside = ownedRun(fullDecision({ baseRoll = 110, expectedBudget = 130 }),
+        declaration(hardValues))
+    lu.assertEquals(insideObserved[1].kind, "generated-installed")
+    lu.assertEquals(inside.DifficultyRating, 130)
+    lu.assertEquals(inside.HardEncounterOverrideValues, { BaseDifficultyMin = 100, BaseDifficultyMax = 120 })
+    restoreInside()
+end
+
+function TestGeneratedEncounterNative.testAdmissionReadsTheNativeFinalBudget()
+    for _, case in ipairs({
+        { overrides = { DifficultyModifier = 5 }, hordes = 1.5, budget = 67.5 },
+        { overrides = { MinimumDifficulty = 100 }, budget = 100 },
+    }) do
+        for _, expected in ipairs({ case.budget, 40 }) do
+            local _, instance, _, restore = configuredProduction()
+            _G.game.EnemyData = _G.EnemyData
+            _G.MetaUpgradeData.EnemyCountShrineUpgrade.ChangeValue = case.hordes or 1
+            local state = { state = "synchronized", diagnostics = {} }
+            local realized = install(instance, state, { id = "budget" }, phase("Combat", fullDecision({ expectedBudget = expected })),
+                { Name = "budget" }, declaration(case.overrides))
+            local observed = { state.diagnostics[1].observed }
+            lu.assertEquals(realized.DifficultyRating, case.budget)
+            if expected == case.budget then
+                lu.assertEquals(observed[1].kind, "generated-installed")
+            else
+                lu.assertEquals(observed[1], { kind = "generated-admission", reason = "budget-mismatch",
+                    expected = 40, observed = case.budget })
+            end
+            restore()
+        end
+    end
+end
+
+function TestGeneratedEncounterNative.testAdmittedDecisionMountsEveryWaveWithoutReevaluation()
+    local _, instance, _, restore = configuredProduction()
+    _G.game.EnemyData = _G.EnemyData
+    local eligibility, atFirstFill = 0, nil
+    local nativeEligible, installedFill = _G.IsEnemyEligible, _G.FillEnemyTypes
+    _G.IsEnemyEligible = function(...) eligibility = eligibility + 1; return nativeEligible(...) end
+    _G.FillEnemyTypes = function(...)
+        atFirstFill = atFirstFill or eligibility
+        return installedFill(...)
+    end
+    local decision = {
+        kind = "generated", decisionKey = "generatedComposition", expectedBudget = 40, waveCount = 3,
+        highlight = { choiceKey = "Brine", nativeId = "Brine" },
+        waves = {},
+    }
+    for index = 1, 3 do
+        decision.waves[index] = { waveIndex = index, types = { { choiceKey = "Brine", nativeId = "Brine", source = "highlight" } },
+            counts = { Brine = index } }
+    end
+    decision.waves[3].types[2] = { choiceKey = "Ash", nativeId = "Ash", source = "addition" }
+    decision.waves[3].counts.Ash = 2
+    local state = { state = "synchronized", diagnostics = {} }
+    local realized = install(instance, state, { id = "mount" }, phase("Combat", decision), { Name = "mount" },
+        declaration({ MaxWaves = 3 }))
+    lu.assertEquals(state.diagnostics[1].observed.kind, "generated-installed")
+    lu.assertTrue(eligibility > 0)
+    lu.assertEquals(eligibility, atFirstFill)
+    lu.assertEquals(#realized.SpawnWaves, 3)
+    for index = 1, 3 do lu.assertEquals(realized.SpawnWaves[index].Spawns[1].TotalCount, index) end
+    lu.assertEquals(realized.SpawnWaves[3].Spawns[2].Name, "Ash")
+    lu.assertNil(realized.BlockHighlightEncounter)
+    restore()
+end
+
+function TestGeneratedEncounterNative.testFangsAdmissionUsesNativeOrderedPerkEligibility()
+    local fangs = { type = { choiceKey = "Brine", nativeId = "Brine" }, perks = { "Blink" } }
+    for _, case in ipairs({
+        {},
+        { reason = "fangs-perk-unavailable", configure = function() _G.CurrentRun.BannedEliteAttributes.Blink = true end },
+        { reason = "fangs-perk-unavailable", configure = function(source) source.BannedEliteAttributes = { "Blink" } end },
+        { reason = "fangs-perk-unavailable", configure = function()
+            _G.EnemyData.Brine.IsSuperElite = true
+            _G.EnemyData.Brine.EliteAttributeData.Blink.RequiresFalseSuperElite = true
+        end },
+        { reason = "fangs-perk-unavailable", perks = { "Fog", "Blink" } },
+        { perks = { "Blink", "Fog" } },
+    }) do
+        local _, instance, _, restore = configuredProduction()
+        _G.game.EnemyData = _G.EnemyData
+        _G.EnemyData.Brine.EliteAttributeOptions = { "Blink", "Fog" }
+        _G.EnemyData.Brine.EliteAttributeData = { Blink = {}, Fog = { BlockAttributes = { "Blink" } } }
+        local source = declaration()
+        if case.configure then case.configure(source) end
+        local selected = probe.copy(fangs)
+        if case.perks then selected.perks = case.perks end
+        local state = { state = "synchronized", diagnostics = {} }
+        local realized = install(instance, state, { id = "fangs" }, phase("Combat", fullDecision({ fangs = selected })),
+            { Name = "fangs" }, source)
+        local observed = state.diagnostics[1].observed
+        if case.reason then
+            lu.assertEquals({ observed.kind, observed.reason, observed.perk }, { "generated-admission", case.reason, "Blink" })
+            lu.assertNil(realized.__runPlannerGeneratedComposition)
+        else
+            lu.assertEquals(observed.kind, "generated-installed")
+        end
+        restore()
+    end
+end
+
+function TestGeneratedEncounterNative.testPositiveMenaceAdmissionUsesNativeGatesAndMapping()
+    local function menace(target, count)
+        return { { waveIndex = 1, conversions = { conversion("Brine", target, count or 1) } } }
+    end
+    for _, case in ipairs({
+        { target = "Ash" },
+        { target = "Dawn", reason = "menace-target-unmapped" },
+        { target = "Dawn", unmapped = true },
+        { target = "Elite", unmapped = true, reason = "menace-target-unmapped" },
+        { target = "Dawn", count = 0, vow = 0 },
+        { target = "Ash", vow = 0, reason = "menace-vow-inactive" },
+        { target = "Ash", visits = {}, reason = "menace-next-biome-unvisited" },
+        { target = "Ash", visits = { G = 1 } },
+        { target = "Ash", encounterBlock = true, reason = "menace-encounter-blocked" },
+        { target = "Ash", sourceBlock = true, reason = "menace-source-blocked" },
+    }) do
+        local _, instance, _, restore = configuredProduction()
+        _G.game.EnemyData = _G.EnemyData
+        _G.MetaUpgradeData.NextBiomeEnemyShrineUpgrade = {
+            SwapMap = case.unmapped and {} or { Brine = { Name = "Ash" } },
+            BiomeEnemySets = { F = { "Dawn" } },
+        }
+        _G.GetShrineUpgradeChangeValue = function() return case.vow or 0.3 end
+        if case.visits then _G.NextRoomSets, _G.GameState.BiomeVisits = { F = "G" }, case.visits end
+        if case.encounterBlock then _G.EncounterData.ProbeGenerated = { BlockNextBiomeEnemyShrineUpgrade = true } end
+        if case.sourceBlock then _G.EnemyData.Brine.BlockNextBiomeEnemyShrineUpgrade = true end
+        local state = { state = "synchronized", diagnostics = {} }
+        local realized = install(instance, state, { id = "menace" },
+            phase("Combat", fullDecision({ menace = menace(case.target, case.count) })),
+            { Name = "menace", RoomSetName = "F" }, declaration())
+        local observed = state.diagnostics[1].observed
+        if case.reason then
+            lu.assertEquals({ observed.kind, observed.reason }, { "generated-admission", case.reason })
+            lu.assertNil(realized.__runPlannerGeneratedComposition)
+        else
+            lu.assertEquals(observed.kind, "generated-installed")
+        end
+        restore()
+    end
+end
+
+function TestGeneratedEncounterNative.testRepeatedCagePhasesAdmitAgainstTheLiveRunBlacklist()
+    local _, instance, _, restore = configuredProduction()
+    _G.game.EnemyData = _G.EnemyData
+    local state = { state = "synchronized", diagnostics = {} }
+    local occurrence, destination = { id = "cages" }, { Name = "cages" }
+    local first = install(instance, state, occurrence, phase("Cage01", fullDecision()), destination, declaration())
+    lu.assertEquals(first.__runPlannerGeneratedComposition.slotKey, "Cage01")
+    lu.assertTrue(_G.CurrentRun.Blacklist.Cinder)
+    local repeated = install(instance, state, occurrence, phase("Cage02", fullDecision()), destination, declaration())
+    lu.assertEquals({ state.diagnostics[2].observed.reason, state.diagnostics[2].observed.enemy },
+        { "native-enemy-ineligible", "Cinder" })
+    lu.assertNil(repeated.__runPlannerGeneratedComposition)
+    local distinct = fullDecision({ waves = { { waveIndex = 1, types = {
+        { choiceKey = "Ash", nativeId = "Ash", source = "addition" },
+        { choiceKey = "Brine", nativeId = "Brine", source = "addition" },
+    }, counts = { Ash = 1, Brine = 2 } } } })
+    local second = install(instance, state, occurrence, phase("Cage02", distinct), destination, declaration())
+    lu.assertEquals(second.__runPlannerGeneratedComposition.slotKey, "Cage02")
+    lu.assertEquals(first.__runPlannerGeneratedComposition.slotKey, "Cage01")
+    restore()
 end
 
 function TestGeneratedEncounterNative.testFixedSeedsBypassSamplingAndUniquePlaceholdersObservePriorSeeds()
