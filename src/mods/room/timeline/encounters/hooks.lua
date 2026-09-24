@@ -44,7 +44,7 @@ end
 function hooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter, highlights)
     shipCombat = shipCombat or thessaly.create()
     generatedEncounter = generatedEncounter or generated.create()
-    generatedEncounter.attach(module, session)
+    generatedEncounter.attach(module, session, getState, room)
     local encounterIndex
     local directEncounterSequences = setmetatable({}, { __mode = "k" })
 
@@ -118,7 +118,15 @@ function hooks.attach(module, session, getState, report, room, shipCombat, gener
         -- so nested native setup cannot inherit an outer same-name override.
         local result = generatedEncounter.withPhase(state, room, phase, nativeRoom, choose)
         if phase ~= nil and type(result) == "table" then
-            room.bindEncounter(state, result, phase.slotKey, nativeRoom)
+            local actual = result.GenusName or result.Name or result.EncounterName
+            if actual == phase.encounterKey then
+                room.bindEncounter(state, result, phase.slotKey, nativeRoom)
+            elseif session.diagnostic then
+                session.diagnostic(state, "encounter-composition", {
+                    kind = "intro-substitution", phase = phase.slotKey,
+                    encounterKey = phase.encounterKey, observed = actual,
+                }, room.occurrence(state, nativeRoom))
+            end
         end
         return result
     end)

@@ -394,7 +394,8 @@ function TestEncounters.testDirectEncounterChoicesAreBoundToOnePublishedSequence
     local run = {}
     local nativeEncounters = {}
     local function choose()
-        local native = {}
+        local names = { "PassiveEncounter", "CageEncounter", "CageEncounter", "Native", "Native" }
+        local native = { Name = names[#nativeEncounters + 1] }
         nativeEncounters[#nativeEncounters + 1] = native
         return callbacks.ChooseEncounter(nil, {}, function() return native end,
             run, nativeRoom, {})

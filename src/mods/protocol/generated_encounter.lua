@@ -4,7 +4,7 @@ local p = type(import) == "function" and import("mods/protocol/primitives.lua")
 local generated = {}
 
 local function ordinal(value, label)
-    return p.int(value, label, 1) and value <= 5
+    return p.int(value, label, 1) and value <= 4
 end
 
 local function enemy(value, label)
@@ -17,12 +17,12 @@ local function enemy(value, label)
 end
 
 function generated.decode(value, label)
-    local row, err = p.exact(value, { "decisionKey", "kind" }, { "baseRoll", "waveCount", "highlight", "fangs", "waves" }, label)
+    local row, err = p.exact(value, { "decisionKey", "kind", "waveCount", "waves" }, { "baseRoll", "highlight", "fangs" }, label)
     if not row then return nil, err end
     if row.kind ~= "generated" or not p.str(row.decisionKey, label .. ".decisionKey") then
         return p.fail(label .. " has invalid generated decision")
     end
-    if row.waveCount ~= nil and not ordinal(row.waveCount, label .. ".waveCount") then
+    if not ordinal(row.waveCount, label .. ".waveCount") then
         return p.fail(label .. " has invalid wave count")
     end
     if row.baseRoll ~= nil and (not p.int(row.baseRoll, label .. ".baseRoll", 0) or row.baseRoll > 10000) then
@@ -48,49 +48,66 @@ function generated.decode(value, label)
             seen[perk] = true
         end
     end
-    if row.waves ~= nil then
-        local waves, wavesError = p.arr(row.waves, label .. ".waves", 5)
+    do
+        local waves, wavesError = p.arr(row.waves, label .. ".waves", 4)
         if not waves then return nil, wavesError end
-        if #waves == 0 then return p.fail(label .. " has no waves") end
-        local seen = {}
+        if #waves ~= row.waveCount then return p.fail(label .. " waves must cover wave count") end
         for index, valueWave in ipairs(waves) do
             local path = label .. ".waves[" .. index .. "]"
-            local wave, waveError = p.exact(valueWave, { "waveIndex", "types" }, { "allocations" }, path)
+            local wave, waveError = p.exact(valueWave, { "waveIndex", "types", "counts" }, {}, path)
             if not wave then return nil, waveError end
-            if not ordinal(wave.waveIndex, path .. ".waveIndex") or seen[wave.waveIndex]
-                or (row.waveCount ~= nil and wave.waveIndex > row.waveCount) then
-                return p.fail(path .. " has duplicate or out-of-range wave index")
+            if wave.waveIndex ~= index then
+                return p.fail(path .. " must follow wave index order")
             end
-            seen[wave.waveIndex] = true
             local types, typesError = p.arr(wave.types, path .. ".types", 5)
             if not types then return nil, typesError end
             if #types == 0 then return p.fail(path .. " requires generated types") end
             local keys, nativeIds = {}, {}
             for typeIndex, valueType in ipairs(types) do
-                local entry, entryError = enemy(valueType, path .. ".types[" .. typeIndex .. "]")
-                if not entry then return nil, entryError end
-                if keys[entry.choiceKey] or nativeIds[entry.nativeId] then
+                local spawn, shapeError = p.exact(valueType, { "choiceKey", "nativeId", "source" }, {}, path .. ".types")
+                if not spawn then return nil, shapeError end
+                if spawn.source ~= "fixed" and spawn.source ~= "template"
+                    and spawn.source ~= "highlight" and spawn.source ~= "addition" then
+                    return p.fail(path .. ".types has invalid source")
+                end
+                if not p.str(spawn.choiceKey, path .. ".types[" .. typeIndex .. "].choiceKey")
+                    or not p.str(spawn.nativeId, path .. ".types[" .. typeIndex .. "].nativeId") then
+                    return p.fail(path .. ".types has invalid enemy identity")
+                end
+                if keys[spawn.choiceKey] or nativeIds[spawn.nativeId] then
                     return p.fail(path .. " has duplicate generated types")
                 end
-                keys[entry.choiceKey], nativeIds[entry.nativeId] = true, true
+                keys[spawn.choiceKey], nativeIds[spawn.nativeId] = true, true
             end
-            if row.highlight ~= nil and (types[1].choiceKey ~= row.highlight.choiceKey
-                or types[1].nativeId ~= row.highlight.nativeId) then
-                return p.fail(path .. " must seed its declared highlight first")
+            local highlightCount = 0
+            for _, entry in ipairs(types) do if entry.source == "highlight" then highlightCount = highlightCount + 1 end end
+            if (row.highlight == nil and highlightCount ~= 0) or (row.highlight ~= nil
+                and (highlightCount ~= 1 or types[1].source ~= "highlight"
+                    or types[1].choiceKey ~= row.highlight.choiceKey
+                    or types[1].nativeId ~= row.highlight.nativeId)) then
+                return p.fail(path .. " must have exactly its declared highlight first")
             end
-            if wave.allocations ~= nil then
-                if type(wave.allocations) ~= "table" then return p.fail(path .. " allocations must be an object") end
-                for name, allocation in pairs(wave.allocations) do
-                    if type(name) ~= "string" or not p.num(allocation, path .. ".allocations") or allocation < 0
-                        or nativeIds[name] == nil then
-                        return p.fail(path .. " allocations must name generated types with nonnegative values")
-                    end
+            if type(wave.counts) ~= "table" then return p.fail(path .. " counts must be an object") end
+            local countNames = 0
+            for name, count in pairs(wave.counts) do
+                countNames = countNames + 1
+                if type(name) ~= "string" or not p.int(count, path .. ".counts", 1) or nativeIds[name] == nil then
+                    return p.fail(path .. " counts must exactly name generated types")
+                end
+            end
+            if countNames ~= #types then return p.fail(path .. " counts must exactly name generated types") end
+        end
+    end
+    if row.fangs ~= nil then
+        local found = false
+        for _, wave in ipairs(row.waves) do
+            for _, entry in ipairs(wave.types) do
+                if entry.choiceKey == row.fangs.type.choiceKey and entry.nativeId == row.fangs.type.nativeId then
+                    found = true
                 end
             end
         end
-    end
-    if row.baseRoll == nil and row.waveCount == nil and row.highlight == nil and row.fangs == nil and row.waves == nil then
-        return p.fail(label .. " has no active override")
+        if not found then return p.fail(label .. ".fangs.type must be in the published roster") end
     end
     return row
 end

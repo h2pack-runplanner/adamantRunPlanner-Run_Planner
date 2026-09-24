@@ -1,274 +1,236 @@
--- Optional generated-composition steering stays inside the synchronous native
--- encounter preparation call. The planner supplies only sparse operands; the
--- game still owns eligibility, type side effects, rounding, caps and spawning.
+-- Install resolved composition at native fill contacts. Native generation keeps
+-- templates/setup; native spawning keeps timing, caps, groups and retries.
 local generated = {}
-local fangsDefinition = type(import) == "function" and import("mods/room/timeline/encounters/fangs.lua")
+local fangs = type(import) == "function" and import("mods/room/timeline/encounters/fangs.lua")
     or require("mods.room.timeline.encounters.fangs")
 
 local function compositionFor(phase)
     for _, decision in ipairs(phase and phase.customization or {}) do
-        if decision.kind == "generated" and decision.decisionKey == "generatedComposition" then
-            return decision
-        end
+        if decision.kind == "generated" and decision.decisionKey == "generatedComposition" then return decision end
     end
-    return nil
 end
 
-local function waveFor(decision, index)
-    for _, wave in ipairs(decision.waves or {}) do
-        if wave.waveIndex == index then return wave end
-    end
-    return nil
-end
-
-local function nativeId(entry)
-    return type(entry) == "table" and entry.nativeId or nil
-end
-
--- Highlight is published first in each generated wave, while fixed template
--- entries are intentionally absent from the authored generated list.
-local function additionsFor(decision, index)
-    local wave = waveFor(decision, index)
-    if wave == nil then return nil end
-    local start = decision.highlight ~= nil and 2 or 1
+local function copy(value)
     local result = {}
-    for position = start, #(wave.types or {}) do
-        result[#result + 1] = nativeId(wave.types[position])
-    end
-    return result, wave
-end
-
--- FillEnemyCounts uses the full spawn-array index against generated-entry
--- count to identify its RandomNormal branches. Sparse absolute allocations
--- bind only those calls; the native remainder, rounding, caps and
--- redistribution stay untouched.
-local function countSampleBranches(wave)
-    local generatedCount, result = 0, {}
-    for _, spawn in ipairs(wave.Spawns or {}) do
-        local fixed = not spawn.Generated and ((spawn.CountMin and spawn.CountMax) or spawn.TotalCount)
-        if not fixed then generatedCount = generatedCount + 1 end
-    end
-    for index, spawn in ipairs(wave.Spawns or {}) do
-        local isGenerated = spawn.Generated or not ((spawn.CountMin and spawn.CountMax) or spawn.TotalCount)
-        if isGenerated and spawn.TotalCount == nil and index ~= generatedCount then
-            result[#result + 1] = { index = index, enemyName = spawn.Name }
-        end
-    end
-    return generatedCount, result
-end
-
-local function allocationFor(wave, enemyName)
-    return wave and wave.allocations and wave.allocations[enemyName] or nil
-end
-
-local function withScope(stack, scope, action)
-    stack[#stack + 1] = scope
-    local ok, result = pcall(action)
-    stack[#stack] = nil
-    if not ok then error(result, 0) end
+    for key, entry in pairs(value or {}) do result[key] = entry end
     return result
 end
 
-function generated.create()
-    local instance = {}
-    local stack = {}
-    local fangsAdapter = fangsDefinition.create()
-    local function current() return stack[#stack] end
+local function scoped(stack, scope, action)
+    stack[#stack + 1] = scope
+    local result = table.pack(pcall(action))
+    stack[#stack] = nil
+    if not result[1] then error(result[2], 0) end
+    return table.unpack(result, 2, result.n)
+end
 
+local function templateFor(encounter, index, count)
+    local hard = encounter.IsHardEncounter and encounter.HardEncounterOverrideValues or {}
+    local manual = hard.ManualWaveTemplates or encounter.ManualWaveTemplates or {}
+    return manual[index] or manual[-1 * (count - index)] or hard.WaveTemplate or encounter.WaveTemplate
+end
+
+-- Admission validates the payload. Only live declaration compatibility belongs here.
+local function preflight(decision, encounter, enemies, runBlacklist)
+    if encounter.InfiniteSpawns then return "unsupported-infinite-spawns" end
+    if encounter.SpawnWaves ~= nil and next(encounter.SpawnWaves) ~= nil then return "preexisting-waves" end
+    for index, wave in ipairs(decision.waves) do
+        local template = templateFor(encounter, index, decision.waveCount)
+        if type(template) ~= "table" or type(template.Spawns) ~= "table" then return "unsupported-template" end
+        local templateIndex = 1
+        for _, entry in ipairs(wave.types) do
+            local name, source = entry.nativeId, entry.source
+            local count = wave.counts[name]
+            if enemies[name] == nil then return "missing-enemy" end
+            if enemies[name].BlacklistAfterFirstAppearance and runBlacklist[name] then
+                return "run-blacklisted-enemy", name
+            end
+            if source == "fixed" or source == "template" then
+                local seed = template.Spawns[templateIndex]
+                if seed == nil then return "missing-template-entry" end
+                if source == "fixed" then
+                    if seed.Name ~= name or seed.Generated or seed.TotalCount ~= count then
+                        return "fixed-template-changed"
+                    end
+                elseif seed.Name ~= nil or not seed.Generated then return "unsupported-placeholder" end
+                templateIndex = templateIndex + 1
+            end
+        end
+        if templateIndex <= #template.Spawns then return "unowned-template-entry" end
+    end
+end
+
+function generated.create()
+    local instance, stack = {}, {}
+    local function current() return stack[#stack] end
     local function diagnostic(owner, observed)
-        if owner.session and owner.state and owner.occurrence then
+        if owner and owner.session and owner.state and owner.occurrence then
             owner.session.diagnostic(owner.state, "encounter-composition", observed, owner.occurrence)
         end
     end
-
     function instance.withPhase(state, room, phase, nativeRoom, action)
         local decision = compositionFor(phase)
-        -- A nested native or unsupported setup must not inherit its caller's
-        -- same-name override while that outer preparation scope is active.
-        if decision == nil then
-            return withScope(stack, { kind = "native" }, action)
-        end
-        local occurrence = state and room.occurrence(state, nativeRoom) or nil
-        if occurrence == nil then return withScope(stack, { kind = "native" }, action) end
-        return withScope(stack, {
+        local occurrence = state and room.occurrence and room.occurrence(state, nativeRoom)
+        if decision == nil or occurrence == nil then return scoped(stack, { kind = "native" }, action) end
+        return scoped(stack, {
             kind = "preparation", state = state, session = instance.session, occurrence = occurrence,
-            phase = phase, nativeRoom = nativeRoom, encounterKey = phase.encounterKey, decision = decision,
+            phase = phase, encounterKey = phase.encounterKey, decision = decision,
         }, action)
     end
-
-    -- Reward-owned Devotion selects inside SetupRoomReward. Its native
-    -- generation context remains the predecessor; this only provides the
-    -- stamped destination identity that owns the sparse override.
     function instance.withRewardDestination(state, room, nativeRoom, action)
-        local phase = state and room.encounterAt(state, 1, nativeRoom)
-        return instance.withPhase(state, room, phase, nativeRoom, action)
+        return instance.withPhase(state, room, state and room.encounterAt(state, 1, nativeRoom), nativeRoom, action)
     end
-
-    function instance.attach(module, session)
+    function instance.attach(module, session, getState, room)
         instance.session = session
-        fangsAdapter.attach(module, session)
-
+        local function owned(runtime, encounter)
+            if type(encounter) ~= "table" then return nil end
+            local marker = encounter.__runPlannerGeneratedComposition
+            if marker == nil then return nil end
+            local state = getState(runtime)
+            if state == nil or state.state ~= "synchronized" then return nil end
+            local phase = room.encounterPhase(state, encounter)
+            local occurrence = room.occurrence(state)
+            if phase == nil or occurrence == nil or marker.occurrenceId ~= occurrence.id
+                or marker.slotKey ~= phase.slotKey or marker.encounterKey ~= phase.encounterKey then return nil end
+            return compositionFor(phase)
+        end
+        fangs.attach(module, owned)
         module.hooks.wrap("SetupEncounter", "run-planner-generated-encounter-setup", function(_, _, base,
             encounterData, nativeRoom)
             local parent = current()
             if parent == nil or parent.kind ~= "preparation" or parent.encounterKey ~= encounterData.Name then
-                return withScope(stack, { kind = "native" }, function() return base(encounterData, nativeRoom) end)
+                return scoped(stack, { kind = "native" }, function() return base(encounterData, nativeRoom) end)
             end
-            return withScope(stack, { kind = "setup", owner = parent }, function()
-                return base(encounterData, nativeRoom)
+            local ok, result = pcall(function()
+                return scoped(stack, { kind = "setup", owner = parent }, function()
+                    return base(encounterData, nativeRoom)
+                end)
             end)
+            local actual = type(result) == "table" and (result.GenusName or result.Name or result.EncounterName)
+            if not ok or actual ~= parent.encounterKey then
+                if parent.prepared then
+                    parent.prepared.__runPlannerGeneratedComposition = nil
+                end
+                diagnostic(parent, { kind = "generated-not-realized", reason = ok and "intro-substitution" or "setup-error",
+                    encounterKey = parent.encounterKey, observed = ok and actual or tostring(result) })
+            end
+            if not ok then error(result, 0) end
+            return result
         end)
-
         module.hooks.wrap("GenerateEncounter", "run-planner-generated-encounter-generate", function(_, _, base,
             currentRun, nativeRoom, encounter)
             local parent = current()
             if parent == nil or parent.kind ~= "setup" or parent.owner.encounterKey ~= encounter.Name then
-                return withScope(stack, { kind = "native" }, function()
-                    return base(currentRun, nativeRoom, encounter)
-                end)
+                return scoped(stack, { kind = "native" }, function() return base(currentRun, nativeRoom, encounter) end)
             end
-            local owner, decision = parent.owner, parent.owner.decision
-            if decision.fangs ~= nil then fangsAdapter.bind(encounter, decision.fangs, owner) end
-            owner.baseRollUsed = false
-            if decision.waveCount ~= nil then
-                encounter.MinWaves, encounter.MaxWaves = decision.waveCount, decision.waveCount
-                -- GenerateEncounter applies this copied table before reading
-                -- bounds for hard encounters. Keep every native override, but
-                -- retain the explicit count on this encounter copy.
-                if type(encounter.HardEncounterOverrideValues) == "table" then
-                    local overrides = {}
-                    for key, value in pairs(encounter.HardEncounterOverrideValues) do overrides[key] = value end
-                    overrides.MinWaves, overrides.MaxWaves = decision.waveCount, decision.waveCount
-                    encounter.HardEncounterOverrideValues = overrides
+            local owner, gameValue = parent.owner, _G.game or game or _G
+            local decision, enemies = owner.decision, gameValue.EnemyData or {}
+            -- A new owned preparation supersedes any restored realization. A
+            -- failed attempt must fall back natively rather than leave a stale
+            -- marker for Fangs or zero-Menace spawn interception.
+            if encounter.__runPlannerGeneratedComposition ~= nil then
+                encounter.__runPlannerGeneratedComposition = nil
+            end
+            local failure, enemy = preflight(decision, encounter, enemies, currentRun.Blacklist or {})
+            if failure then
+                diagnostic(owner, { kind = "generated-preflight", reason = failure, enemy = enemy })
+                return scoped(stack, { kind = "native" }, function() return base(currentRun, nativeRoom, encounter) end)
+            end
+            encounter.MinWaves, encounter.MaxWaves = decision.waveCount, decision.waveCount
+            if decision.baseRoll ~= nil then
+                encounter.BaseDifficultyMin, encounter.BaseDifficultyMax = decision.baseRoll, decision.baseRoll
+            end
+            local previousHighlight, previousHard = encounter.BlockHighlightEncounter, encounter.HardEncounterOverrideValues
+            encounter.BlockHighlightEncounter = true
+            if previousHard then
+                encounter.HardEncounterOverrideValues = copy(previousHard)
+                encounter.HardEncounterOverrideValues.MinWaves = decision.waveCount
+                encounter.HardEncounterOverrideValues.MaxWaves = decision.waveCount
+                encounter.HardEncounterOverrideValues.BlockHighlightEncounter = true
+                if decision.baseRoll ~= nil then
+                    encounter.HardEncounterOverrideValues.BaseDifficultyMin = decision.baseRoll
+                    encounter.HardEncounterOverrideValues.BaseDifficultyMax = decision.baseRoll
                 end
             end
-            return withScope(stack, {
-                kind = "generate", owner = owner, encounter = encounter, nativeRoom = nativeRoom,
-            }, function()
-                local result = base(currentRun, nativeRoom, encounter)
-                local waves = {}
-                for index, wave in ipairs(encounter.SpawnWaves or {}) do
-                    local spawns, requested = {}, {}
-                    for _, spawn in ipairs(wave.Spawns or {}) do
-                        spawns[#spawns + 1] = {
-                            name = spawn.Name, count = spawn.TotalCount,
-                            countMin = spawn.CountMin, countMax = spawn.CountMax,
-                        }
-                    end
-                    local authored = waveFor(decision, index)
-                    for _, entry in ipairs(authored and authored.types or {}) do
-                        requested[#requested + 1] = {
-                            name = nativeId(entry), allocation = authored.allocations and authored.allocations[nativeId(entry)],
-                        }
-                    end
-                    waves[#waves + 1] = { wave = index, spawns = spawns, requested = requested }
-                end
-                diagnostic(owner, {
-                    kind = "generated-result", phase = owner.phase.slotKey,
-                    encounterKey = owner.encounterKey, requestedWaveCount = decision.waveCount,
-                    baseRoll = decision.baseRoll, baseRollUsed = owner.baseRollUsed,
-                    nativeHardEncounter = encounter.IsHardEncounter == true,
-                    waveCount = #waves, waves = waves,
-                })
-                return result
+            local scope = { kind = "generate", owner = owner, encounter = encounter, run = currentRun,
+                enemies = enemies, installed = {} }
+            local ok, result = pcall(function()
+                return scoped(stack, scope, function() return base(currentRun, nativeRoom, encounter) end)
             end)
-        end)
-
-        module.hooks.wrap("FillEnemyTypes", "run-planner-generated-encounter-types", function(_, _, base,
-            encounter, wave, nativeRoom)
-            local parent = current()
-            if parent == nil or parent.kind ~= "generate" or parent.encounter ~= encounter
-                or encounter.SpawnWaves[wave.WaveIndex] ~= wave then
-                return withScope(stack, { kind = "native" }, function() return base(encounter, wave, nativeRoom) end)
+            encounter.BlockHighlightEncounter, encounter.HardEncounterOverrideValues = previousHighlight, previousHard
+            if not ok then
+                diagnostic(owner, { kind = "generated-not-realized", reason = "generation-error" })
+                error(result, 0)
             end
-            local additions = additionsFor(parent.owner.decision, wave.WaveIndex)
-            if additions ~= nil and not encounter.EscalateTypeCount and wave.TypeCount == nil then
-                local named = 0
-                for _, spawn in ipairs(wave.Spawns or {}) do if spawn.Name then named = named + 1 end end
-                wave.TypeCount = named + #additions
+            for index = 1, decision.waveCount do
+                if not scope.installed[index] then
+                    diagnostic(owner, { kind = "generated-not-realized", reason = "missing-fill-contact", wave = index })
+                    return result
+                end
             end
-            return withScope(stack, {
-                kind = "types", owner = parent.owner, encounter = encounter, wave = wave, additions = additions,
-            }, function() return base(encounter, wave, nativeRoom) end)
-        end)
-
-        module.hooks.wrap("FillEnemyCounts", "run-planner-generated-encounter-counts", function(_, _, base,
-            encounter, wave, nativeRoom)
-            local parent = current()
-            if parent == nil or parent.kind ~= "generate" or parent.encounter ~= encounter
-                or encounter.SpawnWaves[wave.WaveIndex] ~= wave then
-                return withScope(stack, { kind = "native" }, function() return base(encounter, wave, nativeRoom) end)
+            encounter.__runPlannerGeneratedComposition = {
+                occurrenceId = owner.occurrence.id, slotKey = owner.phase.slotKey, encounterKey = owner.encounterKey,
+            }
+            owner.prepared = encounter
+            local waves = {}
+            for index, wave in ipairs(encounter.SpawnWaves) do
+                local spawns = {}
+                for _, spawn in ipairs(wave.Spawns) do
+                    spawns[#spawns + 1] = { name = spawn.Name, count = spawn.TotalCount }
+                end
+                waves[index] = { wave = index, spawns = spawns }
             end
-            local generatedCount, samples = countSampleBranches(wave)
-            return withScope(stack, {
-                kind = "counts", owner = parent.owner, encounter = encounter, wave = wave,
-                generatedCount = generatedCount, samples = samples, sampleIndex = 0,
-            }, function() return base(encounter, wave, nativeRoom) end)
-        end)
-
-        module.hooks.wrap("IsEnemyEligible", "run-planner-generated-encounter-highlight", function(_, _, base,
-            enemyName, encounter, wave)
-            local result = base(enemyName, encounter, wave)
-            local scope = current()
-            if scope and scope.kind == "generate" and scope.encounter == encounter
-                and wave == encounter.SpawnWaves[1] and wave.TypeCount == 1 and #(wave.Spawns or {}) == 0 then
-                scope.highlightReady = true
-            end
+            diagnostic(owner, { kind = "generated-installed", phase = owner.phase.slotKey,
+                encounterKey = owner.encounterKey, waveCount = #waves, waves = waves })
             return result
         end)
-
-        module.hooks.wrap("RemoveRandomValue", "run-planner-generated-encounter-selection", function(_, _, base,
-            values, ...)
-            local scope, owner = current(), current() and current().owner
-            local requested, kind
-            if scope and scope.kind == "generate" and scope.highlightReady then
-                requested, kind, scope.highlightReady = nativeId(owner.decision.highlight), "highlight", false
-            elseif scope and scope.kind == "types" then
-                scope.typeIndex = (scope.typeIndex or 0) + 1
-                requested, kind = scope.additions and scope.additions[scope.typeIndex], "type"
-            end
-            if requested == nil then return base(values, ...) end
-            for index, candidate in ipairs(values or {}) do
-                if candidate == requested then return table.remove(values, index) end
-            end
-            diagnostic(owner, {
-                phase = owner.phase.slotKey, encounterKey = owner.encounterKey,
-                wave = scope.wave and scope.wave.WaveIndex or 0, kind = kind,
-                requested = requested, reason = "native-ineligible",
-            })
-            return base(values, ...)
-        end)
-
-        module.hooks.wrap("RandomNormal", "run-planner-generated-encounter-allocation", function(_, _, base,
-            mean, deviation, ...)
+        module.hooks.wrap("FillEnemyTypes", "run-planner-generated-encounter-types", function(_, _, base,
+            encounter, wave, nativeRoom)
             local scope = current()
-            if scope == nil or scope.kind ~= "counts" then return base(mean, deviation, ...) end
-            scope.sampleIndex = scope.sampleIndex + 1
-            local branch = scope.samples[scope.sampleIndex]
-            local wave = waveFor(scope.owner.decision, scope.wave.WaveIndex)
-            local allocation = branch and allocationFor(wave, branch.enemyName)
-            if allocation == nil then return base(mean, deviation, ...) end
-            return allocation
-        end)
-        module.hooks.wrap("RandomInt", "run-planner-generated-encounter-base-roll", function(_, _, base,
-            minimum, maximum, ...)
-            local scope = current()
-            if scope and scope.kind == "generate" then
-                local requested = scope.owner.decision.baseRoll
-                -- Bind only the declared encounter's own BaseDifficulty
-                -- range; an incidental RandomInt inside generation remains
-                -- native even when its numeric bounds coincide.
-                if requested ~= nil and scope.encounter.BaseDifficultyMin == minimum
-                    and scope.encounter.BaseDifficultyMax == maximum then
-                    scope.owner.baseRollUsed = true
-                    return requested
+            if scope == nil or scope.kind ~= "generate" or scope.encounter ~= encounter
+                or encounter.SpawnWaves[wave.WaveIndex] ~= wave then return base(encounter, wave, nativeRoom) end
+            local index, published = wave.WaveIndex, scope.owner.decision.waves[wave.WaveIndex]
+            if scope.installed[index] then return end
+            local spawns, templateIndex = {}, 1
+            for _, entry in ipairs(published.types) do
+                local name, source = entry.nativeId, entry.source
+                if source == "fixed" or source == "template" then
+                    local spawn = wave.Spawns[templateIndex]
+                    templateIndex = templateIndex + 1
+                    spawn.Name = name
+                    spawns[#spawns + 1] = spawn
+                else
+                    spawns[#spawns + 1] = { Name = name, Generated = true }
+                end
+                -- Native FillEnemyCounts attaches metadata without reallocating
+                -- entries whose TotalCount is already installed.
+                spawns[#spawns].TotalCount = published.counts[name]
+                if source == "highlight" then
+                    encounter.Blacklist[name] = true
+                elseif source == "addition" then
+                    local enemy = scope.enemies[name]
+                    if enemy.BlacklistAfterFirstAppearance then scope.run.Blacklist[name] = true end
+                    local generator = enemy.GeneratorData or {}
+                    if encounter.BlockTypesAcrossWaves then
+                        for _, excluded in pairs(generator.BlockEnemyTypes or {}) do encounter.Blacklist[excluded] = true end
+                    end
+                    if generator.ActiveEnemyCapBonus then
+                        encounter.ActiveEnemyCapBonus = (encounter.ActiveEnemyCapBonus or 0) + generator.ActiveEnemyCapBonus
+                    end
                 end
             end
-            return base(minimum, maximum, ...)
+            wave.Spawns, wave.TypeCount, scope.installed[index] = spawns, #spawns, true
+        end)
+        module.hooks.wrap("HandleNextSpawn", "run-planner-generated-encounter-zero-menace", function(_, runtime, base,
+            encounter, ignoreSpawnPreferences, spawnInfo, overrides, args)
+            if owned(runtime, encounter) == nil then
+                return base(encounter, ignoreSpawnPreferences, spawnInfo, overrides, args)
+            end
+            local copied = copy(args)
+            copied.IgnoreShrineOverrides = true
+            return base(encounter, ignoreSpawnPreferences, spawnInfo, overrides, copied)
         end)
     end
-
     return instance
 end
-
 return generated

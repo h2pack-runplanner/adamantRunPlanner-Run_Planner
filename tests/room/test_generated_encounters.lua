@@ -1,171 +1,176 @@
--- Scoped realization witnesses for optional generated encounter operands.
--- luacheck: globals TestGeneratedEncounters
+-- Direct-installation witnesses use the shipped callbacks, not the retired
+-- steering probe, and retain native count initialization.
 local lu = require("luaunit")
-local runtime = require("mods.runtime.session")
 local generatedDefinition = require("mods.room.timeline.encounters.generated")
 local support = require("tests.harness.hook_composition")
 
 TestGeneratedEncounters = {}
 
+local function decision()
+    return { kind = "generated", decisionKey = "generatedComposition", waveCount = 1, baseRoll = 42,
+        fangs = { type = { choiceKey = "Elite", nativeId = "Elite" }, perks = { "Blink" } },
+        waves = {{ waveIndex = 1, types = {
+            { choiceKey = "Elite", nativeId = "Elite", source = "addition" },
+            { choiceKey = "Cinder", nativeId = "Cinder", source = "addition" },
+        }, counts = { Elite = 2, Cinder = 3 } }}, }
+end
+
 local function fixture()
     local module, _, callbacks = support.capture()
-    local generated = generatedDefinition.create()
-    generated.attach(module, runtime)
-    local occurrence = { id = "generated", diagnostics = { ["encounter-composition"] = "published" } }
-    local state = { state = "synchronized", diagnostics = {} }
-    local room = { occurrence = function() return occurrence end }
-    local destination = { __runPlannerExecutionRoomId = occurrence.id }
-    return callbacks, generated, state, room, destination
+    local instance = generatedDefinition.create()
+    local occurrence = { id = "generated" }
+    local state = { state = "synchronized" }
+    local phase = { slotKey = "Combat", encounterKey = "Generated", customization = { decision() } }
+    local room = {
+        occurrence = function() return occurrence end,
+        encounterPhase = function(_, encounter)
+            return encounter.__runPlannerGeneratedComposition and phase or nil
+        end,
+    }
+    local diagnostics = {}
+    instance.attach(module, { diagnostic = function(_, _, value) diagnostics[#diagnostics + 1] = value end },
+        function() return state end, room)
+    return callbacks, instance, state, room, phase, diagnostics
 end
 
-local function phase(decision)
-    return { slotKey = "Combat", encounterKey = "Generated", customization = decision and { decision } or nil }
-end
-
-local function decision(values)
-    values = values or {}
-    values.kind, values.decisionKey = "generated", "generatedComposition"
-    return values
-end
-
-function TestGeneratedEncounters.testGeneratedResultSnapshotsAllocationWithoutTrackingSpawns()
-    local callbacks, generated, state, room, destination = fixture()
-    local encounter = { Name = "Generated" }
-    local authored = phase(decision({ waveCount = 1, waves = {
-        { waveIndex = 1, types = { { nativeId = "Ash" } } },
-    } }))
-    local result = generated.withPhase(state, room, authored, destination, function()
-        return callbacks.SetupEncounter(nil, {}, function()
-            return callbacks.GenerateEncounter(nil, {}, function()
-                encounter.SpawnWaves = { { Spawns = {
-                    { Name = "Ash", TotalCount = 4 },
-                    { Name = "Template", CountMin = 1, CountMax = 2 },
-                } } }
-                return "native-result"
-            end, {}, destination, encounter)
-        end, encounter, destination)
-    end)
-    encounter.SpawnWaves[1].Spawns[1].TotalCount = 99
-    lu.assertEquals(result, "native-result")
-    lu.assertEquals(state.state, "synchronized")
-    lu.assertEquals(state.diagnostics[1].observed, {
-        kind = "generated-result", phase = "Combat", encounterKey = "Generated",
-        requestedWaveCount = 1, baseRollUsed = false, nativeHardEncounter = false, waveCount = 1, waves = {
-            { wave = 1, requested = { { name = "Ash" } }, spawns = {
-                { name = "Ash", count = 4 }, { name = "Template", countMin = 1, countMax = 2 },
-            } },
-        },
-    })
-end
-
-function TestGeneratedEncounters.testDefaultAndNestedSameNameCallsDelegateWithoutAStaleOverride()
-    local callbacks, generated, state, room, destination = fixture()
-    local defaultCalls, nestedCalls, outerCalls = 0, 0, 0
-    generated.withPhase(state, room, phase(nil), destination, function()
-        return callbacks.SetupEncounter(nil, {}, function()
-            callbacks.GenerateEncounter(nil, {}, function(_, _, encounter)
-                defaultCalls = defaultCalls + 1
-                lu.assertEquals({ encounter.MinWaves, encounter.MaxWaves }, { 1, 2 })
-            end, {}, destination, { Name = "Generated", MinWaves = 1, MaxWaves = 2 })
-        end, { Name = "Generated" }, destination)
-    end)
-    local outer = phase(decision({ waveCount = 3 }))
-    generated.withPhase(state, room, outer, destination, function()
-        generated.withPhase(state, room, phase(nil), destination, function()
-            callbacks.SetupEncounter(nil, {}, function()
-                callbacks.GenerateEncounter(nil, {}, function(_, _, encounter)
-                    nestedCalls = nestedCalls + 1
-                    lu.assertEquals({ encounter.MinWaves, encounter.MaxWaves }, { 1, 2 })
-                end, {}, destination, { Name = "Generated", MinWaves = 1, MaxWaves = 2 })
-            end, { Name = "Generated" }, destination)
-        end)
-        callbacks.SetupEncounter(nil, {}, function()
-            callbacks.GenerateEncounter(nil, {}, function(_, _, encounter)
-                outerCalls = outerCalls + 1
-                lu.assertEquals({ encounter.MinWaves, encounter.MaxWaves }, { 3, 3 })
-            end, {}, destination, { Name = "Generated", MinWaves = 1, MaxWaves = 2 })
-        end, { Name = "Generated" }, destination)
-    end)
-    lu.assertEquals(defaultCalls, 1)
-    lu.assertEquals(nestedCalls, 1)
-    lu.assertEquals(outerCalls, 1)
-end
-
-function TestGeneratedEncounters.testInvalidTypeIsDiagnosticAndScopeRestoresAfterAnError()
-    local callbacks, generated, state, room, destination = fixture()
-    local selected = phase(decision({ waves = {
-        { waveIndex = 1, types = { { choiceKey = "Ash", nativeId = "Ash" } } },
-    } }))
-    local encounter = { Name = "Generated", EscalateTypeCount = false, SpawnWaves = {} }
-    local wave = { WaveIndex = 1, Spawns = {} }
-    encounter.SpawnWaves[1] = wave
-    generated.withPhase(state, room, selected, destination, function()
-        callbacks.SetupEncounter(nil, {}, function()
-            callbacks.GenerateEncounter(nil, {}, function()
-                callbacks.FillEnemyTypes(nil, {}, function()
-                    return callbacks.RemoveRandomValue(nil, {}, function(values) return values[1] end,
-                        { "Brine" })
-                end, encounter, wave, destination)
-            end, {}, destination, encounter)
-        end, { Name = "Generated" }, destination)
-    end)
-    lu.assertEquals(state.state, "synchronized")
-    lu.assertEquals(state.diagnostics[1].observed, {
-        phase = "Combat", encounterKey = "Generated", wave = 1, kind = "type",
-        requested = "Ash", reason = "native-ineligible",
-    })
-    lu.assertError(function()
-        generated.withPhase(state, room, selected, destination, function()
-            callbacks.SetupEncounter(nil, {}, function() error("native setup fault") end,
-                { Name = "Generated" }, destination)
-        end)
-    end)
-    lu.assertEquals(callbacks.RemoveRandomValue(nil, {}, function(values) return values[1] end,
-        { "native" }), "native")
-end
-
-function TestGeneratedEncounters.testFixedFirstSpawnMapsAllocationByGeneratedIdentityAtTheNativeSampleBranch()
-    local callbacks, generated, state, room, destination = fixture()
-    local selected = phase(decision({ waves = {
-        { waveIndex = 1, types = {
-            { choiceKey = "Brine", nativeId = "Brine" }, { choiceKey = "Cinder", nativeId = "Cinder" },
-        }, allocations = { Cinder = 16 } },
-    } }))
-    local wave = { WaveIndex = 1, Spawns = {
-        { Name = "Ash", TotalCount = 2 }, { Name = "Brine" }, { Name = "Cinder" },
+function TestGeneratedEncounters.testPriorRunBlacklistDelegatesWholeCompositionIncludingFangsAndMenace()
+    local callbacks, instance, state, room, phase, diagnostics = fixture()
+    local previous = _G.game
+    _G.game = { EnemyData = {
+        Elite = {}, Cinder = { BlacklistAfterFirstAppearance = true },
     } }
-    local encounter = { Name = "Generated", SpawnWaves = { wave } }
-    local requested
-    generated.withPhase(state, room, selected, destination, function()
-        callbacks.SetupEncounter(nil, {}, function()
-            callbacks.GenerateEncounter(nil, {}, function()
-                callbacks.FillEnemyCounts(nil, {}, function()
-                    requested = callbacks.RandomNormal(nil, {}, function(mean) return mean end, 10, 1)
-                end, encounter, wave, destination)
-            end, {}, destination, encounter)
-        end, { Name = "Generated" }, destination)
+    local encounter = { Name = "Generated", MinWaves = 2, MaxWaves = 3,
+        WaveTemplate = { Spawns = {} } }
+    local run = { Blacklist = { Cinder = true } }
+    local nativeTypes, nativeFangs, nativeSpawns = 0, 0, 0
+    instance.withPhase(state, room, phase, {}, function()
+        callbacks.SetupEncounter(nil, {}, function(data, nativeRoom)
+            return callbacks.GenerateEncounter(nil, {}, function()
+                lu.assertEquals({ data.MinWaves, data.MaxWaves }, { 2, 3 })
+                lu.assertNil(data.BlockHighlightEncounter)
+                lu.assertNil(data.BaseDifficultyMin)
+                local wave = { WaveIndex = 1, Spawns = {} }
+                data.SpawnWaves = { wave }
+                callbacks.FillEnemyTypes(nil, {}, function()
+                    nativeTypes = nativeTypes + 1
+                    wave.Spawns = { { Name = "NativeChoice", TotalCount = 4 } }
+                end, data, wave, nativeRoom)
+                return data
+            end, run, nativeRoom, data)
+        end, encounter, {})
     end)
-    -- Spawn index three is the proven sample branch here; it maps to Cinder's
-    -- explicit identity allocation, not a full-array position.
-    lu.assertEquals(requested, 16)
+    callbacks.PickEncounterEliteAttributes(nil, {}, function() nativeFangs = nativeFangs + 1 end, encounter)
+    local args = {}
+    callbacks.HandleNextSpawn(nil, {}, function(_, _, _, _, actual)
+        nativeSpawns = nativeSpawns + 1
+        lu.assertIs(actual, args)
+        lu.assertNil(actual.IgnoreShrineOverrides)
+    end, encounter, false, nil, nil, args)
+    lu.assertEquals({ nativeTypes, nativeFangs, nativeSpawns }, { 1, 1, 1 })
+    lu.assertEquals(encounter.SpawnWaves[1].Spawns, { { Name = "NativeChoice", TotalCount = 4 } })
+    lu.assertNil(encounter.__runPlannerGeneratedComposition)
+    lu.assertEquals(diagnostics, {
+        { kind = "generated-preflight", reason = "run-blacklisted-enemy", enemy = "Cinder" },
+    })
+    _G.game = previous
 end
 
-function TestGeneratedEncounters.testBaseRollSteersOnlyTheBoundEncounterBaseRange()
-    local callbacks, generated, state, room, destination = fixture()
-    local selected = phase(decision({ baseRoll = 412 }))
-    local encounter = { Name = "Generated", BaseDifficultyMin = 340, BaseDifficultyMax = 500,
-        SpawnWaves = {} }
-    local value, incidental
-    generated.withPhase(state, room, selected, destination, function()
-        callbacks.SetupEncounter(nil, {}, function()
-            callbacks.GenerateEncounter(nil, {}, function()
-                incidental = callbacks.RandomInt(nil, {}, function() return 7 end, 1, 10)
-                value = callbacks.RandomInt(nil, {}, function() return 340 end, 340, 500)
-            end, {}, destination, encounter)
-        end, encounter, destination)
+function TestGeneratedEncounters.testInstallsCompleteTypesCountsFangsAndZeroMenaceAtNativeContacts()
+    local callbacks, instance, state, room, phase = fixture()
+    local previous = _G.game
+    _G.game = { EnemyData = {
+        Elite = { IsElite = true, GeneratorData = { DifficultyRating = 4 } },
+        Cinder = { BlacklistAfterFirstAppearance = true, GeneratorData = {
+            DifficultyRating = 5, BlockEnemyTypes = { "Blocked" }, ActiveEnemyCapBonus = 2,
+        } },
+    } }
+    local encounter = { Name = "Generated", MinWaves = 1, MaxWaves = 2,
+        BaseDifficultyMin = 1, BaseDifficultyMax = 9, BlockTypesAcrossWaves = true,
+        WaveTemplate = { Spawns = {} }, Blacklist = {} }
+    local run, countInitialization = { Blacklist = {} }, 0
+    local result = instance.withPhase(state, room, phase, {}, function()
+        return callbacks.SetupEncounter(nil, {}, function(data, nativeRoom)
+            callbacks.GenerateEncounter(nil, {}, function(currentRun, _, generated)
+                generated.SpawnWaves = { { WaveIndex = 1, Spawns = {} } }
+                local wave = generated.SpawnWaves[1]
+                callbacks.FillEnemyTypes(nil, {}, function() error("types must not redraw") end,
+                    generated, wave, nativeRoom)
+                callbacks.FillEnemyTypes(nil, {}, function() error("types must not redraw") end,
+                    generated, wave, nativeRoom)
+                countInitialization = countInitialization + 1
+                for _, spawn in ipairs(wave.Spawns) do
+                    lu.assertNotNil(spawn.TotalCount)
+                    spawn.Generated, spawn.GeneratorData = true, _G.game.EnemyData[spawn.Name].GeneratorData
+                end
+                return generated
+            end, run, nativeRoom, data)
+            return data
+        end, encounter, nativeRoom)
     end)
-    lu.assertEquals(incidental, 7)
-    lu.assertEquals(value, 412)
-    lu.assertEquals(state.diagnostics[1].observed.baseRoll, 412)
-    lu.assertTrue(state.diagnostics[1].observed.baseRollUsed)
+    lu.assertEquals(result, encounter)
+    lu.assertEquals({ encounter.MinWaves, encounter.MaxWaves, encounter.BaseDifficultyMin }, { 1, 1, 42 })
+    lu.assertEquals(encounter.SpawnWaves[1].Spawns[1].TotalCount, 2)
+    lu.assertEquals(encounter.SpawnWaves[1].Spawns[2].TotalCount, 3)
+    lu.assertEquals(countInitialization, 1)
+    lu.assertTrue(run.Blacklist.Cinder)
+    lu.assertTrue(encounter.Blacklist.Blocked)
+    lu.assertEquals(encounter.ActiveEnemyCapBonus, 2)
+    callbacks.PickEncounterEliteAttributes(nil, {}, function() error("Fangs must not redraw") end, encounter)
+    lu.assertEquals(encounter.EliteAttributes, { Elite = { "Blink" } })
+    local original, observed = {}, nil
+    callbacks.HandleNextSpawn(nil, {}, function(_, _, _, _, args) observed = args end,
+        encounter, false, nil, nil, original)
+    lu.assertTrue(observed.IgnoreShrineOverrides)
+    lu.assertNil(original.IgnoreShrineOverrides)
+    _G.game = previous
+end
+
+function TestGeneratedEncounters.testUnsupportedTemplateFallsBackWithoutInstallingAMarker()
+    local callbacks, instance, state, room, phase = fixture()
+    local previous = _G.game
+    _G.game = { EnemyData = { Elite = {}, Cinder = {} } }
+    local encounter = { Name = "Generated", WaveTemplate = { Spawns = {} }, SpawnWaves = { {} },
+        __runPlannerGeneratedComposition = { occurrenceId = "old" } }
+    local nativeCalls = 0
+    instance.withPhase(state, room, phase, {}, function()
+        callbacks.SetupEncounter(nil, {}, function(data, nativeRoom)
+            return callbacks.GenerateEncounter(nil, {}, function() nativeCalls = nativeCalls + 1; return data end,
+                {}, nativeRoom, data)
+        end, encounter, nativeRoom)
+    end)
+    lu.assertEquals(nativeCalls, 1)
+    lu.assertNil(encounter.__runPlannerGeneratedComposition)
+    _G.game = previous
+end
+
+function TestGeneratedEncounters.testLiveDeclarationDriftFallsBackBeforeMutation()
+    local previous = _G.game
+    for _, case in ipairs({
+        { enemies = { Elite = {} }, spawns = {} },
+        { enemies = { Elite = {}, Cinder = {} }, spawns = { { Name = "Unowned", TotalCount = 1 } } },
+        { enemies = { Elite = {}, Cinder = {} }, spawns = { { Name = "Elite", TotalCount = 4 } },
+            source = "fixed" },
+        { enemies = { Elite = {}, Cinder = {} }, spawns = { { Name = "Elite", Generated = true } },
+            source = "template" },
+    }) do
+        local callbacks, instance, state, room, phase = fixture()
+        if case.source then phase.customization[1].waves[1].types[1].source = case.source end
+        _G.game = { EnemyData = case.enemies }
+        local encounter = { Name = "Generated", MinWaves = 2, MaxWaves = 3,
+            WaveTemplate = { Spawns = case.spawns } }
+        local nativeCalls = 0
+        instance.withPhase(state, room, phase, {}, function()
+            callbacks.SetupEncounter(nil, {}, function(data, nativeRoom)
+                return callbacks.GenerateEncounter(nil, {}, function()
+                    nativeCalls = nativeCalls + 1
+                    lu.assertEquals({ data.MinWaves, data.MaxWaves }, { 2, 3 })
+                    lu.assertNil(data.BlockHighlightEncounter)
+                    return data
+                end, {}, nativeRoom, data)
+            end, encounter, {})
+        end)
+        lu.assertEquals(nativeCalls, 1)
+        lu.assertNil(encounter.__runPlannerGeneratedComposition)
+    end
+    _G.game = previous
 end

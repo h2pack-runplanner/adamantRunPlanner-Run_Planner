@@ -21,15 +21,16 @@ function TestProtocol.testPublishedCompatibilityMatchesDecoder()
 end
 local root = "fixtures/execution-plan/"
 
-function TestProtocol.testGeneratedEncounterSparseOperands()
+function TestProtocol.testGeneratedEncounterRequiresACompleteProvenancedComposition()
     local function value()
         return assert(json.decode([[{
             "kind":"generated","decisionKey":"generatedComposition","waveCount":3,
             "highlight":{"choiceKey":"Guard","nativeId":"Guard"},
-            "waves":[{"waveIndex":3,"types":[
-                {"choiceKey":"Guard","nativeId":"Guard"},
-                {"choiceKey":"Mage","nativeId":"Mage"}
-            ],"allocations":{"Mage":12}}]
+            "waves":[
+                {"waveIndex":1,"types":[{"choiceKey":"Guard","nativeId":"Guard","source":"highlight"},{"choiceKey":"Mage","nativeId":"Mage","source":"addition"}],"counts":{"Guard":2,"Mage":3}},
+                {"waveIndex":2,"types":[{"choiceKey":"Guard","nativeId":"Guard","source":"highlight"},{"choiceKey":"Mage","nativeId":"Mage","source":"addition"}],"counts":{"Guard":2,"Mage":3}},
+                {"waveIndex":3,"types":[{"choiceKey":"Guard","nativeId":"Guard","source":"highlight"},{"choiceKey":"Mage","nativeId":"Mage","source":"addition"}],"counts":{"Guard":2,"Mage":3}}
+            ]
         }]]))
     end
     lu.assertNotNil(generated.decode(value(), "generated"))
@@ -39,10 +40,12 @@ function TestProtocol.testGeneratedEncounterSparseOperands()
         function(row) row.unknown = true end,
         function(row) row.waves[2] = row.waves[1] end,
         function(row) row.waves[1].waveIndex = 4 end,
-        function(row) row.waves[1].allocations.Unknown = 0 end,
-        function(row) row.waves[1].allocations.Mage = -1 end,
+        function(row) row.waves[1].counts.Unknown = 0 end,
+        function(row) row.waves[1].counts.Mage = 0 end,
         function(row) row.waves[1].types[2] = row.waves[1].types[1] end,
         function(row) row.waves[1].types[1], row.waves[1].types[2] = row.waves[1].types[2], row.waves[1].types[1] end,
+        function(row) row.waves[1].types[1].source = "addition" end,
+        function(row) row.waves[1].types[2].source = "highlight" end,
     }) do
         local row = value()
         mutate(row)
