@@ -36,11 +36,11 @@ end
 function TestGeneratedEncounters.testPriorRunBlacklistDelegatesWholeCompositionIncludingFangsAndMenace()
     local callbacks, instance, state, room, phase, diagnostics = fixture()
     local previous = _G.game
-    _G.game = { EnemyData = {
+    _G.game = { IsEnemyEligible = function(name, encounter) return not encounter.Blacklist[name] end, EnemyData = {
         Elite = {}, Cinder = { BlacklistAfterFirstAppearance = true },
     } }
     local encounter = { Name = "Generated", MinWaves = 2, MaxWaves = 3,
-        WaveTemplate = { Spawns = {} } }
+        EnemySet = { "Elite", "Cinder" }, WaveTemplate = { Spawns = {} } }
     local run = { Blacklist = { Cinder = true } }
     local nativeTypes, nativeFangs, nativeSpawns = 0, 0, 0
     instance.withPhase(state, room, phase, {}, function()
@@ -70,7 +70,7 @@ function TestGeneratedEncounters.testPriorRunBlacklistDelegatesWholeCompositionI
     lu.assertEquals(encounter.SpawnWaves[1].Spawns, { { Name = "NativeChoice", TotalCount = 4 } })
     lu.assertNil(encounter.__runPlannerGeneratedComposition)
     lu.assertEquals(diagnostics, {
-        { kind = "generated-preflight", reason = "run-blacklisted-enemy", enemy = "Cinder" },
+        { kind = "generated-preflight", reason = "native-enemy-ineligible", enemy = "Cinder" },
     })
     _G.game = previous
 end
@@ -78,7 +78,7 @@ end
 function TestGeneratedEncounters.testInstallsCompleteTypesCountsFangsAndZeroMenaceAtNativeContacts()
     local callbacks, instance, state, room, phase = fixture()
     local previous = _G.game
-    _G.game = { EnemyData = {
+    _G.game = { IsEnemyEligible = function() return true end, EnemyData = {
         Elite = { IsElite = true, GeneratorData = { DifficultyRating = 4 } },
         Cinder = { BlacklistAfterFirstAppearance = true, GeneratorData = {
             DifficultyRating = 5, BlockEnemyTypes = { "Blocked" }, ActiveEnemyCapBonus = 2,
@@ -86,7 +86,7 @@ function TestGeneratedEncounters.testInstallsCompleteTypesCountsFangsAndZeroMena
     } }
     local encounter = { Name = "Generated", MinWaves = 1, MaxWaves = 2,
         BaseDifficultyMin = 1, BaseDifficultyMax = 9, BlockTypesAcrossWaves = true,
-        WaveTemplate = { Spawns = {} }, Blacklist = {} }
+        EnemySet = { "Elite", "Cinder" }, WaveTemplate = { Spawns = {} }, Blacklist = {} }
     local run, countInitialization = { Blacklist = {} }, 0
     local result = instance.withPhase(state, room, phase, {}, function()
         return callbacks.SetupEncounter(nil, {}, function(data, nativeRoom)

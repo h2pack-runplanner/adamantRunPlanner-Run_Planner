@@ -9,6 +9,46 @@ local generated = require("mods.protocol.generated_encounter")
 
 TestProtocol = {}
 
+function TestProtocol.testMenaceStrictSourceCoverageAndOmittedZero()
+    local function value()
+        return assert(json.decode([[{"kind":"generated","decisionKey":"generatedComposition","waveCount":1,"waves":[{"waveIndex":1,"types":[{"choiceKey":"Guard","nativeId":"Guard","source":"addition"}],"counts":{"Guard":4}}]}]]))
+    end
+    local function conversion(count)
+        local entry = assert(json.decode('{"source":{"choiceKey":"Guard","nativeId":"Guard"},"count":0,"target":{"choiceKey":"Guard2","nativeId":"Guard2"}}'))
+        entry.count = count
+        return entry
+    end
+    local function menace(count)
+        local waves = assert(json.decode(' [{"waveIndex":1,"conversions":[{}]}] '))
+        waves[1].conversions[1] = conversion(count)
+        return waves
+    end
+    lu.assertNotNil(generated.decode(value(), "test"))
+    for _, count in ipairs({ 0, 1, 4 }) do
+        local row = value()
+        row.menace = menace(count)
+        if count == 0 then row.menace[1].conversions[1].target = nil end
+        lu.assertNotNil(generated.decode(row, "test"))
+    end
+    for _, mutate in ipairs({
+        function(row) row.menace[2] = row.menace[1] end,
+        function(row) row.menace[1].waveIndex = 2 end,
+        function(row) row.menace[1].conversions[2] = row.menace[1].conversions[1] end,
+        function(row) row.menace[1].conversions[1].count = 5 end,
+        function(row) row.menace[1].conversions[1].count = -1 end,
+        function(row) row.menace[1].conversions[1].count = 0.5 end,
+        function(row) row.menace[1].conversions[1].target = nil end,
+        function(row) row.menace[1].conversions[1].source.choiceKey = "Other" end,
+        function(row) row.menace[1].conversions[1].source.nativeId = "Other" end,
+        function(row) row.menace[1].conversions[1].extra = true end,
+    }) do
+        local row = value()
+        row.menace = menace(1)
+        mutate(row)
+        lu.assertNil(generated.decode(row, "test"))
+    end
+end
+
 function TestProtocol.testPublishedCompatibilityMatchesDecoder()
     local file = assert(io.open("src/execution-compatibility.json", "r"))
     local contents = file:read("*a")

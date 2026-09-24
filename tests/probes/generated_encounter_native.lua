@@ -65,6 +65,22 @@ function probe.loadEliteApplicationBody(scriptsPath)
     chunk()
 end
 
+function probe.loadSetupUnitBody(scriptsPath)
+    local path = scriptsPath .. "/RoomLogic.lua"
+    local chunk, errorValue = load(body(read(path), "SetupUnit"), "@" .. path .. ":SetupUnit")
+    assert(chunk, errorValue)
+    chunk()
+end
+
+function probe.loadNextSpawnBody(scriptsPath)
+    local path = scriptsPath .. "/EncounterLogic.lua"
+    for _, name in ipairs({ "HandleNextSpawn", "SpawnUnitGroup" }) do
+        local chunk, errorValue = load(body(read(path), name), "@" .. path .. ":" .. name)
+        assert(chunk, errorValue)
+        chunk()
+    end
+end
+
 function probe.copy(value, seen)
     if type(value) ~= "table" then return value end
     seen = seen or {}

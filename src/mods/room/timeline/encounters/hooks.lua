@@ -96,32 +96,42 @@ function hooks.attach(module, session, getState, report, room, shipCombat, gener
             declaration = gameValue and gameValue.EncounterData
                 and gameValue.EncounterData[phase.encounterKey] or nil
         end
-        local function choose()
+        local admitted = declaration ~= nil
+        if phase and not declaration and session.diagnostic then
+            session.diagnostic(state, "encounter-eligibility", {
+                phase = phase.slotKey, encounterKey = phase.encounterKey,
+                room = nativeRoom and nativeRoom.Name, reason = "missing-declaration",
+            }, room.occurrence(state, nativeRoom))
+        end
+        do
             local gameValue = _G.game or game
-            local eligible = gameValue and gameValue.IsEncounterEligible
-            if declaration and type(eligible) == "function" and session.diagnostic then
+            local eligible = gameValue and gameValue.IsEncounterEligible or _G.IsEncounterEligible
+            if declaration then
                 local ok, verdict = pcall(eligible, currentRun, nativeRoom, declaration, args)
                 if not ok or not verdict then
-                    session.diagnostic(state, "encounter-eligibility", {
+                    admitted = false
+                    if session.diagnostic then session.diagnostic(state, "encounter-eligibility", {
                         phase = phase.slotKey, encounterKey = phase.encounterKey,
                         room = nativeRoom and nativeRoom.Name,
                         reason = ok and "native-ineligible" or "native-check-error",
                         error = not ok and tostring(verdict) or nil,
-                    }, room.occurrence(state, nativeRoom))
+                    }, room.occurrence(state, nativeRoom)) end
                 end
             end
-            return declaration ~= nil
+        end
+        local function choose()
+            return admitted
                 and chooseForcedEncounter(base, currentRun, nativeRoom, args, declaration)
                 or base(currentRun, nativeRoom, args)
         end
         -- withPhase also installs a neutral scope for nil/unsupported phases,
         -- so nested native setup cannot inherit an outer same-name override.
-        local result = generatedEncounter.withPhase(state, room, phase, nativeRoom, choose)
+        local result = generatedEncounter.withPhase(state, room, admitted and phase or nil, nativeRoom, choose)
         if phase ~= nil and type(result) == "table" then
             local actual = result.GenusName or result.Name or result.EncounterName
             if actual == phase.encounterKey then
                 room.bindEncounter(state, result, phase.slotKey, nativeRoom)
-            elseif session.diagnostic then
+            elseif admitted and session.diagnostic then
                 session.diagnostic(state, "encounter-composition", {
                     kind = "intro-substitution", phase = phase.slotKey,
                     encounterKey = phase.encounterKey, observed = actual,

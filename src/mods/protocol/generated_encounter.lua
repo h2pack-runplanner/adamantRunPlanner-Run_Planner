@@ -17,7 +17,7 @@ local function enemy(value, label)
 end
 
 function generated.decode(value, label)
-    local row, err = p.exact(value, { "decisionKey", "kind", "waveCount", "waves" }, { "baseRoll", "highlight", "fangs" }, label)
+    local row, err = p.exact(value, { "decisionKey", "kind", "waveCount", "waves" }, { "baseRoll", "highlight", "fangs", "menace" }, label)
     if not row then return nil, err end
     if row.kind ~= "generated" or not p.str(row.decisionKey, label .. ".decisionKey") then
         return p.fail(label .. " has invalid generated decision")
@@ -46,6 +46,33 @@ function generated.decode(value, label)
                 return p.fail(label .. " has invalid Fangs perks")
             end
             seen[perk] = true
+        end
+    end
+    if row.menace ~= nil then
+        local menace, menaceError = p.arr(row.menace, label .. ".menace", 4)
+        if not menace then return nil, menaceError end
+        local menaceWaves = {}
+        for index, waveValue in ipairs(menace) do
+            local wave, waveError = p.exact(waveValue, { "waveIndex", "conversions" }, {}, label .. ".menace[" .. index .. "]")
+            if not wave then return nil, waveError end
+            if not ordinal(wave.waveIndex, label .. ".menace[" .. index .. "].waveIndex") then return p.fail(label .. " has invalid Menace wave") end
+            if menaceWaves[wave.waveIndex] then return p.fail(label .. " has duplicate Menace wave") end
+            menaceWaves[wave.waveIndex] = true
+            local conversions, conversionsError = p.arr(wave.conversions, label .. ".menace[" .. index .. "].conversions", 5)
+            if not conversions then return nil, conversionsError end
+            for conversionIndex, conversionValue in ipairs(conversions) do
+                local conversionLabel = label .. ".menace[" .. index .. "].conversions[" .. conversionIndex .. "]"
+                local conversion, conversionError = p.exact(conversionValue, { "source", "count" }, { "target" }, conversionLabel)
+                if not conversion then return nil, conversionError end
+                local source, sourceError = enemy(conversion.source, conversionLabel .. ".source")
+                if not source then return nil, sourceError end
+                if not p.int(conversion.count, conversionLabel .. ".count", 0) then return p.fail(label .. " has invalid Menace count") end
+                if conversion.count > 0 and conversion.target == nil then return p.fail(label .. " positive Menace conversion requires target") end
+                if conversion.target ~= nil then
+                    local target, targetError = enemy(conversion.target, label .. ".menace[" .. index .. "].conversions[" .. conversionIndex .. "].target")
+                    if not target then return nil, targetError end
+                end
+            end
         end
     end
     do
@@ -108,6 +135,21 @@ function generated.decode(value, label)
             end
         end
         if not found then return p.fail(label .. ".fangs.type must be in the published roster") end
+    end
+    for _, menaceWave in ipairs(row.menace or {}) do
+        local wave = row.waves[menaceWave.waveIndex]
+        if wave == nil then return p.fail(label .. " Menace wave is unavailable") end
+        local sources = {}
+        for _, conversion in ipairs(menaceWave.conversions) do
+            if sources[conversion.source.nativeId] then return p.fail(label .. " has duplicate Menace source") end
+            sources[conversion.source.nativeId] = true
+            local found = false
+            for _, entry in ipairs(wave.types) do
+                if entry.choiceKey == conversion.source.choiceKey and entry.nativeId == conversion.source.nativeId
+                    and conversion.count <= wave.counts[entry.nativeId] then found = true end
+            end
+            if not found then return p.fail(label .. " Menace conversion exceeds its source request") end
+        end
     end
     return row
 end

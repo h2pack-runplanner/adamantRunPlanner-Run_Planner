@@ -203,6 +203,7 @@ function TestRoomEntryHooks.testOpeningFinalizesLoadoutBeforeForcingNativeCreati
     local rewardBag = { { Name = "Boon" }, { Name = "WeaponUpgrade" } }
     local currentRun = { RewardPriorities = {}, RewardStores = { RunProgress = rewardBag } }
     _G.game = {
+        IsEncounterEligible = function() return true end,
         RoomData = { F_Opening01 = { Name = "F_Opening01" } },
         EncounterData = { OpeningGeneratedF = { Name = "OpeningGeneratedF" } },
     }
@@ -1000,7 +1001,7 @@ function TestRoomEntryHooks.testEncounterForcingKeepsNativeSetupAndGeneration()
         encounterIsFinal = function() return true end,
     }
     local priorGame, priorGlobalForce = _G.game, _G.ForceNextEncounter
-    _G.game = { EncounterData = { OpeningGeneratedF = declaration } }
+    _G.game = { IsEncounterEligible = function() return true end, EncounterData = { OpeningGeneratedF = declaration } }
     _G.ForceNextEncounter = "DebugEncounter"
     encounterHooks.attach(module, session, function() return state end, function() end, roomSession)
 
@@ -1041,7 +1042,7 @@ function TestRoomEntryHooks.testEncounterChoiceUsesStampedDestinationInsteadOfAc
     }
     assert(roomCoordinatorModule.enter(state, source))
     local priorGame = _G.game
-    _G.game = { EncounterData = {
+    _G.game = { IsEncounterEligible = function() return true end, EncounterData = {
         SourceEncounter = { Name = "SourceEncounter" },
         TargetEncounter = { Name = "TargetEncounter" },
     } }

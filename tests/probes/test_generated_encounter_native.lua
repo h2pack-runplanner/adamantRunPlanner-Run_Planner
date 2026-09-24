@@ -114,6 +114,251 @@ end
 
 TestGeneratedEncounterNative = {}
 
+local function ownedSpawnProbe(conversions, roster, fangs)
+    local extraGlobals = { "GetNextSpawn", "HandleNextSpawn", "SpawnUnitGroup", "ShallowCopyTable", "GetIds", "IsAlive", "SelectSpawnPoint", "Destroy", "SpawnUnit", "SpawnObstacle", "CalcOffset", "thread", "SetupUnit", "NextRoomSets", "wait" }
+    local prior = {}
+    for _, key in ipairs(extraGlobals) do prior[key] = _G[key] end
+    local _, instance, callbacks, restoreNative = configuredProduction()
+    local function restore()
+        restoreNative()
+        for _, key in ipairs(extraGlobals) do _G[key] = prior[key] end
+    end
+    _G.game.EnemyData = _G.EnemyData
+    for name, enemy in pairs(_G.EnemyData) do enemy.Name = name end
+    _G.EnemyData.Group = { Name = "Group", IsUnitGroup = true, UnitGroup = { "Ash", "Brine" }, GroupAI = "ProbeAI", GeneratorData = {} }
+    _G.MetaUpgradeData.NextBiomeEnemyShrineUpgrade = { SwapMap = {
+        Brine = { Name = "Ash", RequiredSpawnPoint = "MappedPoint", ActiveCapWeight = 3 },
+        Cinder = { Name = "Ash" },
+    }, BiomeEnemySets = {} }
+    local occurrence, destination = { id = "menace" }, { Name = "menace", __runPlannerExecutionRoomId = "menace" }
+    local state = { state = "synchronized" }
+    local decision = fullDecision({ menace = { { waveIndex = 1, conversions = conversions } }, fangs = fangs })
+    if roster then decision.waves = { roster } end
+    local selected = phase("Combat", decision)
+    local encounter = install(instance, state, occurrence, selected, destination,
+        declaration({ EnemySet = { "Ash", "Brine", "Cinder", "Group" } }))
+    encounter.ActiveSpawns = {}
+    for _, source in ipairs(encounter.SpawnWaves[1].Spawns) do source.RemainingSpawns = source.TotalCount end
+    local function bind(value)
+        runtime.__generatedProbeState = state
+        runtime.__generatedProbeOccurrences[state] = occurrence
+        runtime.__generatedProbePhases[value] = selected
+    end
+    bind(encounter)
+    callbacks.PickEncounterEliteAttributes(nil, runtime, function() error("owned Fangs must not draw") end, encounter)
+    _G.CurrentRun.CurrentRoom = { RoomSetName = "F", SpawnOnIds = {} }
+    _G.NextRoomSets, _G.GameState.BiomeVisits = {}, {}
+    local spawned, selections = {}, 0
+    _G.ShallowCopyTable = probe.copy
+    _G.GetIds = function() return {} end
+    _G.IsAlive = function() return true end
+    _G.SelectSpawnPoint = function() return 7 end
+    _G.Destroy = function() end
+    _G.SpawnUnit = function() return #spawned + 100 end
+    _G.SpawnObstacle = function() return 7 end
+    _G.CalcOffset = function() return { X = 0, Y = 0 } end
+    _G.wait = function() end
+    _G.thread = function(_, enemy) spawned[#spawned + 1] = enemy end
+    _G.SetupUnit = function() end
+    _G.RandomChance = function() error("owned Menace must not draw native RNG") end
+    _G.GetNextSpawn = function(value)
+        selections = selections + 1
+        for _, source in ipairs(value.SpawnWaves[1].Spawns) do
+            if source.RemainingSpawns > 0 then return source end
+        end
+    end
+    probe.loadNextSpawnBody(scriptsPath)
+    local raw = _G.HandleNextSpawn
+    _G.HandleNextSpawn = function(...)
+        return callbacks.HandleNextSpawn(nil, runtime, raw, ...)
+    end
+    return encounter, spawned, bind, function() return selections end, restore
+end
+
+local function conversion(source, target, count)
+    return { source = { choiceKey = source, nativeId = source },
+        target = { choiceKey = target, nativeId = target }, count = count }
+end
+
+function TestGeneratedEncounterNative.testShippedMenacePartialAllZeroAndSingleNativeSelection()
+    for _, count in ipairs({ 0, 1, 2 }) do
+        local encounter, spawned, _, selections, restore = ownedSpawnProbe({ conversion("Brine", "Ash", count) })
+        local source = encounter.SpawnWaves[1].Spawns[1]
+        source.SpawnOverrides = { CustomWitness = "kept" }
+        _G.HandleNextSpawn(encounter, false, nil, nil, {})
+        _G.HandleNextSpawn(encounter, false, source, nil, {})
+        lu.assertEquals(selections(), 1)
+        lu.assertEquals(source.Name, "Brine")
+        lu.assertEquals(source.RemainingSpawns, 0)
+        lu.assertEquals(source.SpawnOverrides, { CustomWitness = "kept" })
+        for index, enemy in ipairs(spawned) do
+            lu.assertEquals(enemy.Name, index <= count and "Ash" or "Brine")
+            lu.assertEquals(enemy.CustomWitness, "kept")
+            if index <= count then
+                lu.assertTrue(enemy.IsFromNextBiomeEnemyShrineUpgrade)
+                lu.assertEquals(enemy.RequiredSpawnPoint, "MappedPoint")
+                lu.assertEquals(enemy.ActiveCapWeight, 3)
+            else lu.assertNil(enemy.IsFromNextBiomeEnemyShrineUpgrade) end
+        end
+        restore()
+    end
+end
+
+function TestGeneratedEncounterNative.testFailedAttemptAndReloadReconstructSuccessfulProgressWithoutReplay()
+    local encounter, spawned, bind, _, restore = ownedSpawnProbe({ conversion("Brine", "Ash", 1) })
+    local source = encounter.SpawnWaves[1].Spawns[1]
+    _G.SelectSpawnPoint = function() return nil end
+    lu.assertNil(_G.HandleNextSpawn(encounter, false, source, nil, {}))
+    lu.assertEquals(source.RemainingSpawns, 2)
+    lu.assertEquals(#spawned, 0)
+    _G.SelectSpawnPoint = function() return 7 end
+    _G.HandleNextSpawn(encounter, false, source, nil, {})
+    lu.assertEquals(spawned[1].Name, "Ash")
+    local restored = probe.copy(encounter)
+    bind(restored)
+    _G.HandleNextSpawn(restored, false, restored.SpawnWaves[1].Spawns[1], nil, {})
+    lu.assertEquals(spawned[2].Name, "Brine")
+    lu.assertEquals(restored.SpawnWaves[1].Spawns[1].RemainingSpawns, 0)
+    lu.assertEquals(source.RemainingSpawns, 1)
+    restore()
+end
+
+function TestGeneratedEncounterNative.testDistinctSourcesSharingTargetAndOriginalTargetRemainSeparate()
+    local roster = { waveIndex = 1, types = {}, counts = { Ash = 1, Brine = 2, Cinder = 1 } }
+    for _, name in ipairs({ "Ash", "Brine", "Cinder" }) do
+        roster.types[#roster.types + 1] = { choiceKey = name, nativeId = name, source = "addition" }
+    end
+    local encounter, spawned, _, _, restore = ownedSpawnProbe({ conversion("Brine", "Ash", 1), conversion("Cinder", "Ash", 1) }, roster)
+    for _, source in ipairs(encounter.SpawnWaves[1].Spawns) do
+        while source.RemainingSpawns > 0 do _G.HandleNextSpawn(encounter, false, source, nil, {}) end
+    end
+    lu.assertEquals(#encounter.SpawnWaves[1].Spawns, 3)
+    lu.assertEquals({ spawned[1].Name, spawned[2].Name, spawned[3].Name, spawned[4].Name }, { "Ash", "Ash", "Brine", "Ash" })
+    lu.assertNil(spawned[1].IsFromNextBiomeEnemyShrineUpgrade)
+    lu.assertEquals(spawned[4].RequiredSpawnPoint, "nil")
+    restore()
+end
+
+function TestGeneratedEncounterNative.testMappedGroupRecursionConsumesOneSourceRequestAndPreservesMetadata()
+    local encounter, spawned, _, selections, restore = ownedSpawnProbe({ conversion("Brine", "Group", 1) })
+    local source = encounter.SpawnWaves[1].Spawns[1]
+    lu.assertEquals(_G.HandleNextSpawn(encounter, false, source, nil, {}), 1)
+    lu.assertEquals(source.Name, "Brine")
+    lu.assertEquals(source.RemainingSpawns, 1)
+    lu.assertEquals(selections(), 0)
+    lu.assertEquals(#spawned, 2)
+    lu.assertEquals({ spawned[1].Name, spawned[2].Name }, { "Ash", "Brine" })
+    for _, enemy in ipairs(spawned) do
+        lu.assertTrue(enemy.IsFromNextBiomeEnemyShrineUpgrade)
+        lu.assertEquals(enemy.RequiredSpawnPoint, "MappedPoint")
+        lu.assertEquals(enemy.ActiveCapWeight, 3)
+    end
+    _G.HandleNextSpawn(encounter, false, source, nil, {})
+    lu.assertEquals(spawned[3].Name, "Brine")
+    lu.assertNil(spawned[3].IsFromNextBiomeEnemyShrineUpgrade)
+    lu.assertEquals(source.RemainingSpawns, 0)
+    restore()
+end
+
+function TestGeneratedEncounterNative.testNativeSetupUsesActualReplacementNameForFangsAndDreamScaling()
+    local encounter, spawned, _, _, restore = ownedSpawnProbe({ conversion("Brine", "Ash", 1) }, nil,
+        { type = { choiceKey = "Brine", nativeId = "Brine" }, perks = { "SourcePerk" } })
+    local extra = probe.restore({
+        IsCharmed = function() return false end, ActiveEnemies = {}, SurroundEnemiesAttacking = {},
+        AttachLua = function() end, AddToGroup = function() end, SetThingProperty = function() end,
+        ApplyEnemyModifiers = function() end, ApplyEnemyTraits = function() end, CreateLevelDisplay = function() end,
+        SessionMapState = { SpawnPointsUsed = {} }, GameData = { FullRunBiomeCount = 4 },
+    })
+    _G.MetaUpgradeData.EnemyHealthShrineUpgrade = { ChangeValue = 1 }
+    _G.CurrentRun.SpawnRecord, _G.GameState.SpawnRecord = {}, {}
+    _G.CurrentRun.IsDreamRun, _G.CurrentRun.EnteredBiomes = true, 1
+    _G.CurrentRun.CurrentRoom.EliteAttributes = { Ash = { "TargetPerk" } }
+    for _, name in ipairs({ "Ash", "Brine" }) do
+        _G.EnemyData[name].IsElite = true
+        _G.EnemyData[name].EliteAttributeData = { SourcePerk = {}, TargetPerk = {} }
+        _G.EnemyData[name].DreamBiomeData = {
+            { DataOverrides = { DreamWitness = 1 } }, { DataOverrides = { DreamWitness = 2 } },
+        }
+    end
+    probe.loadSetupUnitBody(scriptsPath)
+    probe.loadEliteApplicationBody(scriptsPath)
+    _G.thread = function(fn, enemy)
+        if fn == _G.SetupUnit then
+            spawned[#spawned + 1] = enemy
+            fn(enemy, _G.CurrentRun, { SkipAISetup = true, SkipPresentation = true, IgnorePackages = true })
+        end
+    end
+    local source = encounter.SpawnWaves[1].Spawns[1]
+    _G.HandleNextSpawn(encounter, false, source, nil, {})
+    _G.HandleNextSpawn(encounter, false, source, nil, {})
+    lu.assertEquals(spawned[1].Name, "Ash")
+    lu.assertEquals(spawned[1].EliteAttributes, { "TargetPerk" })
+    lu.assertEquals(spawned[1].DreamWitness, 2)
+    lu.assertEquals(spawned[2].Name, "Brine")
+    lu.assertEquals(spawned[2].EliteAttributes, { "SourcePerk" })
+    lu.assertEquals(spawned[2].DreamWitness, 1)
+    extra()
+    restore()
+end
+
+function TestGeneratedEncounterNative.testGroupSourceConversionCountsRequestsNotItsMembers()
+    local roster = { waveIndex = 1, types = { { choiceKey = "Group", nativeId = "Group", source = "addition" } }, counts = { Group = 2 } }
+    local encounter, spawned, _, _, restore = ownedSpawnProbe({ conversion("Group", "Ash", 1) }, roster)
+    local source = encounter.SpawnWaves[1].Spawns[1]
+    source.SpawnOverrides = {}
+    _G.HandleNextSpawn(encounter, false, source, nil, {})
+    lu.assertEquals(source.RemainingSpawns, 1)
+    lu.assertEquals(#spawned, 1)
+    lu.assertEquals(spawned[1].RequiredSpawnPoint, "nil")
+    _G.HandleNextSpawn(encounter, false, source, nil, {})
+    lu.assertEquals(source.RemainingSpawns, 0)
+    lu.assertEquals(#spawned, 3)
+    lu.assertEquals({ spawned[1].Name, spawned[2].Name, spawned[3].Name }, { "Ash", "Ash", "Brine" })
+    lu.assertNil(spawned[2].IsFromNextBiomeEnemyShrineUpgrade)
+    restore()
+end
+
+function TestGeneratedEncounterNative.testUnownedWrapperLeavesRawNativeConversionEnabled()
+    local encounter, spawned, _, _, restore = ownedSpawnProbe({ conversion("Brine", "Ash", 0) })
+    encounter.__runPlannerGeneratedComposition = nil
+    _G.GetShrineUpgradeChangeValue = function() return 1 end
+    _G.RandomChance = function() return true end
+    _G.HandleNextSpawn(encounter, false, encounter.SpawnWaves[1].Spawns[1], nil, {})
+    lu.assertEquals(spawned[1].Name, "Ash")
+    lu.assertTrue(spawned[1].IsFromNextBiomeEnemyShrineUpgrade)
+    restore()
+end
+
+-- Raw native contact witness for Gate D. It proves that HandleNextSpawn
+-- captures the source entry before its shrine copy, copies conversion metadata
+-- only to the spawned request, and decrements the source only after success.
+function TestGeneratedEncounterNative.testRawNextSpawnKeepsSourceAccountingAndCopiedMenaceMetadata()
+    local restore = probe.restore(native({}))
+    _G.ShallowCopyTable = function(value) local result = {}; for k, v in pairs(value) do result[k] = v end; return result end
+    _G.GetShrineUpgradeChangeValue = function() return 1 end
+    _G.RandomChance = function() return true end
+    _G.NextRoomSets, _G.GameState.BiomeVisits = {}, {}
+    _G.EnemyData.Ash.Name, _G.EnemyData.Brine.Name = "Ash", "Brine"
+    _G.MetaUpgradeData.NextBiomeEnemyShrineUpgrade = { SwapMap = { Ash = { Name = "Brine", RequiredSpawnPoint = "NativePoint", ActiveCapWeight = 3 } }, BiomeEnemySets = {} }
+    _G.CurrentRun.CurrentRoom = { RoomSetName = "F", SpawnOnIds = { 7 } }
+    _G.GetIds, _G.RemoveRandomValue, _G.IsAlive = function() return { 7 } end, function(values) return table.remove(values) end, function() return true end
+    _G.SelectSpawnPoint, _G.Destroy, _G.SpawnUnit = function() return 7 end, function() end, function() return 99 end
+    local observed
+    _G.thread = function(fn, enemy) observed = enemy end
+    _G.SetupUnit = function() end
+    probe.loadNextSpawnBody(scriptsPath)
+    local source = { Name = "Ash", TotalCount = 2, RemainingSpawns = 2 }
+    local result = HandleNextSpawn({ Name = "Probe", ActiveSpawns = {} }, false, source, nil, {})
+    lu.assertEquals(result, 99)
+    lu.assertEquals(source.Name, "Ash")
+    lu.assertEquals(source.RemainingSpawns, 1)
+    lu.assertEquals(observed.Name, "Brine")
+    lu.assertTrue(observed.IsFromNextBiomeEnemyShrineUpgrade)
+    lu.assertEquals(observed.RequiredSpawnPoint, "NativePoint")
+    lu.assertEquals(observed.ActiveCapWeight, 3)
+    restore()
+end
+
 function TestGeneratedEncounterNative.testPublishedOperandsInstallThroughRawContactsAndPreserveNativeEffects()
     local rawDraws, _, _, rawRestore = configuredProduction()
     local raw = SetupEncounter(declaration(), { Name = "raw" })
@@ -274,6 +519,103 @@ function TestGeneratedEncounterNative.testIntroReplacementAndGenerationErrorClea
     local delegated = false
     callbacks.HandleNextSpawn(nil, runtime, function() delegated = true end, broken, false, nil, nil, {})
     lu.assertTrue(delegated)
+    restore()
+end
+
+function TestGeneratedEncounterNative.testLiveAdmissionRejectsWholeCompositionBeforeAnyMutation()
+    local cases = {
+        function() _G.EnemyData.Brine.GameStateRequirements = { Never = true } end,
+        function() _G.CurrentRun.Blacklist.Brine = true end,
+        function(source) source.Blacklist = { Brine = true } end,
+        function(source) source.EnemySet = { "Ash", "Cinder" } end,
+        function(source)
+            _G.EnemyData.Brine.IsElite = true
+            source.WaveTemplate.BlockEliteTypes = true
+        end,
+        function()
+            _G.EnemyData.Brine.IntroEncounterName = "Unseen"
+            _G.EnemyData.Brine.IneligibleIfUncompletedIntroEncounter = true
+            _G.HasEncounterBeenCompleted = function() return false end
+        end,
+        function() _G.game.IsEnemyEligible = function() error("predicate failed") end end,
+        function(source)
+            source.MaxEliteTypes = 1
+            _G.EnemyData.Brine.IsElite, _G.EnemyData.Cinder.IsElite = true, true
+        end,
+        function(source)
+            source.MaxTypesPerGroup = { cinder = 1 }
+            _G.EnemyData.Brine.Groups = { "cinder" }
+        end,
+        function(source, decision)
+            source.BlockTypesAcrossWaves = true
+            decision.waveCount = 2
+            decision.waves[1] = { waveIndex = 1, types = {
+                { nativeId = "Cinder", source = "addition" },
+            }, counts = { Cinder = 1 } }
+            decision.waves[2] = { waveIndex = 2, types = {
+                { nativeId = "Ash", source = "addition" },
+            }, counts = { Ash = 1 } }
+        end,
+        function(_, decision)
+            decision.waveCount = 2
+            decision.waves[2] = probe.copy(decision.waves[1])
+            decision.waves[2].waveIndex = 2
+        end,
+    }
+    for _, configure in ipairs(cases) do
+        local _, instance, callbacks, restore = configuredProduction()
+        _G.game.EnemyData = _G.EnemyData
+        local source, decision = declaration(), fullDecision()
+        configure(source, decision)
+        local original, blacklist = same(source), same(_G.CurrentRun.Blacklist)
+        local state, occurrence = { state = "synchronized" }, { id = "rejection" }
+        local calls = 0
+        instance.withPhase(state, { occurrence = function() return occurrence end }, phase("Combat", decision), {}, function()
+            callbacks.SetupEncounter(nil, {}, function(data, room)
+                return callbacks.GenerateEncounter(nil, {}, function(_, _, encounter)
+                    calls = calls + 1
+                    lu.assertEquals(same(encounter), original)
+                    lu.assertEquals(same(_G.CurrentRun.Blacklist), blacklist)
+                    return encounter
+                end, _G.CurrentRun, room, data)
+            end, source, {})
+        end)
+        lu.assertEquals(calls, 1)
+        lu.assertEquals(state.state, "synchronized")
+        lu.assertEquals(#state.diagnostics, 1)
+        lu.assertEquals(state.diagnostics[1].observed.kind, "generated-preflight")
+        lu.assertNil(source.__runPlannerGeneratedComposition)
+        restore()
+    end
+end
+
+function TestGeneratedEncounterNative.testFixedSeedsBypassSamplingAndUniquePlaceholdersObservePriorSeeds()
+    local _, instance, _, restore = configuredProduction()
+    _G.game.EnemyData = _G.EnemyData
+    _G.CurrentRun.Blacklist.Ash = true
+    local decision = fullDecision({ waves = { { waveIndex = 1, types = {
+        { nativeId = "Ash", source = "fixed" }, { nativeId = "Brine", source = "template" },
+    }, counts = { Ash = 1, Brine = 1 } } } })
+    local source = declaration({ WaveTemplate = { Spawns = {
+        { Name = "Ash", TotalCount = 1 }, { Generated = true, EnemySet = { "Brine" } },
+    } } })
+    local state = { state = "synchronized" }
+    local realized = install(instance, state, { id = "fixed" }, phase("Combat", decision), {}, source)
+    lu.assertNotNil(realized.__runPlannerGeneratedComposition)
+    lu.assertEquals(realized.SpawnWaves[1].Spawns[2].Name, "Brine")
+    restore()
+end
+
+function TestGeneratedEncounterNative.testNativePostAdditionCapsAdmitValidPublishedMembers()
+    local _, instance, _, restore = configuredProduction()
+    _G.game.EnemyData = _G.EnemyData
+    _G.EnemyData.Brine.IsElite, _G.EnemyData.Cinder.IsElite = true, true
+    _G.EnemyData.Brine.Groups = { "cinder" }
+    local source = declaration({ MaxEliteTypes = 2, MaxTypesPerGroup = { cinder = 2 } })
+    local realized = install(instance, { state = "synchronized" }, { id = "caps" },
+        phase("Combat", fullDecision()), {}, source)
+    lu.assertNotNil(realized.__runPlannerGeneratedComposition)
+    lu.assertEquals(#realized.SpawnWaves[1].Spawns, 2)
     restore()
 end
 

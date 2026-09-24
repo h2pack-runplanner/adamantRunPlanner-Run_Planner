@@ -1,5 +1,6 @@
 -- Install resolved composition at native fill contacts. Native generation keeps
 -- templates/setup; native spawning keeps timing, caps, groups and retries.
+-- luacheck: globals GetNextSpawn MetaUpgradeData
 local generated = {}
 local fangs = type(import) == "function" and import("mods/room/timeline/encounters/fangs.lua")
     or require("mods.room.timeline.encounters.fangs")
@@ -14,6 +15,23 @@ local function copy(value)
     local result = {}
     for key, entry in pairs(value or {}) do result[key] = entry end
     return result
+end
+
+local function menaceConversion(encounter, decision, spawnInfo)
+    if spawnInfo == nil then return nil end
+    for waveIndex, wave in ipairs(encounter.SpawnWaves or {}) do
+        for _, source in ipairs(wave.Spawns or {}) do
+            if source == spawnInfo then
+                for _, menaceWave in ipairs(decision.menace or {}) do
+                    if menaceWave.waveIndex == waveIndex then
+                        for _, conversion in ipairs(menaceWave.conversions or {}) do
+                            if conversion.source.nativeId == source.Name then return conversion end
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function scoped(stack, scope, action)
@@ -31,9 +49,16 @@ local function templateFor(encounter, index, count)
 end
 
 -- Admission validates the payload. Only live declaration compatibility belongs here.
-local function preflight(decision, encounter, enemies, runBlacklist)
+local function preflight(decision, encounter, enemies)
     if encounter.InfiniteSpawns then return "unsupported-infinite-spawns" end
     if encounter.SpawnWaves ~= nil and next(encounter.SpawnWaves) ~= nil then return "preexisting-waves" end
+    for _, wave in ipairs(decision.menace or {}) do
+        for _, conversion in ipairs(wave.conversions) do
+            if conversion.count > 0 and enemies[conversion.target.nativeId] == nil then
+                return "missing-menace-enemy", conversion.target.nativeId
+            end
+        end
+    end
     for index, wave in ipairs(decision.waves) do
         local template = templateFor(encounter, index, decision.waveCount)
         if type(template) ~= "table" or type(template.Spawns) ~= "table" then return "unsupported-template" end
@@ -42,9 +67,6 @@ local function preflight(decision, encounter, enemies, runBlacklist)
             local name, source = entry.nativeId, entry.source
             local count = wave.counts[name]
             if enemies[name] == nil then return "missing-enemy" end
-            if enemies[name].BlacklistAfterFirstAppearance and runBlacklist[name] then
-                return "run-blacklisted-enemy", name
-            end
             if source == "fixed" or source == "template" then
                 local seed = template.Spawns[templateIndex]
                 if seed == nil then return "missing-template-entry" end
@@ -57,6 +79,122 @@ local function preflight(decision, encounter, enemies, runBlacklist)
             end
         end
         if templateIndex <= #template.Spawns then return "unowned-template-entry" end
+    end
+end
+
+-- Native eligibility reads global CurrentRun.Blacklist. Leave it untouched:
+-- carry only prospective exclusions in the detached encounter view instead.
+-- Ordinary candidates are sampled before placeholders/additions in each wave;
+-- fixed seeds and replicated highlight seeds are never sampled again.
+local function eligibleComposition(decision, encounter, nativeRoom, currentRun, gameValue)
+    nativeRoom = nativeRoom or currentRun.CurrentRoom or {}
+    local eligible = gameValue.IsEnemyEligible or _G.IsEnemyEligible
+    if type(eligible) ~= "function" then return "missing-enemy-eligibility" end
+    local view = copy(encounter)
+    if encounter.IsHardEncounter then
+        for key, value in pairs(encounter.HardEncounterOverrideValues or {}) do view[key] = value end
+    end
+    if view.UseRoomEncounterEnemySet then view.EnemySet = nativeRoom.Encounter and nativeRoom.Encounter.EnemySet end
+    if view.BuildCustomEnemySet then return "unsupported-custom-enemy-set" end
+    view.Blacklist = copy(view.Blacklist)
+    for name, blocked in pairs(currentRun.Blacklist or {}) do
+        if blocked then view.Blacklist[name] = true end
+    end
+    local enemies = gameValue.EnemyData or {}
+    local requireIntro = view.RequireCompletedIntro or nativeRoom.RequireCompletedIntro
+    local roomData = gameValue.RoomData or _G.RoomData
+    local depth = gameValue.GetBiomeDepth or _G.GetBiomeDepth
+    local minDepth = nativeRoom.MinDepthBeforeIntros or (roomData and roomData.BaseRoom.MinDepthBeforeIntros)
+    if minDepth and depth and depth(currentRun) < minDepth then requireIntro = true end
+    local function check(name, wave, enemySet)
+        local member = false
+        for _, candidate in pairs(enemySet or view.EnemySet or {}) do
+            if candidate == name then member = true end
+        end
+        if not member then return "enemy-set-changed", name end
+        local ok, verdict = pcall(eligible, name, view, wave)
+        if not ok then return "native-enemy-check-error", name end
+        if not verdict then return "native-enemy-ineligible", name end
+    end
+    local function waveView(index)
+        local wave = copy(templateFor(view, index, decision.waveCount))
+        wave.Spawns = {}
+        for _, spawn in ipairs(templateFor(view, index, decision.waveCount).Spawns) do
+            wave.Spawns[#wave.Spawns + 1] = copy(spawn)
+        end
+        wave.WaveIndex, wave.TypeCount = index, #decision.waves[index].types
+        wave.RequireCompletedIntro = wave.RequireCompletedIntro or requireIntro
+        if decision.highlight and index == 1 then wave.BlockEliteTypes = view.BlockHighlightEliteTypes end
+        return wave
+    end
+    local highlight = decision.highlight and decision.highlight.nativeId
+    if highlight then
+        local wave = waveView(1)
+        wave.TypeCount, wave.BlockEliteTypes = 1, view.BlockHighlightEliteTypes
+        local reason, name = check(highlight, wave)
+        if reason then return reason, name end
+        view.Blacklist[highlight] = true
+    end
+    for index, published in ipairs(decision.waves) do
+        local wave = waveView(index)
+        if highlight then wave.Spawns[#wave.Spawns + 1] = { Name = highlight } end
+        -- These selections come from the one ordinary pool sampled before any
+        -- placeholder gets a name. Unique placeholder pools are sampled later.
+        local templateIndex = 1
+        for _, entry in ipairs(published.types) do
+            local seed = wave.Spawns[templateIndex]
+            if entry.source == "addition" or (entry.source == "template" and not seed.EnemySet) then
+                local reason, name = check(entry.nativeId, wave)
+                if reason then return reason, name end
+            end
+            if entry.source == "fixed" or entry.source == "template" then templateIndex = templateIndex + 1 end
+        end
+        templateIndex = 1
+        for _, entry in ipairs(published.types) do
+            if entry.source == "fixed" or entry.source == "template" then
+                local seed = wave.Spawns[templateIndex]
+                if entry.source == "template" then
+                    if seed.EnemySet then
+                        local reason, name = check(entry.nativeId, wave, seed.EnemySet)
+                        if reason then return reason, name end
+                    end
+                    seed.Name = entry.nativeId
+                end
+                templateIndex = templateIndex + 1
+            end
+        end
+        local excluded = {}
+        for _, entry in ipairs(published.types) do
+            if entry.source == "addition" then
+                local name, enemy = entry.nativeId, enemies[entry.nativeId]
+                if excluded[name] then return "native-enemy-ineligible", name end
+                if enemy.BlacklistAfterFirstAppearance then view.Blacklist[name] = true end
+                for _, blocked in pairs((enemy.GeneratorData or {}).BlockEnemyTypes or {}) do
+                    excluded[blocked] = true
+                    if view.BlockTypesAcrossWaves then view.Blacklist[blocked] = true end
+                end
+                wave.Spawns[#wave.Spawns + 1] = { Name = name }
+                -- Native prunes the already-sampled pool after each addition.
+                -- Check only published subsequent members, without resampling
+                -- against the now-populated wave or this wave's run blacklist.
+                local elites, groups = 0, {}
+                for _, spawn in ipairs(wave.Spawns) do
+                    local selected = enemies[spawn.Name]
+                    if selected.IsElite then elites = elites + 1 end
+                    for _, group in pairs(selected.Groups or {}) do groups[group] = (groups[group] or 0) + 1 end
+                end
+                for _, candidate in ipairs(published.types) do
+                    local candidateEnemy = enemies[candidate.nativeId]
+                    if view.MaxEliteTypes and elites >= view.MaxEliteTypes and candidateEnemy.IsElite then
+                        excluded[candidate.nativeId] = true
+                    end
+                    for _, group in pairs(candidateEnemy.Groups or {}) do
+                        local cap = (view.MaxTypesPerGroup or {})[group]
+                        if cap and (groups[group] or 0) >= cap then excluded[candidate.nativeId] = true end
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -131,7 +269,12 @@ function generated.create()
             if encounter.__runPlannerGeneratedComposition ~= nil then
                 encounter.__runPlannerGeneratedComposition = nil
             end
-            local failure, enemy = preflight(decision, encounter, enemies, currentRun.Blacklist or {})
+            local failure, enemy = preflight(decision, encounter, enemies)
+            if not failure then
+                local ok
+                ok, failure, enemy = pcall(eligibleComposition, decision, encounter, nativeRoom, currentRun, gameValue)
+                if not ok then failure, enemy = "native-enemy-check-error", nil end
+            end
             if failure then
                 diagnostic(owner, { kind = "generated-preflight", reason = failure, enemy = enemy })
                 return scoped(stack, { kind = "native" }, function() return base(currentRun, nativeRoom, encounter) end)
@@ -221,13 +364,52 @@ function generated.create()
             end
             wave.Spawns, wave.TypeCount, scope.installed[index] = spawns, #spawns, true
         end)
-        module.hooks.wrap("HandleNextSpawn", "run-planner-generated-encounter-zero-menace", function(_, runtime, base,
+        module.hooks.wrap("HandleNextSpawn", "run-planner-generated-encounter-menace", function(_, runtime, base,
             encounter, ignoreSpawnPreferences, spawnInfo, overrides, args)
-            if owned(runtime, encounter) == nil then
+            local decision = owned(runtime, encounter)
+            -- SpawnUnitGroup re-enters HandleNextSpawn with this flag. Those
+            -- child requests are native realization of one source request.
+            if decision == nil or (args and args.IgnoreShrineOverrides) then
                 return base(encounter, ignoreSpawnPreferences, spawnInfo, overrides, args)
             end
             local copied = copy(args)
             copied.IgnoreShrineOverrides = true
+            -- Native obtains a request only once. Pull it before conversion so
+            -- the bound source table remains the accounting/progress owner.
+            if spawnInfo == nil then
+                if type(GetNextSpawn) ~= "function" then return base(encounter, ignoreSpawnPreferences, nil, overrides, copied) end
+                spawnInfo = GetNextSpawn(encounter)
+                if spawnInfo == nil then return nil end
+            end
+            local conversion = menaceConversion(encounter, decision, spawnInfo)
+            local remaining = spawnInfo and (spawnInfo.RemainingSpawns or spawnInfo.TotalCount) or 0
+            local progress = spawnInfo and (spawnInfo.TotalCount or remaining) - remaining or 0
+            if conversion ~= nil and progress < conversion.count and conversion.target ~= nil then
+                -- Keep the source entry intact: group expansion can yield and
+                -- recurse, so a temporary source rename is unsafe. Native
+                -- decrements the transformed copy; reflect that success back
+                -- to the source after the call returns.
+                local originalName = spawnInfo.Name
+                local transformedOverrides = copy(spawnInfo.SpawnOverrides)
+                local transformed = copy(spawnInfo)
+                local sourceRemaining = spawnInfo.RemainingSpawns or spawnInfo.TotalCount
+                transformed.Name = conversion.target.nativeId
+                transformed.SpawnOverrides = transformedOverrides
+                transformedOverrides.IsFromNextBiomeEnemyShrineUpgrade = true
+                transformedOverrides.RequiredSpawnPoint = "nil"
+                local swap = ((_G.MetaUpgradeData or MetaUpgradeData).NextBiomeEnemyShrineUpgrade.SwapMap or {})[originalName]
+                if swap ~= nil then
+                    transformedOverrides.RequiredSpawnPoint = swap.RequiredSpawnPoint or "nil"
+                    transformedOverrides.ActiveCapWeight = swap.ActiveCapWeight
+                end
+                local result = table.pack(pcall(base, encounter, ignoreSpawnPreferences, transformed, overrides, copied))
+                if not result[1] then error(result[2], 0) end
+                local realizedRemaining = transformed.RemainingSpawns
+                if sourceRemaining ~= nil and realizedRemaining ~= nil and not spawnInfo.InfiniteSpawns then
+                    spawnInfo.RemainingSpawns = sourceRemaining - math.max(0, sourceRemaining - realizedRemaining)
+                end
+                return table.unpack(result, 2, result.n)
+            end
             return base(encounter, ignoreSpawnPreferences, spawnInfo, overrides, copied)
         end)
     end

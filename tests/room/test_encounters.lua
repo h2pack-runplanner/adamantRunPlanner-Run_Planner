@@ -471,15 +471,16 @@ function TestEncounters.testGeneratedCompositionUsesTheExistingExactPhaseCarrier
     local run = {}
     local function choose()
         return callbacks.ChooseEncounter(nil, {}, function(currentRun)
-            return { Name = currentRun.ForceNextEncounterData.Name }
+            lu.assertNil(currentRun.ForceNextEncounterData)
+            return { Name = "SameGenerated" }
         end, run, nativeRoom, {})
     end
     local first, second = choose(), choose()
     _G.game = priorGame
 
     lu.assertEquals(scoped, {
-        { state = state, room = room, phase = occurrence.overview.encounterPhases[1], destination = nativeRoom },
-        { state = state, room = room, phase = occurrence.overview.encounterPhases[2], destination = nativeRoom },
+        { state = state, room = room, destination = nativeRoom },
+        { state = state, room = room, destination = nativeRoom },
     })
     lu.assertEquals(bound, { { native = first, slotKey = "Combat1" }, { native = second, slotKey = "Combat2" } })
     lu.assertNil(run.ForceNextEncounterData)
@@ -526,6 +527,7 @@ function TestEncounters.testPEncounterSequenceLeavesHeraclesNativeSuffixTerminat
             GeneratedP = { Name = "GeneratedP" },
             HeraclesCombatP = { Name = "HeraclesCombatP", BlockMultipleEncounters = true },
         },
+        IsEncounterEligible = function() return true end,
     }
     local run = {}
     local function choose(base)
