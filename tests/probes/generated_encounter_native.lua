@@ -57,6 +57,14 @@ function probe.loadEliteAttributeBody(scriptsPath)
     chunk()
 end
 
+function probe.loadEliteApplicationBody(scriptsPath)
+    local path = scriptsPath .. "/ShrineLogic.lua"
+    local chunk, errorValue = load(body(read(path), "ApplyEliteAttribute"),
+        "@" .. path .. ":ApplyEliteAttribute")
+    assert(chunk, errorValue)
+    chunk()
+end
+
 function probe.copy(value, seen)
     if type(value) ~= "table" then return value end
     seen = seen or {}

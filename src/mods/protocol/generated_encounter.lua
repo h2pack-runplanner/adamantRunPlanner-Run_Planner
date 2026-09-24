@@ -17,7 +17,7 @@ local function enemy(value, label)
 end
 
 function generated.decode(value, label)
-    local row, err = p.exact(value, { "decisionKey", "kind" }, { "baseRoll", "waveCount", "highlight", "waves" }, label)
+    local row, err = p.exact(value, { "decisionKey", "kind" }, { "baseRoll", "waveCount", "highlight", "fangs", "waves" }, label)
     if not row then return nil, err end
     if row.kind ~= "generated" or not p.str(row.decisionKey, label .. ".decisionKey") then
         return p.fail(label .. " has invalid generated decision")
@@ -32,6 +32,21 @@ function generated.decode(value, label)
         local highlight, highlightError = enemy(row.highlight, label .. ".highlight")
         if not highlight then return nil, highlightError end
         if row.waveCount == 1 then return p.fail(label .. " cannot highlight a single wave") end
+    end
+    if row.fangs ~= nil then
+        local fangs, fangsError = p.exact(row.fangs, { "type", "perks" }, {}, label .. ".fangs")
+        if not fangs then return nil, fangsError end
+        local selected, selectedError = enemy(fangs.type, label .. ".fangs.type")
+        if not selected then return nil, selectedError end
+        local perks, perksError = p.arr(fangs.perks, label .. ".fangs.perks", 2)
+        if not perks then return nil, perksError end
+        local seen = {}
+        for index, perk in ipairs(perks) do
+            if not p.str(perk, label .. ".fangs.perks[" .. index .. "]") or seen[perk] then
+                return p.fail(label .. " has invalid Fangs perks")
+            end
+            seen[perk] = true
+        end
     end
     if row.waves ~= nil then
         local waves, wavesError = p.arr(row.waves, label .. ".waves", 5)
@@ -74,7 +89,7 @@ function generated.decode(value, label)
             end
         end
     end
-    if row.baseRoll == nil and row.waveCount == nil and row.highlight == nil and row.waves == nil then
+    if row.baseRoll == nil and row.waveCount == nil and row.highlight == nil and row.fangs == nil and row.waves == nil then
         return p.fail(label .. " has no active override")
     end
     return row

@@ -2,6 +2,8 @@
 -- encounter preparation call. The planner supplies only sparse operands; the
 -- game still owns eligibility, type side effects, rounding, caps and spawning.
 local generated = {}
+local fangsDefinition = type(import) == "function" and import("mods/room/timeline/encounters/fangs.lua")
+    or require("mods.room.timeline.encounters.fangs")
 
 local function compositionFor(phase)
     for _, decision in ipairs(phase and phase.customization or {}) do
@@ -70,6 +72,7 @@ end
 function generated.create()
     local instance = {}
     local stack = {}
+    local fangsAdapter = fangsDefinition.create()
     local function current() return stack[#stack] end
 
     local function diagnostic(owner, observed)
@@ -103,6 +106,7 @@ function generated.create()
 
     function instance.attach(module, session)
         instance.session = session
+        fangsAdapter.attach(module, session)
 
         module.hooks.wrap("SetupEncounter", "run-planner-generated-encounter-setup", function(_, _, base,
             encounterData, nativeRoom)
@@ -124,6 +128,7 @@ function generated.create()
                 end)
             end
             local owner, decision = parent.owner, parent.owner.decision
+            if decision.fangs ~= nil then fangsAdapter.bind(encounter, decision.fangs, owner) end
             owner.baseRollUsed = false
             if decision.waveCount ~= nil then
                 encounter.MinWaves, encounter.MaxWaves = decision.waveCount, decision.waveCount
