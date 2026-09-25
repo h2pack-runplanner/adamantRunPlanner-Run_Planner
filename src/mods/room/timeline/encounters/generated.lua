@@ -327,27 +327,15 @@ local function admission(decision, encounter, nativeRoom, currentRun, gameValue)
     return introSubstitution(decision.waves, encounter, gameValue)
 end
 
--- FillEnemyTypes draw count for the one roster wave: escalated, template-fixed,
--- or MinTypes..MaxTypes with the depth ramp, capped by MaxTypesCap.
-local function rosterTypeBounds(encounter, template, currentRun, gameValue)
-    local ramp, depth = encounter.TypeCountDepthRamp or 0, 0
-    if ramp ~= 0 then
-        local biomeDepth = nativeValue(gameValue, "GetBiomeDepth")
-        if encounter.UseEncounterDepthForTypes then depth = currentRun.BiomeEncounterDepth or 1
-        elseif type(biomeDepth) == "function" then depth = biomeDepth(currentRun)
-        else return nil end
+-- FillEnemyTypes draw count for the one roster wave: MinTypes..MaxTypes capped by
+-- MaxTypesCap. Escalated, template-fixed or depth-dependent counts are not admitted.
+local function rosterTypeBounds(encounter, template)
+    if encounter.EscalateTypeCount or template.TypeCount ~= nil or encounter.UseEncounterDepthForTypes
+        or (encounter.TypeCountDepthRamp or 0) ~= 0 then
+        return nil
     end
-    local minimum, maximum
-    if encounter.EscalateTypeCount and type(encounter.MaxTypes) == "number" then
-        minimum = math.floor(encounter.MaxTypes + ramp * depth)
-        maximum = minimum
-    elseif template.TypeCount ~= nil then
-        minimum, maximum = template.TypeCount, template.TypeCount
-    else
-        minimum = template.MinTypes or encounter.MinTypes
-        maximum = template.MaxTypes or (type(encounter.MaxTypes) == "number"
-            and math.floor(encounter.MaxTypes + ramp * depth))
-    end
+    local minimum = template.MinTypes or encounter.MinTypes
+    local maximum = template.MaxTypes or (type(encounter.MaxTypes) == "number" and math.floor(encounter.MaxTypes))
     if type(minimum) ~= "number" or type(maximum) ~= "number" then return nil end
     if encounter.MaxTypesCap then
         minimum, maximum = math.min(minimum, encounter.MaxTypesCap), math.min(maximum, encounter.MaxTypesCap)
@@ -373,7 +361,7 @@ local function rosterAdmission(decision, encounter, nativeRoom, currentRun, game
     local template = templateFor(encounter, 1, 1)
     if type(template) ~= "table" or type(template.Spawns) ~= "table" then return "unsupported-template" end
     if next(template.Spawns) ~= nil then return "unowned-template-entry" end
-    local typeMinimum, typeMaximum = rosterTypeBounds(encounter, template, currentRun, gameValue)
+    local typeMinimum, typeMaximum = rosterTypeBounds(encounter, template)
     if typeMinimum == nil then return "unsupported-type-bounds" end
     if #decision.types < typeMinimum or #decision.types > typeMaximum then
         return "type-count-out-of-range", { expected = { min = typeMinimum, max = typeMaximum }, observed = #decision.types }

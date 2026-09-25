@@ -209,6 +209,10 @@ function TestAnomalyRoster.testUnsupportedEffectiveDeclarationsDecline()
         { overrides = { ManualWaveTemplates = { { Spawns = { { Name = "Seed" } } } } }, reason = "unowned-template-entry" },
         { overrides = { MaxTypes = 2, MaxTypesCap = 2 }, reason = "type-count-out-of-range" },
         { overrides = { EnemySet = { "SpreadShotUnit" } }, reason = "enemy-set-changed" },
+        { overrides = { EscalateTypeCount = true }, reason = "unsupported-type-bounds" },
+        { overrides = { ManualWaveTemplates = { { Spawns = {}, TypeCount = 3 } } }, reason = "unsupported-type-bounds" },
+        { overrides = { UseEncounterDepthForTypes = true }, reason = "unsupported-type-bounds" },
+        { overrides = { TypeCountDepthRamp = 0.2 }, reason = "unsupported-type-bounds" },
     }) do
         withGame(game(), function()
             local context = fixture(roster("SpreadShotUnit", "BloodlessPitcher", "Swarmer_Elite"))
