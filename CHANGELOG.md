@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-25
+
+### Added
+
+- encounters: admit customizations once after native budget calculation (
+64a8d1)
+- encounters: apply Menace outcomes with native admission fallback (
+230a8a)
+- encounters: install complete planner-owned waves (
+a27332)
+- executor: steer native Fangs selection per encounter (
+251ced)
+- steer native encounter budget allocations (
+c080e2)
+- diagnose native encounter eligibility and generated composition (
+82dd2c)
+
+### Fixed
+
+- guidance: restore Ephyra overlays and complete choice highlights (
+fc956d)
+- navigation: allow native exits beyond configured prefix (
+a6d283)
+
 ## [0.9.2] - 2026-09-23
 
 ### Added
