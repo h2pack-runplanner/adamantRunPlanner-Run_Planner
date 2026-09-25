@@ -385,6 +385,22 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
             if proved then proved, errorValue = doors.proveAdditional(occurrence, additional) end
             return proved, errorValue
         end,
+        -- Leaving the Hub at the fountain's position closes its Hub-owned use.
+        proveHubDeparture = function(state, currentRun)
+            local nativeRoom = currentRun and currentRun.CurrentRoom
+            if ephyra.hubFountainObjectId(nativeRoom) == nil then return true end
+            local outcome, hub, carrier = routeSession.hubFountainDeparture(
+                state.route, ephyra.hubFountainUsed(nativeRoom))
+            if outcome == nil or outcome == "fulfilled" then return true end
+            if outcome == "unobserved" then
+                -- Spent before this session saw it; its Phial outcome is unknown, not proved.
+                session.diagnostic(state, "hub-fountain", "unobserved", carrier)
+                return true
+            end
+            return nil, {
+                checkpoint = "obligation:hubDeparture", expected = hub.fountain.owner, observed = outcome,
+            }
+        end,
         resolveNativeRoom = function(state, nativeRoomData)
             return ephyra.finalHandoff(state, routeSession, nativeRoomData)
         end,

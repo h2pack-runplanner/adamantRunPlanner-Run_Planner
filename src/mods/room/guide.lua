@@ -262,9 +262,17 @@ end
 function guide.project(snapshot)
     if type(snapshot) ~= "table" then return nil end
     if snapshot.kind == "navigation" then
+        -- The Hub fountain use precedes the next visit or final handoff it is due before.
+        local hubFountain = type(snapshot.navigation) == "table" and snapshot.navigation.hubFountain or nil
+        local rows = {}
+        if hubFountain ~= nil then
+            rows[1] = { instruction = instruction({
+                kind = "useFountain", aromaticPhialTarget = hubFountain.aromaticPhialTarget,
+            }) }
+        end
         return {
             header = roomName(snapshot.nativeRoomName),
-            rows = {},
+            rows = rows,
             footer = navigationFooter(snapshot.navigation),
         }
     end

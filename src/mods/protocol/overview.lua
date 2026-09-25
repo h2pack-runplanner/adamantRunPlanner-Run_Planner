@@ -403,6 +403,28 @@ local function fields(value, label)
     return record
 end
 
+-- The one Hub-owned fountain use, after its completed preceding room visits.
+local function hubFountain(value, requiredVisitCount, label)
+    local record, errorMessage = p.exact(
+        value, { "kind", "owner", "interactionKey", "precedingVisitCount" }, { "aromaticPhialTarget" }, label
+    )
+    if not record then return nil, errorMessage end
+    if record.kind ~= "fountainUse" or record.interactionKey ~= "fountain"
+        or not p.str(record.owner, label .. ".owner", p.MAX_OWNER_STRING) then
+        return p.fail(label .. " has invalid fountain use")
+    end
+    local _, countError = p.int(record.precedingVisitCount, label .. ".precedingVisitCount", 0)
+    if countError then return nil, countError end
+    if record.precedingVisitCount > requiredVisitCount then
+        return p.fail(label .. ".precedingVisitCount exceeds the required Hub visits")
+    end
+    if record.aromaticPhialTarget ~= nil
+        and not p.str(record.aromaticPhialTarget, label .. ".aromaticPhialTarget") then
+        return p.fail(label .. " has invalid Aromatic Phial target")
+    end
+    return record
+end
+
 function overview.decode(value, label)
     local record, errorMessage = p.exact(
         value,
@@ -516,7 +538,8 @@ function overview.decode(value, label)
         if fieldsError then return nil, fieldsError end
     end
     if record.hub ~= nil then
-        local hub, hubError = p.exact(record.hub, { "room", "slots", "finalHandoff" }, {}, label .. ".hub")
+        local hub, hubError = p.exact(record.hub,
+            { "room", "slots", "finalHandoff", "requiredVisitCount", "fountain" }, {}, label .. ".hub")
         if not hub then return nil, hubError end
         local room = p.exact(hub.room, { "gameName" }, {}, label .. ".hub.room")
         if not room or not p.str(room.gameName, label .. ".hub.room.gameName") then
@@ -535,6 +558,12 @@ function overview.decode(value, label)
             end
         end
         if not p.roomRef(hub.finalHandoff, label .. ".hub.finalHandoff") then return p.fail(label .. ".hub has invalid final handoff") end
+        local required = p.int(hub.requiredVisitCount, label .. ".hub.requiredVisitCount", 1)
+        if not required or required > #slots then
+            return p.fail(label .. ".hub.requiredVisitCount must be between 1 and the open Hub slots")
+        end
+        local _, fountainError = hubFountain(hub.fountain, required, label .. ".hub.fountain")
+        if fountainError then return nil, fountainError end
     end
     if record.localSlots ~= nil then
         local slots, slotsError = p.arr(record.localSlots, label .. ".localSlots")

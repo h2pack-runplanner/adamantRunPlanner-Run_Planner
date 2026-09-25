@@ -2,7 +2,7 @@
   "format": "run-planner-execution",
   "protocolVersion": 47,
   "catalogVersion": "0.55.0-anvil-of-fates",
-  "projectId": "surface-2",
+  "projectId": "surface-1",
   "routeKey": "Surface",
   "startingLoadout": {
     "weaponKey": "WeaponStaffSwing",
@@ -49,8 +49,8 @@
       }
     }
   },
-  "startingKeepsake": { "keepsakeKey": "ManaOverTimeRefundKeepsake" },
-  "extent": { "kind": "configuredPrefix", "biomeKeys": ["N", "O"], "terminalBiomeKey": "O" },
+  "startingKeepsake": { "keepsakeKey": "FountainRarityKeepsake" },
+  "extent": { "kind": "configuredPrefix", "biomeKeys": ["N"], "terminalBiomeKey": "N" },
   "selectedOccurrenceIds": [
     "surface-n-opening",
     "surface-n-prehub",
@@ -66,17 +66,7 @@
     "surface-n-combat09",
     "surface-n-preboss",
     "surface-n-preboss:boss",
-    "surface-n-preboss:postboss",
-    "surface-o-intro",
-    "surface-o-combat04",
-    "surface-o-combat07",
-    "surface-o-combat01",
-    "surface-o-devotion",
-    "surface-o-story",
-    "surface-o-combat02",
-    "surface-o-preboss",
-    "surface-o-preboss:boss",
-    "surface-o-preboss:postboss"
+    "surface-n-preboss:postboss"
   ],
   "resources": {
     "occurrences": [
@@ -208,96 +198,6 @@
       },
       {
         "occurrenceId": "surface-n-preboss:postboss",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-intro",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-combat04",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-combat07",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-combat01",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-devotion",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-story",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-combat02",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-preboss",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-preboss:boss",
-        "pointDispositions": {
-          "Pickaxe": "native",
-          "Exorcism": "native",
-          "Shovel": "native",
-          "Fishing": "native"
-        }
-      },
-      {
-        "occurrenceId": "surface-o-preboss:postboss",
         "pointDispositions": {
           "Pickaxe": "native",
           "Exorcism": "native",
@@ -506,8 +406,8 @@
             "forfeit": "inactive",
             "chaos": { "active": [], "matured": [] },
             "keepsakes": {
-              "currentKey": "ManaOverTimeRefundKeepsake",
-              "usedKeys": ["ManaOverTimeRefundKeepsake"],
+              "currentKey": "FountainRarityKeepsake",
+              "usedKeys": ["FountainRarityKeepsake"],
               "blockedKeys": [],
               "fatedStatus": "Unknown"
             },
@@ -528,7 +428,7 @@
                 "callingCard": null,
                 "timePiece": null,
                 "figLeaf": null,
-                "phial": null,
+                "phial": { "status": "pending" },
                 "figurine": null,
                 "stone": null,
                 "transcendentEmbryo": null,
@@ -727,7 +627,8 @@
             "kind": "fountainUse",
             "owner": "[\"hubFountain\",\"Surface\",\"N\",\"hub\"]",
             "interactionKey": "fountain",
-            "precedingVisitCount": 0
+            "precedingVisitCount": 3,
+            "aromaticPhialTarget": "AresSpecialBoon"
           }
         }
       },
@@ -1712,7 +1613,11 @@
         "kind": "terminal"
       },
       "roomExitConformance": {
-        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
+        "facts": [
+          { "kind": "elementCounts" },
+          { "kind": "traitInventory" },
+          { "kind": "keepsakeEffects" }
+        ]
       },
       "diagnostics": {
         "roomEntered": {
@@ -1725,6 +1630,52 @@
               "biomeEncounterDepth": 5,
               "routeEncounterDepth": 5,
               "roomHistoryOrdinal": 15
+            },
+            "traits": {
+              "equipped": [
+                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
+                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 }
+              ],
+              "slots": [
+                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
+                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
+                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
+                { "slot": "Rush" },
+                { "slot": "Mana" },
+                { "slot": "Spell" }
+              ],
+              "elements": { "Aether": 0, "Earth": 3, "Air": 1, "Fire": 0, "Water": 0 },
+              "godRarityCounts": { "Common": 3, "Heroic": 1 },
+              "upgradableCount": 3,
+              "bannedTraitKeys": []
+            },
+            "retainedEffects": {
+              "echoShopDuplicateStatus": null,
+              "keepsakes": {
+                "olympianSources": [],
+                "jeweledPom": null,
+                "experimentalHammers": [],
+                "callingCard": null,
+                "timePiece": null,
+                "figLeaf": null,
+                "phial": { "status": "consumed" },
+                "figurine": null,
+                "stone": null,
+                "transcendentEmbryo": null,
+                "gorgon": null
+              },
+              "steadyGrowth": [],
+              "hermesShrineDeliveries": [],
+              "stygianWell": {
+                "sparkUses": 0,
+                "yarnUses": 0,
+                "hymnUses": 0,
+                "discountUses": [],
+                "emptySlotUses": [],
+                "extendedUses": 0
+              }
             }
           }
         },
@@ -1756,7 +1707,7 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
                 { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 }
@@ -1770,7 +1721,7 @@
                 { "slot": "Spell" }
               ],
               "elements": { "Aether": 0, "Earth": 4, "Air": 1, "Fire": 0, "Water": 0 },
-              "godRarityCounts": { "Common": 5 },
+              "godRarityCounts": { "Common": 4, "Heroic": 1 },
               "upgradableCount": 4,
               "bannedTraitKeys": []
             }
@@ -1866,7 +1817,7 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
                 { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 }
@@ -1880,7 +1831,7 @@
                 { "slot": "Spell" }
               ],
               "elements": { "Aether": 0, "Earth": 5, "Air": 1, "Fire": 0, "Water": 0 },
-              "godRarityCounts": { "Common": 5 },
+              "godRarityCounts": { "Common": 4, "Heroic": 1 },
               "upgradableCount": 4,
               "bannedTraitKeys": []
             }
@@ -2003,7 +1954,7 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
                 { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
@@ -2018,7 +1969,7 @@
                 { "slot": "Spell" }
               ],
               "elements": { "Aether": 0, "Earth": 5, "Air": 2, "Fire": 0, "Water": 0 },
-              "godRarityCounts": { "Common": 6 },
+              "godRarityCounts": { "Common": 5, "Heroic": 1 },
               "upgradableCount": 5,
               "bannedTraitKeys": []
             }
@@ -2075,15 +2026,19 @@
                   "kind": "traits",
                   "giver": "SpellDrop",
                   "options": [
+                    { "key": "SpellLaserTrait" },
                     { "key": "SpellSummonTrait" },
-                    { "key": "SpellTimeSlowTrait" },
-                    { "key": "SpellPotionTrait" }
+                    { "key": "SpellTimeSlowTrait" }
                   ],
                   "selected": "option1",
                   "hexTree": {
                     "layoutKey": "Lung",
-                    "rareTalentKeys": ["SummonSpeedTalent", "SummonTeleportTalent"],
-                    "epicTalentKeys": ["SummonDamageSplitTalent"]
+                    "rareTalentKeys": ["LaserAoETalent", "LaserStartAoETalent"],
+                    "epicTalentKeys": ["LaserTripleTalent"],
+                    "godSent": {
+                      "olympianTalentKey": "LaserApolloTalent",
+                      "lineageTalentKey": "OlympianSpellCountTalent"
+                    }
                   }
                 }
               }
@@ -2147,12 +2102,12 @@
             "traits": {
               "equipped": [
                 { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
                 { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
                 { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
                 { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellSummonTrait" }
+                { "traitKey": "SpellLaserTrait" }
               ],
               "slots": [
                 { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
@@ -2160,20 +2115,22 @@
                 { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
                 { "slot": "Rush", "traitKey": "AresSprintBoon" },
                 { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellSummonTrait" }
+                { "slot": "Spell", "traitKey": "SpellLaserTrait" }
               ],
               "elements": { "Aether": 0, "Earth": 5, "Air": 2, "Fire": 0, "Water": 0 },
-              "godRarityCounts": { "Common": 6 },
+              "godRarityCounts": { "Common": 5, "Heroic": 1 },
               "upgradableCount": 5,
               "bannedTraitKeys": []
             },
             "hexProgress": {
-              "spellTraitKey": "SpellSummonTrait",
+              "spellTraitKey": "SpellLaserTrait",
               "layoutKey": "Lung",
               "talentKeys": [
-                "SummonSpeedTalent",
-                "SummonTeleportTalent",
-                "SummonDamageSplitTalent"
+                "LaserAoETalent",
+                "LaserStartAoETalent",
+                "LaserTripleTalent",
+                "LaserApolloTalent",
+                "OlympianSpellCountTalent"
               ],
               "closed": false,
               "bankedPathPoints": 0,
@@ -2364,9 +2321,7 @@
       ],
       "doors": {
         "owner": "[\"occurrence\",\"Surface\",\"N\",\"surface-n-preboss:postboss\"]",
-        "kind": "fixed",
-        "target": { "id": "surface-o-intro", "biomeKey": "O", "gameName": "O_Intro" },
-        "zagreusContractPresent": false
+        "kind": "terminal"
       },
       "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
       "diagnostics": {
@@ -2386,1208 +2341,6 @@
               "biomeEncounterDepth": 8,
               "routeEncounterDepth": 8,
               "roomHistoryOrdinal": 26
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-intro",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-intro\"]",
-      "biomeKey": "O",
-      "gameName": "O_Intro",
-      "kind": "EmptyEncounter",
-      "overview": {
-        "unmodeledEncounterKeys": ["Empty"],
-        "encounterPhases": [],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-intro\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-o-combat04", "biomeKey": "O", "gameName": "O_Combat04" },
-            "zagreusContractPresent": false
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "RunProgress"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 30,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-intro\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 1,
-              "biomeEncounterDepth": 1,
-              "routeEncounterDepth": 8,
-              "roomHistoryOrdinal": 26
-            }
-          }
-        },
-        "beforeRoomExit": {
-          "frame": 31,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-intro\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 2,
-              "biomeEncounterDepth": 1,
-              "routeEncounterDepth": 8,
-              "roomHistoryOrdinal": 27
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-combat04",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-combat04\"]",
-      "biomeKey": "O",
-      "gameName": "O_Combat04",
-      "kind": "ShipEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Intro", "encounterKey": "GeneratedO_Intro01", "kind": "combat" },
-          { "slotKey": "Combat1", "encounterKey": "GeneratedO", "kind": "combat" }
-        ],
-        "rewardWheels": [
-          {
-            "wheelKey": "wheel1",
-            "phaseKey": "Combat1",
-            "phaseOwner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat04\"},\"Combat1\"]",
-            "offerCount": 1,
-            "storeKey": "RunProgress",
-            "offers": [
-              {
-                "offerKey": "offer1",
-                "reward": {
-                  "rewardType": "MaxHealthDrop",
-                  "producerLifecycleKey": "RoomReward",
-                  "resolvedStoreKey": "RunProgress"
-                }
-              }
-            ],
-            "pickedOfferKey": "offer1"
-          }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "chooseRewardWheel",
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\"]",
-            "window": { "kind": "shipPreCombat", "wheelKey": "wheel1" },
-            "wheelKey": "wheel1",
-            "pickedOfferKey": "offer1"
-          },
-          {
-            "kind": "acquisition",
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\",\"offer1\"]",
-            "sourceOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\",\"offer1\"]",
-            "reward": {
-              "rewardType": "MaxHealthDrop",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "self",
-                "disposition": "normal",
-                "lifecyclePoint": "roomRewardPickup",
-                "kind": "consumable",
-                "gameName": "MaxHealthDrop",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"O\",\"[\\\"rewardWheel\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-combat04\\\",\\\"wheel1\\\"]\",\"wheel1\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"rewardWheel\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-combat04\\\\\\\",\\\\\\\"wheel1\\\\\\\"]\\\",\\\"wheel1\\\"]\",\"picked\"]"
-                }
-              }
-            ],
-            "window": { "kind": "shipPostCombat", "wheelKey": "wheel1" }
-          }
-        ],
-        "dependencies": [
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\",\"offer1\"]",
-            "afterOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\"]"
-          }
-        ],
-        "obligations": [
-          {
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
-      },
-      "roomGuide": [
-        {
-          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
-          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
-          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\"]"
-        },
-        {
-          "key": "[\"interactWheelReward\",\"wheel1\"]",
-          "description": {
-            "kind": "interactWheelReward",
-            "wheelKey": "wheel1",
-            "reward": {
-              "rewardType": "MaxHealthDrop",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
-            }
-          },
-          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat04\",\"wheel1\",\"offer1\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat04\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-o-combat07", "biomeKey": "O", "gameName": "O_Combat07" },
-            "zagreusContractPresent": false
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "RunProgress"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "beforeRoomExit": {
-          "frame": 32,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-combat04\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 3,
-              "biomeEncounterDepth": 2,
-              "routeEncounterDepth": 9,
-              "roomHistoryOrdinal": 28
-            },
-            "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 14 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 13 } },
-              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
-              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 17 } },
-              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
-              {
-                "storeKey": "FieldsOptionalRewards",
-                "remaining": { "kind": "exact", "count": 19 }
-              },
-              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
-              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-combat07",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-combat07\"]",
-      "biomeKey": "O",
-      "gameName": "O_Combat07",
-      "kind": "ShipEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Intro", "encounterKey": "GeneratedO_Intro01", "kind": "combat" },
-          { "slotKey": "Combat1", "encounterKey": "GeneratedO", "kind": "combat" }
-        ],
-        "rewardWheels": [
-          {
-            "wheelKey": "wheel1",
-            "phaseKey": "Combat1",
-            "phaseOwner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat07\"},\"Combat1\"]",
-            "offerCount": 1,
-            "storeKey": "MetaProgress",
-            "offers": [
-              {
-                "offerKey": "offer1",
-                "reward": {
-                  "rewardType": "MetaCurrencyBigDrop",
-                  "producerLifecycleKey": "RoomReward",
-                  "resolvedStoreKey": "MetaProgress"
-                }
-              }
-            ],
-            "pickedOfferKey": "offer1"
-          }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "chooseRewardWheel",
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\"]",
-            "window": { "kind": "shipPreCombat", "wheelKey": "wheel1" },
-            "wheelKey": "wheel1",
-            "pickedOfferKey": "offer1"
-          },
-          {
-            "kind": "acquisition",
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\",\"offer1\"]",
-            "sourceOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\",\"offer1\"]",
-            "reward": {
-              "rewardType": "MetaCurrencyBigDrop",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "MetaProgress"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "self",
-                "disposition": "normal",
-                "lifecyclePoint": "roomRewardPickup",
-                "kind": "resource",
-                "gameName": "MetaCurrencyBigDrop",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"O\",\"[\\\"rewardWheel\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-combat07\\\",\\\"wheel1\\\"]\",\"wheel1\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"rewardWheel\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-combat07\\\\\\\",\\\\\\\"wheel1\\\\\\\"]\\\",\\\"wheel1\\\"]\",\"picked\"]"
-                }
-              }
-            ],
-            "window": { "kind": "shipPostCombat", "wheelKey": "wheel1" }
-          }
-        ],
-        "dependencies": [
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\",\"offer1\"]",
-            "afterOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\"]"
-          }
-        ],
-        "obligations": [
-          {
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
-      },
-      "roomGuide": [
-        {
-          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
-          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
-          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\"]"
-        },
-        {
-          "key": "[\"interactWheelReward\",\"wheel1\"]",
-          "description": {
-            "kind": "interactWheelReward",
-            "wheelKey": "wheel1",
-            "reward": {
-              "rewardType": "MetaCurrencyBigDrop",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "MetaProgress"
-            }
-          },
-          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat07\",\"wheel1\",\"offer1\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat07\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-o-combat01", "biomeKey": "O", "gameName": "O_Combat01" },
-            "zagreusContractPresent": false
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "MetaProgress"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "beforeRoomExit": {
-          "frame": 33,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-combat07\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 4,
-              "biomeEncounterDepth": 3,
-              "routeEncounterDepth": 10,
-              "roomHistoryOrdinal": 29
-            },
-            "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 14 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
-              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 17 } },
-              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
-              {
-                "storeKey": "FieldsOptionalRewards",
-                "remaining": { "kind": "exact", "count": 19 }
-              },
-              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
-              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-combat01",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-combat01\"]",
-      "biomeKey": "O",
-      "gameName": "O_Combat01",
-      "kind": "ShipEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Intro", "encounterKey": "GeneratedO_Intro01", "kind": "combat" },
-          { "slotKey": "Combat1", "encounterKey": "GeneratedO", "kind": "combat" }
-        ],
-        "rewardWheels": [
-          {
-            "wheelKey": "wheel1",
-            "phaseKey": "Combat1",
-            "phaseOwner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat01\"},\"Combat1\"]",
-            "offerCount": 1,
-            "storeKey": "RunProgress",
-            "offers": [
-              {
-                "offerKey": "offer1",
-                "reward": {
-                  "rewardType": "RoomMoneyDrop",
-                  "producerLifecycleKey": "RoomReward",
-                  "resolvedStoreKey": "RunProgress"
-                }
-              }
-            ],
-            "pickedOfferKey": "offer1"
-          }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "chooseRewardWheel",
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\"]",
-            "window": { "kind": "shipPreCombat", "wheelKey": "wheel1" },
-            "wheelKey": "wheel1",
-            "pickedOfferKey": "offer1"
-          },
-          {
-            "kind": "acquisition",
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\",\"offer1\"]",
-            "sourceOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\",\"offer1\"]",
-            "reward": {
-              "rewardType": "RoomMoneyDrop",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "self",
-                "disposition": "normal",
-                "lifecyclePoint": "roomRewardPickup",
-                "kind": "consumable",
-                "gameName": "RoomMoneyDrop",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"O\",\"[\\\"rewardWheel\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-combat01\\\",\\\"wheel1\\\"]\",\"wheel1\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"rewardWheel\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-combat01\\\\\\\",\\\\\\\"wheel1\\\\\\\"]\\\",\\\"wheel1\\\"]\",\"picked\"]"
-                }
-              }
-            ],
-            "window": { "kind": "shipPostCombat", "wheelKey": "wheel1" }
-          }
-        ],
-        "dependencies": [
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\",\"offer1\"]",
-            "afterOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\"]"
-          }
-        ],
-        "obligations": [
-          {
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
-      },
-      "roomGuide": [
-        {
-          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
-          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
-          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\"]"
-        },
-        {
-          "key": "[\"interactWheelReward\",\"wheel1\"]",
-          "description": {
-            "kind": "interactWheelReward",
-            "wheelKey": "wheel1",
-            "reward": {
-              "rewardType": "RoomMoneyDrop",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
-            }
-          },
-          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat01\",\"wheel1\",\"offer1\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat01\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-o-devotion", "biomeKey": "O", "gameName": "O_Devotion01" },
-            "zagreusContractPresent": false,
-            "reward": {
-              "rewardType": "Devotion",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress",
-              "source": "AresUpgrade",
-              "spurnedSource": "HephaestusUpgrade"
-            }
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "RunProgress"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "beforeRoomExit": {
-          "frame": 34,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-combat01\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 5,
-              "biomeEncounterDepth": 4,
-              "routeEncounterDepth": 11,
-              "roomHistoryOrdinal": 30
-            },
-            "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 13 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
-              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 17 } },
-              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
-              {
-                "storeKey": "FieldsOptionalRewards",
-                "remaining": { "kind": "exact", "count": 19 }
-              },
-              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
-              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-devotion",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-devotion\"]",
-      "biomeKey": "O",
-      "gameName": "O_Devotion01",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": {
-          "rewardType": "Devotion",
-          "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "RunProgress",
-          "source": "AresUpgrade",
-          "spurnedSource": "HephaestusUpgrade"
-        },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "DevotionTestO", "kind": "combat" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "acquisition",
-            "owner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"chosenSource\"]",
-            "sourceOwner": "[\"incomingReward\",\"Surface\",\"O\",\"surface-o-devotion\"]",
-            "reward": {
-              "rewardType": "Devotion",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress",
-              "source": "AresUpgrade",
-              "spurnedSource": "HephaestusUpgrade"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "chosenSource",
-                "disposition": "normal",
-                "lifecyclePoint": "beforeCombat",
-                "kind": "loot",
-                "gameName": "AresUpgrade",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"O\",\"[\\\"occurrence\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"beforeCombat\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-devotion\\\\\\\"]\\\",\\\"beforeCombat\\\"]\",\"chosenSource\"]"
-                },
-                "traitOffer": {
-                  "kind": "traits",
-                  "giver": "Ares",
-                  "options": [
-                    { "key": "AresExCastBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "RendBloodDropBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "AresStatusDoubleDamageBoon", "rarity": "Common", "effectiveLevel": 1 }
-                  ],
-                  "selected": "option1"
-                }
-              }
-            ],
-            "window": { "kind": "standard", "phase": "beforeCombat" }
-          },
-          {
-            "kind": "acquisition",
-            "owner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"spurnedSource\"]",
-            "sourceOwner": "[\"incomingReward\",\"Surface\",\"O\",\"surface-o-devotion\"]",
-            "reward": {
-              "rewardType": "Devotion",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress",
-              "source": "AresUpgrade",
-              "spurnedSource": "HephaestusUpgrade"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "spurnedSource",
-                "disposition": "normal",
-                "lifecyclePoint": "afterCombat",
-                "kind": "loot",
-                "gameName": "HephaestusUpgrade",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"O\",\"[\\\"occurrence\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"afterCombat\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"occurrence\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-devotion\\\\\\\"]\\\",\\\"afterCombat\\\"]\",\"spurnedSource\"]"
-                },
-                "traitOffer": {
-                  "kind": "traits",
-                  "giver": "Hephaestus",
-                  "options": [
-                    { "key": "AntiArmorBoon", "rarity": "Common", "effectiveLevel": 1 },
-                    { "key": "HeavyArmorBoon", "rarity": "Common" },
-                    { "key": "ArmorBoon", "rarity": "Common", "effectiveLevel": 1 }
-                  ],
-                  "selected": "option1"
-                }
-              }
-            ],
-            "window": { "kind": "standard", "phase": "afterCombat" }
-          }
-        ],
-        "dependencies": [
-          {
-            "owner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"spurnedSource\"]",
-            "afterOwner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"chosenSource\"]"
-          }
-        ],
-        "obligations": []
-      },
-      "roomGuide": [
-        {
-          "key": "[\"interactIncomingReward\",\"beforeCombat\",\"chosenSource\"]",
-          "description": {
-            "kind": "interactIncomingReward",
-            "reward": {
-              "rewardType": "Devotion",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress",
-              "source": "AresUpgrade",
-              "spurnedSource": "HephaestusUpgrade"
-            }
-          },
-          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"chosenSource\"]"
-        },
-        {
-          "key": "[\"interactIncomingReward\",\"afterCombat\",\"spurnedSource\"]",
-          "description": {
-            "kind": "interactIncomingReward",
-            "reward": {
-              "rewardType": "Devotion",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress",
-              "source": "AresUpgrade",
-              "spurnedSource": "HephaestusUpgrade"
-            }
-          },
-          "transactionOwner": "[\"acquisitionRole\",\"Surface\",\"O\",\"[\\\"incomingReward\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-devotion\\\"]\",\"spurnedSource\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-devotion\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-o-story", "biomeKey": "O", "gameName": "O_Story01" },
-            "zagreusContractPresent": false,
-            "reward": {
-              "rewardType": "Story",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "MetaProgress"
-            }
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "MetaProgress"
-      },
-      "roomExitConformance": {
-        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
-      },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 35,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-devotion\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 36,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-devotion\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 6,
-              "biomeEncounterDepth": 5,
-              "routeEncounterDepth": 12,
-              "roomHistoryOrdinal": 31
-            },
-            "traits": {
-              "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
-                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellSummonTrait" },
-                { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 }
-              ],
-              "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
-                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
-                { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellSummonTrait" }
-              ],
-              "elements": { "Aether": 0, "Earth": 6, "Air": 2, "Fire": 1, "Water": 0 },
-              "godRarityCounts": { "Common": 8 },
-              "upgradableCount": 7,
-              "bannedTraitKeys": []
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-story",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-story\"]",
-      "biomeKey": "O",
-      "gameName": "O_Story01",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": {
-          "rewardType": "Story",
-          "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "MetaProgress"
-        },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "Story_Circe_01", "kind": "story" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "encounterInteraction",
-            "owner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-story\"},\"Encounter\"]",
-            "phaseKey": "Encounter",
-            "resolution": {
-              "kind": "traitOffer",
-              "offer": {
-                "kind": "traits",
-                "giver": "Circe",
-                "options": [
-                  { "key": "CirceShrinkTrait" },
-                  { "key": "CirceEnlargeTrait" },
-                  { "key": "HealAmplifyTrait" }
-                ],
-                "selected": "option1"
-              }
-            },
-            "window": { "kind": "standard", "phase": "afterCombat" }
-          }
-        ],
-        "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-story\"},\"Encounter\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
-      },
-      "roomGuide": [
-        {
-          "key": "[\"interactEncounter\",\"Encounter\"]",
-          "description": { "kind": "interactEncounter", "phaseKey": "Encounter" },
-          "transactionOwner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-story\"},\"Encounter\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-story\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-o-combat02", "biomeKey": "O", "gameName": "O_Combat02" },
-            "zagreusContractPresent": false
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "RunProgress"
-      },
-      "roomExitConformance": {
-        "facts": [{ "kind": "elementCounts" }, { "kind": "traitInventory" }]
-      },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 37,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-story\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 38,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-story\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 7,
-              "biomeEncounterDepth": 5,
-              "routeEncounterDepth": 12,
-              "roomHistoryOrdinal": 32
-            },
-            "traits": {
-              "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
-                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellSummonTrait" },
-                { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CirceShrinkTrait" }
-              ],
-              "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
-                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
-                { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellSummonTrait" }
-              ],
-              "elements": { "Aether": 0, "Earth": 6, "Air": 2, "Fire": 1, "Water": 0 },
-              "godRarityCounts": { "Common": 8 },
-              "upgradableCount": 7,
-              "bannedTraitKeys": []
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-combat02",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-combat02\"]",
-      "biomeKey": "O",
-      "gameName": "O_Combat02",
-      "kind": "ShipEncounter",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Intro", "encounterKey": "GeneratedO_Intro01", "kind": "combat" },
-          { "slotKey": "Combat1", "encounterKey": "GeneratedO", "kind": "combat" }
-        ],
-        "rewardWheels": [
-          {
-            "wheelKey": "wheel1",
-            "phaseKey": "Combat1",
-            "phaseOwner": "[\"encounterPhase\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat02\"},\"Combat1\"]",
-            "offerCount": 1,
-            "storeKey": "RunProgress",
-            "offers": [
-              {
-                "offerKey": "offer1",
-                "reward": {
-                  "rewardType": "StackUpgrade",
-                  "producerLifecycleKey": "RoomReward",
-                  "resolvedStoreKey": "RunProgress"
-                }
-              }
-            ],
-            "pickedOfferKey": "offer1"
-          }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "chooseRewardWheel",
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\"]",
-            "window": { "kind": "shipPreCombat", "wheelKey": "wheel1" },
-            "wheelKey": "wheel1",
-            "pickedOfferKey": "offer1"
-          },
-          {
-            "kind": "acquisition",
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\",\"offer1\"]",
-            "sourceOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\",\"offer1\"]",
-            "reward": {
-              "rewardType": "StackUpgrade",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
-            },
-            "producerLifecycleKey": "RoomReward",
-            "roles": [
-              {
-                "role": "self",
-                "disposition": "normal",
-                "lifecyclePoint": "roomRewardPickup",
-                "kind": "loot",
-                "gameName": "StackUpgrade",
-                "settlement": {
-                  "site": "[\"acquisitionSite\",\"Surface\",\"O\",\"[\\\"rewardWheel\\\",\\\"Surface\\\",\\\"O\\\",\\\"surface-o-combat02\\\",\\\"wheel1\\\"]\",\"wheel1\"]",
-                  "entry": "[\"acquisitionEntry\",\"Surface\",\"O\",\"[\\\"acquisitionSite\\\",\\\"Surface\\\",\\\"O\\\",\\\"[\\\\\\\"rewardWheel\\\\\\\",\\\\\\\"Surface\\\\\\\",\\\\\\\"O\\\\\\\",\\\\\\\"surface-o-combat02\\\\\\\",\\\\\\\"wheel1\\\\\\\"]\\\",\\\"wheel1\\\"]\",\"picked\"]"
-                },
-                "levelResolution": {
-                  "offeredTargets": ["ApolloWeaponBoon", "AresSpecialBoon", "HephaestusCastBoon"],
-                  "selectedTarget": "ApolloWeaponBoon",
-                  "levelCount": 1
-                }
-              }
-            ],
-            "window": { "kind": "shipPostCombat", "wheelKey": "wheel1" }
-          }
-        ],
-        "dependencies": [
-          {
-            "owner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\",\"offer1\"]",
-            "afterOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\"]"
-          }
-        ],
-        "obligations": [
-          {
-            "owner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
-      },
-      "roomGuide": [
-        {
-          "key": "[\"chooseRewardWheel\",\"wheel1\"]",
-          "description": { "kind": "chooseRewardWheel", "wheelKey": "wheel1" },
-          "transactionOwner": "[\"rewardWheel\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\"]"
-        },
-        {
-          "key": "[\"interactWheelReward\",\"wheel1\"]",
-          "description": {
-            "kind": "interactWheelReward",
-            "wheelKey": "wheel1",
-            "reward": {
-              "rewardType": "StackUpgrade",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
-            }
-          },
-          "transactionOwner": "[\"rewardWheelOffer\",\"Surface\",\"O\",\"surface-o-combat02\",\"wheel1\",\"offer1\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"exitDecision\",\"Surface\",\"O\",{\"kind\":\"occurrence\",\"occurrenceId\":\"surface-o-combat02\"}]",
-        "kind": "batch",
-        "targets": [
-          {
-            "exitKey": "exit1",
-            "index": 1,
-            "room": { "id": "surface-o-preboss", "biomeKey": "O", "gameName": "O_PreBoss01" },
-            "zagreusContractPresent": false,
-            "reward": {
-              "rewardType": "Shop",
-              "producerLifecycleKey": "RoomReward",
-              "resolvedStoreKey": "RunProgress"
-            }
-          }
-        ],
-        "resolvedSharedRewardStoreKey": "RunProgress"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "beforeRoomExit": {
-          "frame": 39,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-combat02\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 8,
-              "biomeEncounterDepth": 6,
-              "routeEncounterDepth": 13,
-              "roomHistoryOrdinal": 33
-            },
-            "bags": [
-              { "storeKey": "RunProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "MetaProgress", "remaining": { "kind": "exact", "count": 12 } },
-              { "storeKey": "HubRewards", "remaining": { "kind": "exact", "count": 2 } },
-              { "storeKey": "SubRoomRewards", "remaining": { "kind": "exact", "count": 17 } },
-              { "storeKey": "SubRoomRewardsHard", "remaining": { "kind": "exact", "count": 8 } },
-              {
-                "storeKey": "FieldsOptionalRewards",
-                "remaining": { "kind": "exact", "count": 19 }
-              },
-              { "storeKey": "TartarusRewards", "remaining": { "kind": "exact", "count": 9 } },
-              { "storeKey": "TyphonBossRewards", "remaining": { "kind": "exact", "count": 6 } },
-              { "storeKey": "Secrets", "remaining": { "kind": "exact", "count": 1 } }
-            ],
-            "traits": {
-              "equipped": [
-                { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 2 },
-                { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
-                { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "SpellSummonTrait" },
-                { "traitKey": "AresExCastBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "AntiArmorBoon", "rarity": "Common", "level": 1 },
-                { "traitKey": "CirceShrinkTrait" }
-              ],
-              "slots": [
-                { "slot": "Melee", "traitKey": "ApolloWeaponBoon" },
-                { "slot": "Secondary", "traitKey": "AresSpecialBoon" },
-                { "slot": "Ranged", "traitKey": "HephaestusCastBoon" },
-                { "slot": "Rush", "traitKey": "AresSprintBoon" },
-                { "slot": "Mana", "traitKey": "ApolloManaBoon" },
-                { "slot": "Spell", "traitKey": "SpellSummonTrait" }
-              ],
-              "elements": { "Aether": 0, "Earth": 6, "Air": 2, "Fire": 1, "Water": 0 },
-              "godRarityCounts": { "Common": 8 },
-              "upgradableCount": 7,
-              "bannedTraitKeys": []
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-preboss",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss\"]",
-      "biomeKey": "O",
-      "gameName": "O_PreBoss01",
-      "kind": "SingleEncounter",
-      "overview": {
-        "incomingReward": {
-          "rewardType": "Shop",
-          "producerLifecycleKey": "RoomReward",
-          "resolvedStoreKey": "RunProgress"
-        },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "Shop", "kind": "nonCombat" }
-        ],
-        "requiredObjects": [],
-        "shop": {
-          "profileKey": "WorldShop",
-          "offers": [
-            {
-              "offerKey": "Boon",
-              "optionKey": "RandomLoot",
-              "rewardType": "RandomLoot",
-              "source": "ApolloUpgrade"
-            },
-            {
-              "offerKey": "MajorNonBoon",
-              "optionKey": "MaxHealthDrop",
-              "rewardType": "MaxHealthDrop"
-            },
-            { "offerKey": "Minor", "optionKey": "MaxManaDrop", "rewardType": "MaxManaDrop" }
-          ]
-        }
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [],
-      "doors": {
-        "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss\"]",
-        "kind": "fixed",
-        "target": { "id": "surface-o-preboss:boss", "biomeKey": "O", "gameName": "O_Boss01" },
-        "zagreusContractPresent": false
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 40,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-preboss\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 41,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-preboss\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 8,
-              "biomeEncounterDepth": 6,
-              "routeEncounterDepth": 13,
-              "roomHistoryOrdinal": 34
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-preboss:boss",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss:boss\"]",
-      "biomeKey": "O",
-      "gameName": "O_Boss01",
-      "kind": "SingleEncounter",
-      "overview": {
-        "effectNeutralRequiredReward": true,
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "BossEris01", "kind": "boss" }
-        ],
-        "requiredObjects": []
-      },
-      "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
-      "roomGuide": [
-        { "key": "[\"collectRequiredReward\"]", "description": { "kind": "collectRequiredReward" } }
-      ],
-      "doors": {
-        "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss:boss\"]",
-        "kind": "fixed",
-        "target": {
-          "id": "surface-o-preboss:postboss",
-          "biomeKey": "O",
-          "gameName": "O_PostBoss01"
-        },
-        "zagreusContractPresent": false
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 42,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-preboss:boss\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 43,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-preboss:boss\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 9,
-              "biomeEncounterDepth": 6,
-              "routeEncounterDepth": 13,
-              "roomHistoryOrdinal": 35
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "surface-o-preboss:postboss",
-      "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss:postboss\"]",
-      "biomeKey": "O",
-      "gameName": "O_PostBoss01",
-      "kind": "SingleEncounter",
-      "resumeBoundary": "postbossEntry",
-      "overview": {
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "Empty", "kind": "nonCombat" }
-        ],
-        "requiredObjects": [],
-        "hermesShrine": {
-          "offers": [
-            {
-              "generationKey": "initial:first",
-              "optionKey": "HealBigDrop",
-              "rewardType": "HealBigDrop",
-              "slotIndex": 1
-            },
-            {
-              "generationKey": "initial:secondLeft",
-              "optionKey": "MaxHealthDrop",
-              "rewardType": "MaxHealthDrop",
-              "slotIndex": 2
-            },
-            {
-              "generationKey": "initial:secondRight",
-              "optionKey": "MaxManaDrop",
-              "rewardType": "MaxManaDrop",
-              "slotIndex": 3
-            }
-          ]
-        },
-        "keepsakeRack": {},
-        "fountain": {}
-      },
-      "timeline": {
-        "transactions": [
-          {
-            "kind": "fountainUse",
-            "owner": "[\"roomAction\",\"Surface\",\"O\",\"surface-o-preboss:postboss\",\"[\\\"useFountain\\\"]\"]",
-            "interactionKey": "fountain",
-            "window": { "kind": "standard", "phase": "afterCombat" }
-          }
-        ],
-        "dependencies": [],
-        "obligations": [
-          {
-            "owner": "[\"roomAction\",\"Surface\",\"O\",\"surface-o-preboss:postboss\",\"[\\\"useFountain\\\"]\"]",
-            "checkpoint": "exitUsable"
-          }
-        ]
-      },
-      "roomGuide": [
-        {
-          "key": "[\"useFountain\"]",
-          "description": { "kind": "useFountain" },
-          "transactionOwner": "[\"roomAction\",\"Surface\",\"O\",\"surface-o-preboss:postboss\",\"[\\\"useFountain\\\"]\"]"
-        }
-      ],
-      "doors": {
-        "owner": "[\"occurrence\",\"Surface\",\"O\",\"surface-o-preboss:postboss\"]",
-        "kind": "terminal"
-      },
-      "roomExitConformance": { "facts": [{ "kind": "elementCounts" }] },
-      "diagnostics": {
-        "roomEntered": {
-          "frame": 44,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-preboss:postboss\",\"roomEntered\"]",
-          "checkpoint": "roomEntered",
-          "replace": {}
-        },
-        "beforeRoomExit": {
-          "frame": 45,
-          "owner": "[\"roomRunStateCheckpoint\",\"Surface\",\"O\",\"surface-o-preboss:postboss\",\"beforeRoomExit\"]",
-          "checkpoint": "beforeRoomExit",
-          "replace": {
-            "counters": {
-              "biomeDepthCache": 10,
-              "biomeEncounterDepth": 6,
-              "routeEncounterDepth": 13,
-              "roomHistoryOrdinal": 36
             }
           }
         }
@@ -3715,5 +2468,5 @@
       }
     }
   ],
-  "planFingerprint": "a068091c"
+  "planFingerprint": "28e1956c"
 }

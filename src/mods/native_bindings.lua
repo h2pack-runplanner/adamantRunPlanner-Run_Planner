@@ -7,6 +7,8 @@ return {
         logicalRoomAcquisitions = {
             InfernalContractBoon = true,
         },
+        -- HealthFountainN in RoomDataN N_Hub ObstacleData.
+        hubFountainObjectIds = { N_Hub = 664734 },
     },
     timeline = {
         encounterTraitOfferCarriers = {

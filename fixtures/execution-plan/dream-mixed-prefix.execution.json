@@ -3187,7 +3187,14 @@
               }
             }
           ],
-          "finalHandoff": { "id": "dream-n-preboss", "biomeKey": "N", "gameName": "N_PreBoss01" }
+          "finalHandoff": { "id": "dream-n-preboss", "biomeKey": "N", "gameName": "N_PreBoss01" },
+          "requiredVisitCount": 6,
+          "fountain": {
+            "kind": "fountainUse",
+            "owner": "[\"hubFountain\",\"Dream\",\"N\",\"hub\"]",
+            "interactionKey": "fountain",
+            "precedingVisitCount": 0
+          }
         }
       },
       "timeline": {
@@ -4817,5 +4824,5 @@
       }
     }
   ],
-  "planFingerprint": "eb3a6b20"
+  "planFingerprint": "9cbffa74"
 }

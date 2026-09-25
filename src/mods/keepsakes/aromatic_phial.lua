@@ -24,19 +24,19 @@ function phial.attach(module, options)
         if scope == nil or traitKey(source) ~= options.phialTraitKey then
             return base(source, args)
         end
+        -- Consumed before the native mutation, so a failure cannot leak it.
+        active = nil
         local state = options.getState(runtime)
-        if state ~= scope.state or state.state ~= "synchronized"
-            or options.room.current(state) ~= scope.room then
-            active = nil
+        if state ~= scope.state or state.state ~= "synchronized" or not scope.binding.owns(state) then
             return base(source, args)
         end
 
-        active = nil
         local target = findTrait(_G.CurrentRun, scope.target)
         if target == nil then
-            options.session.diagnostic(state, "aromatic-phial-target", "missing trait")
+            options.session.diagnostic(state, "aromatic-phial-target", "missing trait",
+                scope.binding.occurrence)
             local result = base(source, args)
-            options.session.complete(state, scope.handle)
+            scope.binding.complete(state)
             options.report(runtime)
             return result
         end
@@ -46,19 +46,21 @@ function phial.attach(module, options)
         local ok, result = pcall(base, source, forced)
         if not ok then error(result, 0) end
         if traitKey(result) ~= scope.target then
-            options.session.diagnostic(state, "aromatic-phial-target", traitKey(result))
+            options.session.diagnostic(state, "aromatic-phial-target", traitKey(result),
+                scope.binding.occurrence)
         end
-        options.session.complete(state, scope.handle)
+        scope.binding.complete(state)
         options.report(runtime)
         return result
     end)
 
     return {
-        begin = function(state, room, handle, payload)
-            local transaction = payload and payload.transaction
-            local target = transaction and transaction.aromaticPhialTarget
-            if target == nil then return nil end
-            local scope = { state = state, room = room, handle = handle, target = target }
+        -- Every fountain use replaces any earlier scope whose callback never came.
+        -- The binding supplies owns(state), complete(state) and its occurrence.
+        begin = function(state, target, binding)
+            active = nil
+            if target == nil or binding == nil then return nil end
+            local scope = { state = state, target = target, binding = binding }
             active = scope
             return scope
         end,

@@ -85,6 +85,7 @@ function TestRuntimeComposition.testGuideInspectionProjectsActualRoomCompletionW
                 status = function() return { state = state.state, reason = state.reason } end }
         end
         if path == "mods/route/session.lua" then return actual("mods.route.session") end
+        if path == "mods/navigation/ephyra.lua" then return actual("mods.navigation.ephyra") end
         if path == "mods/room/coordinator.lua" then return actual("mods.room.coordinator") end
         if path == "mods/spells/hex_tree.lua" then return { create = function() return { attach = function() end } end } end
         if path == "mods/room/timeline/encounters/thessaly.lua" then return { create = shipCombatStub } end

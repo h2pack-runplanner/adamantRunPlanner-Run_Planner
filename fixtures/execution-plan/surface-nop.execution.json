@@ -841,7 +841,14 @@
               }
             }
           ],
-          "finalHandoff": { "id": "surface-n-preboss", "biomeKey": "N", "gameName": "N_PreBoss01" }
+          "finalHandoff": { "id": "surface-n-preboss", "biomeKey": "N", "gameName": "N_PreBoss01" },
+          "requiredVisitCount": 6,
+          "fountain": {
+            "kind": "fountainUse",
+            "owner": "[\"hubFountain\",\"Surface\",\"N\",\"hub\"]",
+            "interactionKey": "fountain",
+            "precedingVisitCount": 0
+          }
         }
       },
       "timeline": {
@@ -5578,5 +5585,5 @@
       }
     }
   ],
-  "planFingerprint": "5d4db6d1"
+  "planFingerprint": "1333b45e"
 }

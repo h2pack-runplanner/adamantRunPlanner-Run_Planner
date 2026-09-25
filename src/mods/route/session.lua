@@ -79,6 +79,78 @@ local function hubForRoom(route, occurrenceId)
     return nil
 end
 
+-- The Hub fountain's ordered position: the cursor waits in the Hub for its next
+-- visit or final handoff after exactly its preceding completed visits.
+local function hubFountainPosition(route)
+    if route == nil or route.currentOccurrence ~= nil then return nil end
+    local expected = routeSession.expected(route)
+    if expected == nil then return nil end
+    for _, carrier in pairs(route.plan.occurrencesById or {}) do
+        local hub = carrier.overview and carrier.overview.hub
+        if hub and hub.fountain then
+            local slotIds = {}
+            for _, slot in ipairs(hub.slots or {}) do slotIds[slot.room.id] = true end
+            if not slotIds[expected.id] and expected.id ~= hub.finalHandoff.id then return nil end
+            local visits = 0
+            for index = 1, route.index - 1 do
+                if slotIds[route.plan.selectedOccurrenceIds[index]] then visits = visits + 1 end
+            end
+            if visits ~= hub.fountain.precedingVisitCount then return nil end
+            return hub, carrier
+        end
+    end
+    return nil
+end
+
+-- Due at its position while unclaimed and the native fountain is still unused.
+local function dueHubFountain(route, nativeUsed)
+    if route == nil or route.hubFountainClaim ~= nil or nativeUsed then return nil end
+    return hubFountainPosition(route)
+end
+
+routeSession.dueHubFountain = dueHubFountain
+
+-- One claim per route cursor; a released claim returns the use to due.
+function routeSession.claimHubFountain(route, nativeUsed)
+    local hub, carrier = dueHubFountain(route, nativeUsed)
+    if hub == nil then return nil end
+    local claim = { route = route, index = route.index, hub = hub, carrier = carrier, completed = false }
+    route.hubFountainClaim = claim
+    return claim
+end
+
+-- Any Hub fountain use this route saw, including one outside its position.
+function routeSession.observeHubFountainUse(route)
+    if route ~= nil then route.hubFountainObserved = true end
+end
+
+function routeSession.releaseHubFountain(claim)
+    if claim and claim.route.hubFountainClaim == claim and not claim.completed then
+        claim.route.hubFountainClaim = nil
+    end
+end
+
+function routeSession.completeHubFountain(claim)
+    if claim and claim.route.hubFountainClaim == claim then claim.completed = true end
+end
+
+-- The claim stays owned only while its route waits at the same Hub position.
+function routeSession.holdsHubFountain(route, claim)
+    return claim ~= nil and route == claim.route and route.hubFountainClaim == claim
+        and route.currentOccurrence == nil and route.index == claim.index
+end
+
+-- Leaving the Hub from the fountain's position: "fulfilled", "incomplete", or
+-- "unobserved" when the fountain was already spent before this route saw any use.
+function routeSession.hubFountainDeparture(route, nativeUsed)
+    local hub, carrier = hubFountainPosition(route)
+    if hub == nil then return nil end
+    local claim = route.hubFountainClaim
+    if claim ~= nil then return claim.completed and "fulfilled" or "incomplete", hub, carrier end
+    if nativeUsed and not route.hubFountainObserved then return "unobserved", hub, carrier end
+    return "incomplete", hub, carrier
+end
+
 local function guideNext(current, target)
     local result = { kind = "next", occurrence = target }
     for _, door in ipairs(current and current.doors and current.doors.targets or {}) do
@@ -93,7 +165,7 @@ end
 -- The guide consumes this bounded navigation projection rather than inferring
 -- a new cursor from room names. Side rooms return to their native parent;
 -- after a transparent parent restore N returns to its Hub before another visit.
-function routeSession.guideNavigation(route)
+function routeSession.guideNavigation(route, hubFountainUsed)
     if route == nil then return nil end
     local current = route.currentOccurrence
     if current ~= nil then
@@ -119,6 +191,8 @@ function routeSession.guideNavigation(route)
                 break
             end
         end
+        local dueHub = dueHubFountain(route, hubFountainUsed)
+        if dueHub ~= nil then result.hubFountain = dueHub.fountain end
         return result
     end
     local parent = route.lastExitedOccurrence and parentForSide(route, route.lastExitedOccurrence.id)

@@ -12,6 +12,7 @@ function composition.bind(root)
         return protocol.decode(value)
     end, rom.path)
     local route = import("mods/route/session.lua")
+    local ephyra = import("mods/navigation/ephyra.lua")
     local room = import("mods/room/coordinator.lua")
     local session = import("mods/runtime/session.lua")
     local loadout = import("mods/loadout/session.lua")
@@ -62,7 +63,9 @@ function composition.bind(root)
     function bound.roomGuideInspection()
         if executionState.state ~= "synchronized" then return nil end
         local active = room.guide(executionState)
-        local navigation = route.guideNavigation(executionState.route)
+        local currentRun = _G.CurrentRun
+        local navigation = route.guideNavigation(executionState.route,
+            ephyra.hubFountainUsed(currentRun and currentRun.CurrentRoom))
         if active ~= nil then
             return {
                 kind = "room",
@@ -250,7 +253,7 @@ function composition.bind(root)
             })
         encounterHooks.attach(module, session, getState, report, room, shipCombat, generatedEncounter, highlights)
         featureInventory.attach(module, session, getState, report, room, route)
-        interactionHooks.attach(module, session, getState, report, room)
+        interactionHooks.attach(module, session, getState, report, room, route)
         if module.overlays then
             module.overlays.onCommit(function(_, runtime) highlights.refresh(runtime, getState(runtime)) end)
         end

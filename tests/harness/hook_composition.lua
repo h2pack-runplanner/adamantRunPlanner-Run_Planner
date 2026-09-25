@@ -117,7 +117,7 @@ end
 function M.attachFeatureHooks(module, session, getState, report, room, route)
     featureInventory.attach(module, session, getState, report, room, route)
     transformationHooks.attach(module, session, getState, report, room)
-    interactionHooks.attach(module, session, getState, report, room)
+    interactionHooks.attach(module, session, getState, report, room, route)
 end
 
 return M

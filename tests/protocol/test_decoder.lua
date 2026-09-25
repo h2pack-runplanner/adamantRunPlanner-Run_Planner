@@ -270,7 +270,7 @@ end
 
 function TestProtocol.testEveryMirroredPlannerFixtureDecodes()
     local names = mirroredFixtureNames()
-    lu.assertTrue(#names >= 18)
+    lu.assertTrue(#names >= 19)
     for _, name in ipairs(names) do
         local decoded, errorMessage = protocol.decode(decode(name))
         lu.assertNotNil(decoded, name .. ": " .. tostring(errorMessage))
@@ -1868,4 +1868,47 @@ function TestProtocol.testEncounterPhaseAcceptsOnlyTheOptionalFigLeafDecision()
     local invalid, invalidError = protocol.decode(invalidValue)
     lu.assertNil(invalid)
     lu.assertStrContains(invalidError, "encounterPhases[1].figLeafSkip")
+end
+
+function TestProtocol.testHubFountainUseDecodesStrictlyWithinItsRequiredVisits()
+    local function hubPlan(mutate)
+        local plan = decode("surface-n")
+        for _, occurrence in ipairs(plan.occurrences) do
+            if occurrence.overview.hub ~= nil then
+                mutate(occurrence.overview.hub)
+                return overview.decode(occurrence.overview, "overview")
+            end
+        end
+    end
+    for _, accepted in ipairs({
+        function(hub) hub.fountain.precedingVisitCount = 3 end,
+        function(hub) hub.fountain.precedingVisitCount = hub.requiredVisitCount end,
+        function(hub) hub.fountain.aromaticPhialTarget = "ZeusWeaponBoon" end,
+        function(hub) hub.requiredVisitCount = #hub.slots end,
+    }) do
+        local decoded, errorMessage = hubPlan(accepted)
+        lu.assertNotNil(decoded, errorMessage)
+    end
+    for _, case in ipairs({
+        { function(hub) hub.requiredVisitCount = nil end, "missing requiredVisitCount" },
+        { function(hub) hub.fountain = nil end, "missing fountain" },
+        { function(hub) hub.requiredVisitCount = 0 end, "requiredVisitCount" },
+        { function(hub) hub.requiredVisitCount = #hub.slots + 1 end, "requiredVisitCount" },
+        { function(hub) hub.requiredVisitCount = 2.5 end, "requiredVisitCount" },
+        { function(hub) hub.fountain.precedingVisitCount = hub.requiredVisitCount + 1 end,
+            "precedingVisitCount" },
+        { function(hub) hub.fountain.precedingVisitCount = -1 end, "precedingVisitCount must be an integer" },
+        { function(hub) hub.fountain.precedingVisitCount = 1.5 end, "precedingVisitCount must be an integer" },
+        { function(hub) hub.fountain.precedingVisitCount = nil end, "missing precedingVisitCount" },
+        { function(hub) hub.fountain.extra = true end, "unknown field extra" },
+        { function(hub) hub.extra = true end, "unknown field extra" },
+        { function(hub) hub.fountain.owner = "" end, "invalid fountain use" },
+        { function(hub) hub.fountain.kind = "useFountain" end, "invalid fountain use" },
+        { function(hub) hub.fountain.interactionKey = "well" end, "invalid fountain use" },
+        { function(hub) hub.fountain.aromaticPhialTarget = "" end, "Aromatic Phial target" },
+    }) do
+        local decoded, errorMessage = hubPlan(case[1])
+        lu.assertNil(decoded)
+        lu.assertStrContains(errorMessage, case[2])
+    end
 end

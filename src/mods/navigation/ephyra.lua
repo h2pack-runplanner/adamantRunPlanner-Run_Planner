@@ -1,5 +1,7 @@
 -- Native Ephyra Hub and side-door adaptation. The planner owns the complete
 -- board; this module only binds that product to native physical doors.
+local nativeBindings = type(import) == "function" and import("mods/native_bindings.lua")
+    or require("mods.native_bindings")
 local ephyra = {}
 
 local function copy(value, seen)
@@ -18,6 +20,18 @@ end
 
 local function rewardName(value)
     return type(value) == "table" and (value.RewardType or value.Name or value.Reward) or value
+end
+
+function ephyra.hubFountainObjectId(nativeRoom)
+    return nativeBindings.navigation.hubFountainObjectIds[roomName(nativeRoom)]
+end
+
+-- UseHealthFountain records UseableOff; HealthFountainNExitCheck reads the same flag.
+function ephyra.hubFountainUsed(nativeRoom)
+    local objectId = ephyra.hubFountainObjectId(nativeRoom)
+    local states = objectId and type(nativeRoom) == "table" and nativeRoom.ObjectStates or nil
+    local objectState = type(states) == "table" and states[objectId] or nil
+    return type(objectState) == "table" and objectState.UseableOff == true
 end
 
 function ephyra.hub(plan, nativeRoom)

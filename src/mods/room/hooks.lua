@@ -169,6 +169,10 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
         if state == nil or state.state ~= "synchronized" then return base(currentRun, door) end
         local nativeRoomName = roomName(currentRun and currentRun.CurrentRoom)
         if route.leaveTransparent and route.leaveTransparent(state.route, nativeRoomName) then
+            if navigation.proveHubDeparture then
+                local departed, departureError = navigation.proveHubDeparture(state, currentRun)
+                if not departed then reportOutcome(session, state, departureError); report(runtime) end
+            end
             return base(currentRun, door)
         end
         local proved, errorValue = navigation.proveOutgoingDoors(state, currentRun)

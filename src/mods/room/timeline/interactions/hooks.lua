@@ -4,8 +4,8 @@ local fountain = type(import) == "function"
     or require("mods.room.timeline.interactions.fountain")
 local hooks = {}
 
-function hooks.attach(module, session, getState, report, room)
-    fountain.attach(module, session, getState, report, room)
+function hooks.attach(module, session, getState, report, room, route)
+    fountain.attach(module, session, getState, report, room, route)
 end
 
 return hooks

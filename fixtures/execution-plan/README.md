@@ -2,7 +2,8 @@
 
 These files are byte-for-byte mirrors of the corresponding execution fixtures
 in RunPlanner-main. They cover the fixed-route navigation products, automatic
-effects, the Surface scheduled lifecycle, an authored Arachne combat cocoon
+effects, the Surface scheduled lifecycle, the Hub-owned fountain use with an
+Aromatic Phial target after an intermediate visit, an authored Arachne combat cocoon
 count, native and ordered-roster Anomaly encounters, and planner-generated
 encounter compositions (expected budgets, highlight, Fangs, Menace, template
 companions and an authored base roll) used for cross-product protocol proof.
