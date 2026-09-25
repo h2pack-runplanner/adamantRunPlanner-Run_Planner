@@ -105,6 +105,18 @@ function world.create(route)
         if not enabled(runtime, state) then clearMarkers(); return end
         for _, door in ipairs(desired.doors) do mark(door) end
     end
+    function instance.mapIcons(runtime, state, door, icons)
+        if not enabled(runtime, state) or desired.route ~= state.route then return icons end
+        for _, target in ipairs(desired.doors) do
+            if target == door then
+                local result = {}
+                for index, icon in ipairs(icons or {}) do result[index] = icon end
+                result[#result + 1] = { Name = MARKER_KEY, Animation = "RoomRewardSubIcon_ForgetMeNot" }
+                return result
+            end
+        end
+        return icons
+    end
     return instance
 end
 return world

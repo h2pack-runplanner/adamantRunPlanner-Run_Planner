@@ -155,6 +155,15 @@ function hooks.attach(module, session, getState, report, route, room, featureSco
         return result
     end)
 
+    module.hooks.wrap("RestoreUnlockRoomExits", "run-planner-room-restore", function(_, runtime, base,
+        currentRun, nativeRoom)
+        local state = getState(runtime)
+        if state and state.state == "synchronized" then
+            route.enterTransparent(state.route, roomName(nativeRoom))
+        end
+        return base(currentRun, nativeRoom)
+    end)
+
     module.hooks.wrap("LeaveRoom", "run-planner-room-exit", function(_, runtime, base, currentRun, door)
         local state = getState(runtime)
         if state == nil or state.state ~= "synchronized" then return base(currentRun, door) end

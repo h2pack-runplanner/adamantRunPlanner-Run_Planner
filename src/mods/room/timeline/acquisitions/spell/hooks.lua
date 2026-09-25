@@ -27,7 +27,7 @@ local function spellNames(offer)
     end
     return names
 end
-function hooks.attach(module, session, getState, report, room, tree)
+function hooks.attach(module, session, getState, report, room, tree, highlights)
     assert(type(tree) == "table", "spell acquisition Hex Tree instance is required")
     local scopesByLoot = setmetatable({}, { __mode = "k" })
     local offerScope
@@ -73,7 +73,7 @@ function hooks.attach(module, session, getState, report, room, tree)
         if offerScope and values == offerScope.pool then return table.remove(values, 1) end
         return base(values, ...)
     end)
-    module.hooks.wrap("CreateSpellButtons", "run-planner-spell-offer-buttons", function(_, _, base, screen)
+    module.hooks.wrap("CreateSpellButtons", "run-planner-spell-offer-buttons", function(_, runtime, base, screen)
         local scope = screen and screen.Source and scopesByLoot[screen.Source] or nil
         if not scope then return base(screen) end
         local names, missing = spellNames(scope.offer)
@@ -95,6 +95,11 @@ function hooks.attach(module, session, getState, report, room, tree)
         end)
         offerScope = prior
         if not ok then error(result, 0) end
+        local index = tonumber(tostring(scope.offer.selected):match("^option(%d+)$"))
+        local selected = index and scope.offer.options[index]
+        if highlights and selected then
+            highlights.screen(runtime, scope.state, screen, selected.key, false)
+        end
         return result
     end)
     module.hooks.wrap("OpenSpellScreen", "run-planner-spell-begin", function(_, runtime, base, spellItem, args, user)

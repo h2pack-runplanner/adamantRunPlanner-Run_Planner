@@ -80,7 +80,14 @@ local function assertScreenInstallation(isShop)
     require("mods.room.features.inventory.world_item_hooks").attach(module, session, getState, report, room, nil, {})
     local hexTree = require("mods.spells.hex_tree").create()
     hexTree.attach(module)
-    spell.attach(module, session, getState, report, room, hexTree)
+    local markedScreen, markedTrait
+    spell.attach(module, session, getState, report, room, hexTree, {
+        screen = function(_, observedState, screen, selected)
+            lu.assertIs(observedState, state)
+            lu.assertNotNil(screen.Components[1])
+            markedScreen, markedTrait = screen, selected
+        end,
+    })
     local restore = require("tests.harness.native_game").install({
         SpellData = {
             Heal = { TraitName = "SpellHealTrait" }, Beam = { TraitName = "SpellLaserTrait" },
@@ -139,6 +146,8 @@ local function assertScreenInstallation(isShop)
                 end
             end, screen)
             lu.assertEquals(screen.Components[1].TraitName, "SpellPolymorphTrait")
+            lu.assertIs(markedScreen, screen)
+            lu.assertEquals(markedTrait, "SpellPolymorphTrait")
             lu.assertEquals(screen.Components[3].TraitName, "SpellSummonTrait")
             lu.assertEquals(_G.SessionMapState.SelectedSpells, {})
             invoke("AcceptAndCloseSpellScreen", function(_, button)

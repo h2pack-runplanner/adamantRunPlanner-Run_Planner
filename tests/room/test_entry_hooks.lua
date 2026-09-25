@@ -55,6 +55,30 @@ local function attachRuntimeEntryHook(state)
     return callbacks
 end
 
+function TestRoomEntryHooks.testNativeRestorationPublishesTransparentLocationWithoutAdvancing()
+    local state = hookedRuntimeState()
+    local parent = { id = "parent", gameName = "N_Combat01", overview = { localSlots = {
+        { room = { id = "side" } },
+    } } }
+    local side = { id = "side", gameName = "N_Sub01" }
+    state.plan.occurrencesById.parent = parent
+    state.plan.occurrencesById.prehub = { overview = { hub = { room = { gameName = "N_Hub" } } } }
+    state.route.lastExitedOccurrence = side
+    local callbacks = attachRuntimeEntryHook(state)
+    for _, name in ipairs({ "N_Combat01", "N_Hub", "N_Combat01" }) do
+        local index = state.route.index
+        local result = callbacks.RestoreUnlockRoomExits(nil, {}, function()
+            lu.assertEquals(state.route.transparentNativeRoom, name)
+            return "restored"
+        end, {}, { Name = name })
+        lu.assertEquals(result, "restored")
+        lu.assertEquals(state.route.index, index)
+        lu.assertNil(state.route.currentOccurrence)
+        lu.assertNil(roomCoordinatorModule.current(state))
+        routeSessionModule.leaveTransparent(state.route, name)
+    end
+end
+
 function TestRoomEntryHooks.testStartRoomGameplayMismatchStillCallsNativeExactlyOnce()
     local state = hookedRuntimeState()
     local callbacks = attachRuntimeEntryHook(state)

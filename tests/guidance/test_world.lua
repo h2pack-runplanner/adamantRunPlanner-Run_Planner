@@ -50,6 +50,49 @@ function TestGuidanceWorld:testHubUsesPhysicalSlotForNWithoutAdvancingSideCursor
     lu.assertEquals(self.destroyed, { 101 })
 end
 
+function TestGuidanceWorld:testMapSubiconsFollowNextVisitAndPreserveNativeIcons()
+    local first, second = { ObjectId = 1 }, { ObjectId = 2 }
+    local hub = { slots = {
+        { physicalDoorId = 1, room = { id = "first" } },
+        { physicalDoorId = 2, room = { id = "second" } },
+    } }
+    local native = { { Name = "NativePin" } }
+    self.route.nextTarget = { id = "first" }
+    self.guidance.hub(self.runtime, self.state, { first, second }, hub)
+    local icons = self.guidance.mapIcons(self.runtime, self.state, first, native)
+    lu.assertEquals(#icons, 2)
+    lu.assertEquals(#native, 1)
+    lu.assertEquals(icons[2].Animation, "RoomRewardSubIcon_ForgetMeNot")
+    self.route.nextTarget = { id = "second" }
+    self.guidance.hub(self.runtime, self.state, { first, second }, hub)
+    lu.assertIs(self.guidance.mapIcons(self.runtime, self.state, first, native), native)
+    lu.assertEquals(#self.guidance.mapIcons(self.runtime, self.state, second, native), 2)
+    self.runtime.data.read = function() return false end
+    lu.assertIs(self.guidance.mapIcons(self.runtime, self.state, second, native), native)
+end
+
+function TestGuidanceWorld:testMapHookOnlyAddsIconsDuringNativeMapConstruction()
+    local highlights = require("mods.guidance.highlights").create(self.route)
+    local callbacks = {}
+    highlights.attach({ hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } },
+        function() return self.state end)
+    local door = { ObjectId = 2 }
+    self.route.nextTarget = { id = "visit" }
+    highlights.hub(self.runtime, self.state, { door }, { slots = {
+        { physicalDoorId = 2, room = { id = "visit" } },
+    } })
+    local function icons()
+        return callbacks.PopulateDoorRewardPreviewSubIcons(nil, self.runtime,
+            function() return { { Name = "NativePin" } } end, door, {})
+    end
+    lu.assertEquals(#icons(), 1)
+    callbacks.EphyraZoomOut(nil, self.runtime, function() lu.assertEquals(#icons(), 2) end, {})
+    lu.assertEquals(#icons(), 1)
+    local ok = pcall(callbacks.EphyraZoomOut, nil, self.runtime, function() error("native error") end, {})
+    lu.assertFalse(ok)
+    lu.assertEquals(#icons(), 1)
+end
+
 function TestGuidanceWorld:testWheelRetainsSelectedOfferAcrossOtherPreviewAndClearsOnDisable()
     local selected = { __runPlannerOfferKey = "offer1", RewardPreviewIconIds = { 3 }, AdditionalIcons = {} }
     local other = { __runPlannerOfferKey = "offer2", RewardPreviewIconIds = { 4 }, AdditionalIcons = {} }

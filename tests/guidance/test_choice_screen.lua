@@ -48,6 +48,23 @@ function TestChoiceScreenGuidance:testRetainsSourceContextWhileDisabledThenRende
     lu.assertEquals(self.attached[1].DestinationId, 7)
 end
 
+function TestChoiceScreenGuidance:testSpellButtonsUseTraitIdentityAndClearOnAccept()
+    local screen = { Source = {}, Components = {
+        PurchaseButton1 = { Id = 11, TraitName = "Other" },
+        PurchaseButton2 = { Id = 12, TraitName = "Chosen" },
+        PurchaseButton3 = { Id = 13, TraitName = "Third" },
+    } }
+    self.guidance.present(self.runtime, self.state, screen, "Chosen", false)
+    lu.assertEquals(self.attached[1].DestinationId, 12)
+    local callbacks = {}
+    self.guidance.attach({ hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } },
+        function() return self.state end)
+    callbacks.AcceptAndCloseSpellScreen(nil, self.runtime, function() return true end, screen, {})
+    lu.assertEquals(self.destroyed, { 501 })
+    self.guidance.refresh(self.runtime, self.state)
+    lu.assertEquals(#self.created, 1)
+end
+
 function TestChoiceScreenGuidance:testAmbiguousOrMissingRowsSafelyOmitMarker()
     local screen = { Components = {}, UpgradeButtons = {
         { Id = 1, Data = { Name = "Same" } }, { Id = 2, Data = { Name = "Same" } },

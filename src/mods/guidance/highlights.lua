@@ -19,6 +19,20 @@ function highlights.create(route)
     end
     function instance.attach(module, getState)
         choices.attach(module, getState)
+        local mapOpen = false
+        module.hooks.wrap("EphyraZoomOut", "run-planner-highlight-hub-map", function(_, _, base, ...)
+            mapOpen = true
+            local ok, result = pcall(base, ...)
+            mapOpen = false
+            if not ok then error(result, 0) end
+            return result
+        end)
+        module.hooks.wrap("PopulateDoorRewardPreviewSubIcons", "run-planner-highlight-hub-map-icons",
+            function(_, runtime, base, door, args)
+                local icons = base(door, args)
+                if mapOpen then return doors.mapIcons(runtime, getState(runtime), door, icons) end
+                return icons
+            end)
         module.hooks.wrap("RemoveRoomRewardPreviews", "run-planner-highlight-previews-remove", function(_, _, base, ...)
             doors.clear()
             return base(...)

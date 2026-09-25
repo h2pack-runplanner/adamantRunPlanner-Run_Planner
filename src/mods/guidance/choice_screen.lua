@@ -40,10 +40,15 @@ function guidance.create()
         if not valid(context, state) or context.source ~= screen.Source
             or not enabled(runtime, state) or context.marker or context.rebuilding or context.infoOpen then return end
         local matches = {}
-        for _, button in ipairs(screen.UpgradeButtons or {}) do
+        local buttons = screen.UpgradeButtons or {
+            screen.Components and screen.Components.PurchaseButton1,
+            screen.Components and screen.Components.PurchaseButton2,
+            screen.Components and screen.Components.PurchaseButton3,
+        }
+        for _, button in ipairs(buttons) do
             local data = button and button.Data
             local key = context.chaos and data and data.OnExpire and data.OnExpire.TraitData
-                and data.OnExpire.TraitData.Name or data and data.Name
+                and data.OnExpire.TraitData.Name or data and data.Name or button.TraitName
             if key == context.selected then
                 matches[#matches + 1] = button
             end
@@ -55,10 +60,14 @@ function guidance.create()
         })
         if not ok then return end
         if marker and type(_G.Attach) == "function" then
+            -- Spell rows reuse the upgrade-choice button geometry, but their
+            -- screen does not copy its pin offsets.
+            local layout = screen.UpgradeButtons and screen
+                or (_G.ScreenData and _G.ScreenData.UpgradeChoice) or screen
             local attached = pcall(_G.Attach, {
                 Id = marker.Id, DestinationId = matches[1].Id,
-                OffsetX = (screen.PinOffsetX or 0) - (screen.ButtonOffsetX or 0) - 24,
-                OffsetY = screen.PinOffsetY or 0,
+                OffsetX = (layout.PinOffsetX or 0) - (layout.ButtonOffsetX or 0) - 24,
+                OffsetY = layout.PinOffsetY or 0,
             })
             if not attached then
                 if _G.Destroy then pcall(_G.Destroy, { Ids = { marker.Id } }) end
@@ -126,6 +135,11 @@ function guidance.create()
     end
 
     function instance.attach(module, getState)
+        module.hooks.wrap("AcceptAndCloseSpellScreen", "run-planner-highlight-spell-close", function(_, _, base,
+            screen, button)
+            instance.clear(screen)
+            return base(screen, button)
+        end)
         module.hooks.wrap("CreateBoonLootButtons", "run-planner-highlight-source-screen", function(_, runtime,
             base, screen, loot, reroll, args)
             suspend(screen, "rebuilding")

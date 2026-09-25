@@ -48,6 +48,19 @@ function TestRoomGuide.testConversionsDescribeTheSourceAndKeepReplacementSeparat
     end
 end
 
+function TestRoomGuide.testTrialRowsNameTheirOwnAcquisitionGod()
+    local reward = { rewardType = "Devotion", source = "AresUpgrade", spurnedSource = "HephaestusUpgrade" }
+    local snapshot = room({ row("interactIncomingReward", "chosen", { reward = reward }),
+        row("interactIncomingReward", "spurned", { reward = reward }) })
+    snapshot.occurrence.transactionsByOwner = {
+        chosen = { kind = "acquisition", roles = { { gameName = "AresUpgrade" } } },
+        spurned = { kind = "acquisition", roles = { { gameName = "HephaestusUpgrade" } } },
+    }
+    lu.assertEquals(guide.project(snapshot).rows, {
+        { instruction = "Collect Ares boon" }, { instruction = "Collect Hephaestus boon" },
+    })
+end
+
 function TestRoomGuide.testShopLabelsUseResolvedGodWithoutDuplicatingCarrierName()
     for _, case in ipairs({
         { "BlindBoxLoot", "DemeterUpgrade", "RandomLootGiftItem", "Buy Mystery Boon — Demeter" },

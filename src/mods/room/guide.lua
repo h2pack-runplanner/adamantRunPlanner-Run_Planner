@@ -103,6 +103,12 @@ local function instruction(description, occurrence, transaction)
     if type(description) ~= "table" then return "Complete planned action" end
     local kind = description.kind
     local reward = description.reward or (transaction and transaction.reward)
+    if reward and reward.rewardType == "Devotion" and transaction and transaction.kind == "acquisition" then
+        local role = transaction.roles and transaction.roles[1]
+        if role then
+            reward = { rewardType = "Boon", source = role.gameName }
+        end
+    end
     if transaction and transaction.kind == "acquisition" then
         for _, role in ipairs(transaction.roles or {}) do
             if role.disposition == "artificer" then return "Use Artificer on " .. rewardName(reward) end
