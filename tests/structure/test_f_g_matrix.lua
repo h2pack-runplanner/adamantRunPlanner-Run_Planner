@@ -152,6 +152,7 @@ end
 
 function TestFGStructureMatrix.testNormalDoorBatchesCoverZeroThroughThreeExits()
     lu.assertTrue(doors.prove({ doors = { kind = "terminal" } }, {}))
+    lu.assertTrue(doors.prove({ doors = { kind = "terminal" } }, nativeDoors(1, "Q_Intro")))
     for count = 1, 3 do
         local occurrence = doorOccurrence(count, "F_Target")
         local result, errorValue = doors.prove(occurrence, nativeDoors(count, "F_Target"))

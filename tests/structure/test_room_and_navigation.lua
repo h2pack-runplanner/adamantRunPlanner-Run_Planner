@@ -212,7 +212,8 @@ function TestRoomNavigationStructure.testDoorsProveOrderTargetsRewardsAndTermina
     lu.assertNil(doors.prove(item, native))
     item.doors = { kind = "terminal" }
     lu.assertTrue(doors.prove(item, {}))
-    lu.assertNil(doors.prove(item, native))
+    -- The prefix ends here; doors that continue the run are not planned.
+    lu.assertTrue(doors.prove(item, native))
 end
 
 function TestRoomNavigationStructure.testNavigationProvesTheCompleteAdditionalDoorSet()

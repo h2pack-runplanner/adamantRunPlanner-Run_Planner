@@ -96,12 +96,9 @@ end
 
 function doors.prove(occurrence, nativeDoors, occurrencesById)
     local expected = occurrence.doors
-    if expected.kind == "terminal" then
-        if nativeDoors ~= nil and #nativeDoors ~= 0 then
-            return nil, { kind = "terminal", observed = #nativeDoors }
-        end
-        return true, {}
-    end
+    -- A terminal occurrence ends the configured prefix; the native doors that
+    -- continue the run beyond it are not part of the plan.
+    if expected.kind == "terminal" then return true, {} end
     local targets = publishedTargets(expected, occurrencesById)
     if type(nativeDoors) ~= "table" or #nativeDoors ~= #targets then
         return nil, { kind = "count", expected = #targets,
