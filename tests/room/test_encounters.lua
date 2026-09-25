@@ -1,6 +1,8 @@
 -- D1 encounter ownership and identity witnesses.
 -- luacheck: globals TestEncounters
 local lu = require("luaunit")
+local json = require("mods/protocol/json")
+local protocol = require("mods.protocol.decoder")
 local bindings = require("mods.room.timeline.bindings")
 local lifecycle = require("mods.room.timeline.lifecycle")
 local phases = require("mods.room.timeline.encounters.phases").create()
@@ -416,6 +418,58 @@ function TestEncounters.testDirectEncounterChoicesAreBoundToOnePublishedSequence
     lu.assertEquals(fifth, nativeEncounters[5])
     lu.assertNil(phasesForRoom.forNative(fourth))
     lu.assertNil(phasesForRoom.forNative(fifth))
+end
+
+function TestEncounters.testPublishedStoryCarrierIsForcedProvenAndBound()
+    -- F postboss publishes Story_Chronos_01, the native carrier derived from Empty.
+    local file = assert(io.open("fixtures/execution-plan/fg.execution.json", "rb"))
+    local plan = assert(protocol.decode(assert(json.decode(file:read("*a")))))
+    file:close()
+    local occurrence
+    for _, candidate in ipairs(plan.occurrences) do
+        if candidate.gameName == "F_PostBoss01" then occurrence = candidate end
+    end
+    lu.assertEquals(occurrence.overview.encounterPhases[1].encounterKey, "Story_Chronos_01")
+
+    local module, callbacks = capture()
+    local registry = require("mods.room.timeline.encounters.phases").create()
+    local state = { state = "synchronized" }
+    local nativeRoom = { Name = "F_PostBoss01", __runPlannerExecutionRoomId = occurrence.id }
+    local room = {
+        occurrence = function() return occurrence end,
+        encounterAt = function(_, index) return occurrence.overview.encounterPhases[index] end,
+        bindEncounter = function(_, native, slotKey) return registry.bind(occurrence, native, slotKey) end,
+    }
+    local diagnostics = {}
+    encounterHooks.attach(module, { diagnostic = function(_, checkpoint)
+        diagnostics[#diagnostics + 1] = checkpoint
+    end }, function() return state end, function() end, room)
+    local declaration = { Name = "Story_Chronos_01", InheritFrom = { "Empty" } }
+    local priorGame = _G.game
+    _G.game = {
+        EncounterData = { Empty = { Name = "Empty" }, Story_Chronos_01 = declaration },
+        IsEncounterEligible = function(_, destination, candidate)
+            lu.assertIs(destination, nativeRoom)
+            lu.assertIs(candidate, declaration)
+            return true
+        end,
+    }
+    local run = {}
+    local forced
+    local selected = callbacks.ChooseEncounter(nil, {}, function(currentRun)
+        forced = currentRun.ForceNextEncounterData
+        return { Name = forced.Name }
+    end, run, nativeRoom, {})
+    _G.game = priorGame
+
+    lu.assertIs(forced, declaration)
+    lu.assertNil(run.ForceNextEncounterData)
+    lu.assertEquals(diagnostics, {})
+    lu.assertEquals(registry.forNative(selected).phase.slotKey, "Encounter")
+    lu.assertTrue(registry.prove(occurrence, { Encounter = selected }))
+    local result, mismatch = registry.prove(occurrence, { Encounter = { Name = "Empty" } })
+    lu.assertNil(result)
+    lu.assertEquals(mismatch, { kind = "encounter", expected = "Story_Chronos_01", observed = "Empty" })
 end
 
 function TestEncounters.testGeneratedCompositionUsesTheExistingExactPhaseCarrier()

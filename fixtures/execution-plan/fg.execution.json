@@ -2372,7 +2372,7 @@
       "resumeBoundary": "postbossEntry",
       "overview": {
         "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "Empty", "kind": "nonCombat" }
+          { "slotKey": "Encounter", "encounterKey": "Story_Chronos_01", "kind": "nonCombat" }
         ],
         "requiredObjects": [],
         "stygianWell": { "interacted": false },
@@ -3849,5 +3849,5 @@
       }
     }
   ],
-  "planFingerprint": "0b6249f6"
+  "planFingerprint": "6279a32d"
 }
