@@ -51,6 +51,24 @@ local function customization(value, label)
             if not row then return nil, rowError end
             local _, countError = p.int(row.count, decisionLabel .. ".count", 1)
             if countError then return nil, countError end
+        elseif kind == "infiniteRoster" then
+            row, rowError = p.exact(raw, { "decisionKey", "kind", "types" }, {}, decisionLabel)
+            if not row then return nil, rowError end
+            local types, typesError = p.arr(row.types, decisionLabel .. ".types", 16)
+            if not types then return nil, typesError end
+            if #types == 0 then return p.fail(decisionLabel .. ".types must be non-empty") end
+            local seenKeys, seenNatives = {}, {}
+            for typeIndex, typeEntry in ipairs(types) do
+                local typeLabel = decisionLabel .. ".types[" .. typeIndex .. "]"
+                local typeRow, typeError = p.exact(typeEntry, { "choiceKey", "nativeId" }, {}, typeLabel)
+                if not typeRow then return nil, typeError end
+                if not p.str(typeRow.choiceKey, typeLabel .. ".choiceKey")
+                    or not p.str(typeRow.nativeId, typeLabel .. ".nativeId")
+                    or seenKeys[typeRow.choiceKey] or seenNatives[typeRow.nativeId] then
+                    return p.fail(typeLabel .. " has invalid or duplicate roster type")
+                end
+                seenKeys[typeRow.choiceKey], seenNatives[typeRow.nativeId] = true, true
+            end
         else
             return p.fail(decisionLabel .. ".kind is unsupported")
         end

@@ -1,5 +1,7 @@
 -- Install resolved composition at native fill contacts. Native generation keeps
 -- templates/setup; native spawning keeps timing, caps, groups and retries.
+-- A finite composition owns waves and counts; an infinite roster owns only the
+-- ordered FillEnemyTypes draws, which native FillEnemyCounts marks infinite.
 -- luacheck: globals GetNextSpawn MetaUpgradeData
 local generated = {}
 local fangs = type(import) == "function" and import("mods/room/timeline/encounters/fangs.lua")
@@ -12,6 +14,14 @@ local function compositionFor(phase)
         if decision.kind == "generated" and decision.decisionKey == "generatedComposition" then return decision end
     end
 end
+
+local function rosterFor(phase)
+    for _, decision in ipairs(phase and phase.customization or {}) do
+        if decision.kind == "infiniteRoster" and decision.decisionKey == "infiniteRoster" then return decision end
+    end
+end
+
+local function isRoster(decision) return decision.kind == "infiniteRoster" end
 
 local function copy(value)
     local result = {}
@@ -113,6 +123,26 @@ local function installable(decision, encounter, enemies)
     end
 end
 
+-- GenerateEncounter's wave RequireCompletedIntro, including the shallow-depth override.
+local function requireCompletedIntro(encounter, nativeRoom, currentRun, gameValue)
+    local requireIntro = encounter.RequireCompletedIntro or nativeRoom.RequireCompletedIntro
+    local roomData = nativeValue(gameValue, "RoomData")
+    local depth = nativeValue(gameValue, "GetBiomeDepth")
+    local minDepth = nativeRoom.MinDepthBeforeIntros or (roomData and roomData.BaseRoom.MinDepthBeforeIntros)
+    if minDepth and depth and depth(currentRun) < minDepth then requireIntro = true end
+    return requireIntro
+end
+
+-- A detached encounter view with the run blacklist; live tables stay untouched.
+local function eligibilityView(encounter, currentRun)
+    local view = copy(encounter)
+    view.Blacklist = copy(view.Blacklist)
+    for name, blocked in pairs(currentRun.Blacklist or {}) do
+        if blocked then view.Blacklist[name] = true end
+    end
+    return view
+end
+
 -- Native eligibility reads global CurrentRun.Blacklist. Leave it untouched:
 -- carry only prospective exclusions in the detached encounter view instead.
 -- Ordinary candidates are sampled before placeholders/additions in each wave;
@@ -120,17 +150,9 @@ end
 local function eligibleComposition(decision, encounter, nativeRoom, currentRun, gameValue)
     local eligible = nativeValue(gameValue, "IsEnemyEligible")
     if type(eligible) ~= "function" then return "missing-enemy-eligibility" end
-    local view = copy(encounter)
-    view.Blacklist = copy(view.Blacklist)
-    for name, blocked in pairs(currentRun.Blacklist or {}) do
-        if blocked then view.Blacklist[name] = true end
-    end
+    local view = eligibilityView(encounter, currentRun)
     local enemies = gameValue.EnemyData or {}
-    local requireIntro = view.RequireCompletedIntro or nativeRoom.RequireCompletedIntro
-    local roomData = nativeValue(gameValue, "RoomData")
-    local depth = nativeValue(gameValue, "GetBiomeDepth")
-    local minDepth = nativeRoom.MinDepthBeforeIntros or (roomData and roomData.BaseRoom.MinDepthBeforeIntros)
-    if minDepth and depth and depth(currentRun) < minDepth then requireIntro = true end
+    local requireIntro = requireCompletedIntro(view, nativeRoom, currentRun, gameValue)
     local function check(name, index, wave, enemySet)
         local member = false
         for _, candidate in pairs(enemySet or view.EnemySet or {}) do
@@ -267,11 +289,11 @@ end
 
 -- SetupEncounter replaces a generated encounter afterwards when a spawned enemy's
 -- introduction is incomplete and eligible, unless SkipIntroEncounterCheck is set.
-local function introSubstitution(decision, encounter, gameValue)
+local function introSubstitution(waves, encounter, gameValue)
     if encounter.SkipIntroEncounterCheck then return nil end
     local enemies, encounters = gameValue.EnemyData or {}, nativeValue(gameValue, "EncounterData") or {}
     local completed, eligible = nativeValue(gameValue, "HasEncounterBeenCompleted"), nativeValue(gameValue, "IsGameStateEligible")
-    for index, wave in ipairs(decision.waves) do
+    for index, wave in ipairs(waves) do
         for _, entry in ipairs(wave.types) do
             local intro = enemies[entry.nativeId].IntroEncounterName
             if intro ~= nil and not completed(intro) then
@@ -302,7 +324,95 @@ local function admission(decision, encounter, nativeRoom, currentRun, gameValue)
     if reason then return reason, evidence end
     reason, evidence = menaceAdmissible(decision, encounter, nativeRoom, gameValue)
     if reason then return reason, evidence end
-    return introSubstitution(decision, encounter, gameValue)
+    return introSubstitution(decision.waves, encounter, gameValue)
+end
+
+-- FillEnemyTypes draw count for the one roster wave: escalated, template-fixed,
+-- or MinTypes..MaxTypes with the depth ramp, capped by MaxTypesCap.
+local function rosterTypeBounds(encounter, template, currentRun, gameValue)
+    local ramp, depth = encounter.TypeCountDepthRamp or 0, 0
+    if ramp ~= 0 then
+        local biomeDepth = nativeValue(gameValue, "GetBiomeDepth")
+        if encounter.UseEncounterDepthForTypes then depth = currentRun.BiomeEncounterDepth or 1
+        elseif type(biomeDepth) == "function" then depth = biomeDepth(currentRun)
+        else return nil end
+    end
+    local minimum, maximum
+    if encounter.EscalateTypeCount and type(encounter.MaxTypes) == "number" then
+        minimum = math.floor(encounter.MaxTypes + ramp * depth)
+        maximum = minimum
+    elseif template.TypeCount ~= nil then
+        minimum, maximum = template.TypeCount, template.TypeCount
+    else
+        minimum = template.MinTypes or encounter.MinTypes
+        maximum = template.MaxTypes or (type(encounter.MaxTypes) == "number"
+            and math.floor(encounter.MaxTypes + ramp * depth))
+    end
+    if type(minimum) ~= "number" or type(maximum) ~= "number" then return nil end
+    if encounter.MaxTypesCap then
+        minimum, maximum = math.min(minimum, encounter.MaxTypesCap), math.min(maximum, encounter.MaxTypesCap)
+    end
+    return minimum, maximum
+end
+
+-- One roster decision at the pre-wave cap contact; nothing live is mutated. Each
+-- draw is checked against the wave already holding the earlier draws, so native
+-- IsEnemyEligible applies duplicates, earlier BlockEnemyTypes and the elite cap in order.
+local function rosterAdmission(decision, encounter, nativeRoom, currentRun, gameValue)
+    local enemies = gameValue.EnemyData or {}
+    if not encounter.InfiniteSpawns then return "unsupported-finite-spawns" end
+    local minimum, maximum = encounter.MinWaves or 1, encounter.MaxWaves or 1
+    if minimum ~= 1 or maximum ~= 1 then
+        return "wave-count-out-of-range", { expected = { min = 1, max = 1 }, observed = { min = minimum, max = maximum } }
+    end
+    if encounter.SpawnWaves ~= nil and next(encounter.SpawnWaves) ~= nil then return "preexisting-waves" end
+    if encounter.BuildCustomEnemySet ~= nil then return "unsupported-custom-enemy-set" end
+    if encounter.MaxTypesPerGroup ~= nil and next(encounter.MaxTypesPerGroup) ~= nil then
+        return "unsupported-type-groups"
+    end
+    local template = templateFor(encounter, 1, 1)
+    if type(template) ~= "table" or type(template.Spawns) ~= "table" then return "unsupported-template" end
+    if next(template.Spawns) ~= nil then return "unowned-template-entry" end
+    local typeMinimum, typeMaximum = rosterTypeBounds(encounter, template, currentRun, gameValue)
+    if typeMinimum == nil then return "unsupported-type-bounds" end
+    if #decision.types < typeMinimum or #decision.types > typeMaximum then
+        return "type-count-out-of-range", { expected = { min = typeMinimum, max = typeMaximum }, observed = #decision.types }
+    end
+    local eligible = nativeValue(gameValue, "IsEnemyEligible")
+    if type(eligible) ~= "function" then return "missing-enemy-eligibility" end
+    local view = eligibilityView(encounter, currentRun)
+    local wave = copy(template)
+    wave.Spawns, wave.WaveIndex, wave.TypeCount = {}, 1, #decision.types
+    wave.RequireCompletedIntro = wave.RequireCompletedIntro or requireCompletedIntro(view, nativeRoom, currentRun, gameValue)
+    for position, entry in ipairs(decision.types) do
+        local name = entry.nativeId
+        if enemies[name] == nil then return "missing-enemy", { position = position, enemy = name } end
+        local member = false
+        for _, candidate in pairs(view.EnemySet or {}) do
+            if candidate == name then member = true end
+        end
+        if not member then return "enemy-set-changed", { position = position, enemy = name } end
+        local ok, verdict = pcall(eligible, name, view, wave)
+        if not ok then
+            return "native-enemy-check-error", { position = position, enemy = name, observed = tostring(verdict) }
+        end
+        if not verdict then return "native-enemy-ineligible", { position = position, enemy = name } end
+        wave.Spawns[#wave.Spawns + 1] = { Name = name }
+    end
+    return introSubstitution({ { types = decision.types } }, encounter, gameValue)
+end
+
+-- Native FillEnemyTypes side effects of one ordinary draw.
+local function applyDraw(scope, encounter, name)
+    local enemy = scope.enemies[name]
+    if enemy.BlacklistAfterFirstAppearance then scope.run.Blacklist[name] = true end
+    local generator = enemy.GeneratorData or {}
+    if encounter.BlockTypesAcrossWaves then
+        for _, excluded in pairs(generator.BlockEnemyTypes or {}) do encounter.Blacklist[excluded] = true end
+    end
+    if generator.ActiveEnemyCapBonus then
+        encounter.ActiveEnemyCapBonus = (encounter.ActiveEnemyCapBonus or 0) + generator.ActiveEnemyCapBonus
+    end
 end
 
 function generated.create()
@@ -313,14 +423,17 @@ function generated.create()
             owner.session.diagnostic(owner.state, "encounter-composition", observed, owner.occurrence)
         end
     end
+    local function kindFor(owner, suffix)
+        return (isRoster(owner.decision) and "roster-" or "generated-") .. suffix
+    end
     local function decline(owner, reason, evidence)
         owner.declined = reason
         local observed = copy(evidence)
-        observed.kind, observed.reason = "generated-admission", reason
+        observed.kind, observed.reason = kindFor(owner, "admission"), reason
         diagnostic(owner, observed)
     end
     function instance.withPhase(state, room, phase, nativeRoom, action)
-        local decision = compositionFor(phase)
+        local decision = compositionFor(phase) or rosterFor(phase)
         local occurrence = state and room.occurrence and room.occurrence(state, nativeRoom)
         if decision == nil or occurrence == nil then return scoped(stack, { kind = "native" }, action) end
         return scoped(stack, {
@@ -363,7 +476,7 @@ function generated.create()
                 if parent.prepared then
                     parent.prepared.__runPlannerGeneratedComposition = nil
                 end
-                diagnostic(parent, { kind = "generated-not-realized", reason = ok and "intro-substitution" or "setup-error",
+                diagnostic(parent, { kind = kindFor(parent, "not-realized"), reason = ok and "intro-substitution" or "setup-error",
                     encounterKey = parent.encounterKey, observed = ok and actual or tostring(result) })
             end
             if not ok then error(result, 0) end
@@ -398,28 +511,44 @@ function generated.create()
                 return scoped(stack, scope, function() return base(currentRun, nativeRoom, encounter) end)
             end)
             if restoreRoll then restoreRoll() end
-            if scope.admitted then
+            if scope.priorWaves then
                 encounter.BlockHighlightEncounter = scope.priorHighlight
                 encounter.MinWaves, encounter.MaxWaves = scope.priorWaves[1], scope.priorWaves[2]
             end
             if not ok then
-                diagnostic(owner, { kind = "generated-not-realized", reason = "generation-error",
+                diagnostic(owner, { kind = kindFor(owner, "not-realized"), reason = "generation-error",
                     admitted = scope.admitted == true, observed = tostring(result) })
                 error(result, 0)
             end
             if scope.admission == nil then
-                diagnostic(owner, { kind = "generated-not-realized", reason = "missing-admission-contact" })
+                diagnostic(owner, { kind = kindFor(owner, "not-realized"), reason = "missing-admission-contact" })
                 return result
             end
             if not scope.admitted then return result end
             local missing = {}
-            for index = 1, decision.waveCount do
+            for index = 1, isRoster(decision) and 1 or decision.waveCount do
                 if not scope.installed[index] then missing[#missing + 1] = index end
             end
             if #missing > 0 then
                 -- Admitted roster mutation may already be partial; this is not native fallback.
-                diagnostic(owner, { kind = "generated-not-realized", reason = "missing-fill-contact",
+                diagnostic(owner, { kind = kindFor(owner, "not-realized"), reason = "missing-fill-contact",
                     admitted = true, missingWaves = missing })
+                return result
+            end
+            if isRoster(decision) then
+                -- No finite marker: Fangs and Menace overrides never claim a roster.
+                local names, finite = {}, {}
+                for _, spawn in ipairs(encounter.SpawnWaves[1].Spawns) do
+                    names[#names + 1] = spawn.Name
+                    if not spawn.InfiniteSpawns then finite[#finite + 1] = spawn.Name end
+                end
+                if #finite > 0 then
+                    diagnostic(owner, { kind = "roster-not-realized", reason = "finite-spawns", admitted = true,
+                        types = names, finite = finite })
+                    return result
+                end
+                diagnostic(owner, { kind = "roster-installed", phase = owner.phase.slotKey,
+                    encounterKey = owner.encounterKey, types = names })
                 return result
             end
             encounter.__runPlannerGeneratedComposition = {
@@ -448,8 +577,8 @@ function generated.create()
                 return result
             end
             local decision = scope.owner.decision
-            local ok, reason, evidence = pcall(admission, decision, encounter, nativeRoom or currentRun.CurrentRoom or {},
-                currentRun, scope.gameValue)
+            local ok, reason, evidence = pcall(isRoster(decision) and rosterAdmission or admission, decision, encounter,
+                nativeRoom or currentRun.CurrentRoom or {}, currentRun, scope.gameValue)
             if not ok then reason, evidence = "admission-check-error", { observed = tostring(reason) } end
             if reason then
                 scope.admission = reason
@@ -457,6 +586,7 @@ function generated.create()
                 return result
             end
             scope.admission, scope.admitted = "accepted", true
+            if isRoster(decision) then return result end
             scope.priorWaves = { encounter.MinWaves, encounter.MaxWaves }
             encounter.MinWaves, encounter.MaxWaves = decision.waveCount, decision.waveCount
             scope.priorHighlight, encounter.BlockHighlightEncounter = encounter.BlockHighlightEncounter, true
@@ -467,8 +597,20 @@ function generated.create()
             local scope = current()
             if scope == nil or scope.kind ~= "generate" or not scope.admitted or scope.encounter ~= encounter
                 or encounter.SpawnWaves[wave.WaveIndex] ~= wave then return base(encounter, wave, nativeRoom) end
-            local index, published = wave.WaveIndex, scope.owner.decision.waves[wave.WaveIndex]
+            local decision = scope.owner.decision
+            local index = wave.WaveIndex
             if scope.installed[index] then return end
+            if isRoster(decision) then
+                -- Generated entries without counts; native FillEnemyCounts marks them infinite.
+                local spawns = {}
+                for _, entry in ipairs(decision.types) do
+                    spawns[#spawns + 1] = { Name = entry.nativeId, Generated = true }
+                    applyDraw(scope, encounter, entry.nativeId)
+                end
+                wave.Spawns, wave.TypeCount, scope.installed[index] = spawns, #spawns, true
+                return
+            end
+            local published = decision.waves[index]
             local spawns, templateIndex = {}, 1
             for _, entry in ipairs(published.types) do
                 local name, source = entry.nativeId, entry.source
@@ -486,15 +628,7 @@ function generated.create()
                 if source == "highlight" then
                     encounter.Blacklist[name] = true
                 elseif source == "addition" then
-                    local enemy = scope.enemies[name]
-                    if enemy.BlacklistAfterFirstAppearance then scope.run.Blacklist[name] = true end
-                    local generator = enemy.GeneratorData or {}
-                    if encounter.BlockTypesAcrossWaves then
-                        for _, excluded in pairs(generator.BlockEnemyTypes or {}) do encounter.Blacklist[excluded] = true end
-                    end
-                    if generator.ActiveEnemyCapBonus then
-                        encounter.ActiveEnemyCapBonus = (encounter.ActiveEnemyCapBonus or 0) + generator.ActiveEnemyCapBonus
-                    end
+                    applyDraw(scope, encounter, name)
                 end
             end
             wave.Spawns, wave.TypeCount, scope.installed[index] = spawns, #spawns, true

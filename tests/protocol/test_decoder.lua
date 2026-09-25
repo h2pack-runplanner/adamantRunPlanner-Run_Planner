@@ -146,6 +146,33 @@ function TestProtocol.testCocoonCountWireIsClosedAndPositive()
     end
 end
 
+function TestProtocol.testInfiniteRosterWireIsClosedAndDistinct()
+    local function value(decision)
+        return assert(json.decode([[{
+            "encounterPhases":[{"slotKey":"Encounter","encounterKey":"GeneratedAnomalyB","kind":"combat",
+                "customization":[]] .. decision .. [[]}],
+            "requiredObjects":[]
+        }]]))
+    end
+    local a, b = '{"choiceKey":"BloodlessNaked","nativeId":"BloodlessNaked"}',
+        '{"choiceKey":"BloodlessPitcher","nativeId":"BloodlessPitcher"}'
+    local function roster(types, extra)
+        return '{"decisionKey":"infiniteRoster","kind":"infiniteRoster","types":[' .. types .. ']' .. (extra or '') .. '}'
+    end
+    lu.assertNotNil(overview.decode(value(roster(a .. "," .. b)), "overview"))
+    for _, decision in ipairs({
+        roster(""),
+        roster(a .. "," .. a),
+        roster(a .. ',{"choiceKey":"Other","nativeId":"BloodlessNaked"}'),
+        roster('{"choiceKey":"BloodlessNaked","nativeId":"BloodlessNaked","count":3}'),
+        roster(a .. "," .. b, ',"expectedBudget":30'),
+        roster(a .. "," .. b, ',"waveCount":1'),
+        '{"decisionKey":"infiniteRoster","kind":"infiniteRoster"}',
+    }) do
+        lu.assertNil(overview.decode(value(decision), "overview"))
+    end
+end
+
 function TestProtocol.testConformanceResolverProjectsNamedFactsAndRejectsUnknownOrDuplicateKinds()
     local state = assert(json.decode([[{
         "retainedEffects": {
@@ -243,7 +270,7 @@ end
 
 function TestProtocol.testEveryMirroredPlannerFixtureDecodes()
     local names = mirroredFixtureNames()
-    lu.assertTrue(#names >= 17)
+    lu.assertTrue(#names >= 18)
     for _, name in ipairs(names) do
         local decoded, errorMessage = protocol.decode(decode(name))
         lu.assertNotNil(decoded, name .. ": " .. tostring(errorMessage))
@@ -286,6 +313,30 @@ function TestProtocol.testMirroredArachneFixtureCarriesOnlyTheAuthoredCocoonCoun
         { decisionKey = "cocoonCount", kind = "cocoonCount", count = 11 },
     })
     lu.assertEquals(arachne.ArachneCombatG, false)
+end
+
+local function anomalyCustomization(name)
+    local plan = assert(protocol.decode(decode(name)))
+    local found, customization = false, nil
+    for _, occurrence in ipairs(plan.occurrences) do
+        for _, phase in ipairs(occurrence.overview.encounterPhases) do
+            if phase.encounterKey == "GeneratedAnomalyB" then found, customization = true, phase.customization end
+        end
+    end
+    lu.assertTrue(found, name)
+    return customization
+end
+
+function TestProtocol.testMirroredDefaultAnomalyCarriesNoCustomization()
+    lu.assertNil(anomalyCustomization("fg-anomaly"))
+end
+
+function TestProtocol.testMirroredAnomalyFixtureCarriesTheOrderedRoster()
+    lu.assertEquals(anomalyCustomization("fg-anomaly-roster"), { { decisionKey = "infiniteRoster", kind = "infiniteRoster", types = {
+        { choiceKey = "SpreadShotUnit_Elite", nativeId = "SpreadShotUnit_Elite" },
+        { choiceKey = "SpreadShotUnit", nativeId = "SpreadShotUnit" },
+        { choiceKey = "BloodlessPitcher", nativeId = "BloodlessPitcher" },
+    } } })
 end
 
 function TestProtocol.testScheduledLifecycleKeepsHermesAndEchoStateDiagnosticOnly()
