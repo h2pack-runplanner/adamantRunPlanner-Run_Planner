@@ -126,6 +126,26 @@ function TestProtocol.testEncounterCustomizationWireIsClosedAndBounded()
     lu.assertNil(overview.decode(duplicate, "overview"))
 end
 
+function TestProtocol.testCocoonCountWireIsClosedAndPositive()
+    local function value(decision)
+        return assert(json.decode([[{
+            "encounterPhases":[{"slotKey":"Encounter","encounterKey":"ArachneCombatF","kind":"combat",
+                "customization":[]] .. decision .. [[]}],
+            "requiredObjects":[]
+        }]]))
+    end
+    lu.assertNotNil(overview.decode(value('{"decisionKey":"cocoonCount","kind":"cocoonCount","count":8}'), "overview"))
+    for _, decision in ipairs({
+        '{"decisionKey":"cocoonCount","kind":"cocoonCount","count":0}',
+        '{"decisionKey":"cocoonCount","kind":"cocoonCount","count":8.5}',
+        '{"decisionKey":"cocoonCount","kind":"cocoonCount","count":"8"}',
+        '{"decisionKey":"cocoonCount","kind":"cocoonCount"}',
+        '{"decisionKey":"cocoonCount","kind":"cocoonCount","count":8,"minimum":8}',
+    }) do
+        lu.assertNil(overview.decode(value(decision), "overview"))
+    end
+end
+
 function TestProtocol.testConformanceResolverProjectsNamedFactsAndRejectsUnknownOrDuplicateKinds()
     local state = assert(json.decode([[{
         "retainedEffects": {
@@ -223,7 +243,7 @@ end
 
 function TestProtocol.testEveryMirroredPlannerFixtureDecodes()
     local names = mirroredFixtureNames()
-    lu.assertTrue(#names >= 16)
+    lu.assertTrue(#names >= 17)
     for _, name in ipairs(names) do
         local decoded, errorMessage = protocol.decode(decode(name))
         lu.assertNotNil(decoded, name .. ": " .. tostring(errorMessage))
@@ -250,6 +270,22 @@ function TestProtocol.testMirroredGeneratedCompositionsCarryExpectedBudgetsAndOu
     local precombat = generatedDecisions(assert(protocol.decode(decode("surface-generated-precombat"))))
     lu.assertEquals(#precombat, 1)
     lu.assertEquals({ precombat[1].baseRoll, precombat[1].expectedBudget }, { 412, 412 })
+end
+
+function TestProtocol.testMirroredArachneFixtureCarriesOnlyTheAuthoredCocoonCount()
+    local plan = assert(protocol.decode(decode("underworld-arachne-cocoons")))
+    local arachne = {}
+    for _, occurrence in ipairs(plan.occurrences) do
+        for _, phase in ipairs(occurrence.overview.encounterPhases) do
+            if phase.encounterKey == "ArachneCombatF" or phase.encounterKey == "ArachneCombatG" then
+                arachne[phase.encounterKey] = phase.customization or false
+            end
+        end
+    end
+    lu.assertEquals(arachne.ArachneCombatF, {
+        { decisionKey = "cocoonCount", kind = "cocoonCount", count = 11 },
+    })
+    lu.assertEquals(arachne.ArachneCombatG, false)
 end
 
 function TestProtocol.testScheduledLifecycleKeepsHermesAndEchoStateDiagnosticOnly()

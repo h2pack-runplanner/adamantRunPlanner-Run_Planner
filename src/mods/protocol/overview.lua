@@ -46,6 +46,11 @@ local function customization(value, label)
                 end
                 seenChoices[choice.choiceKey] = true
             end
+        elseif kind == "cocoonCount" then
+            row, rowError = p.exact(raw, { "decisionKey", "kind", "count" }, {}, decisionLabel)
+            if not row then return nil, rowError end
+            local _, countError = p.int(row.count, decisionLabel .. ".count", 1)
+            if countError then return nil, countError end
         else
             return p.fail(decisionLabel .. ".kind is unsupported")
         end
