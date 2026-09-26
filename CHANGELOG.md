@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-26
+
+### Added
+
+- hub: Hub departure trait conformance replaces the fountain obligation (
+a4b61c)
+- hub: bind the Hub fountain use and its Phial target (
+4e11ea)
+- encounters: Anomaly infinite roster admission and install (
+2e4c0b)
+- encounters: Arachne combat cocoon count adapter (
+72d24d)
+
+### Fixed
+
+- honor published NPC shopping protection (65d381e)
+- hub: check trait inventory on every departure (
+069ac4)
+
+### Changed
+
+- encounters: decline roster type bounds outside the declared shape (
+6b6002)
+
 ## [0.10.0] - 2026-09-25
 
 ### Added
