@@ -117,22 +117,16 @@ local function validateGodPool(value, label)
     return true
 end
 
-local function validateTraits(value, label)
-    local record, errorMessage = p.exact(
-        value,
-        { "equipped", "slots", "elements", "godRarityCounts", "upgradableCount", "bannedTraitKeys" },
-        {},
-        label
-    )
-    if not record then return nil, errorMessage end
-    local equipped, equippedError = p.arr(record.equipped, label .. ".equipped")
+-- Modeled equipped-trait rows, shared by Run State frames and Hub departure conformance.
+local function equippedTraits(value, label)
+    local equipped, equippedError = p.arr(value, label)
     if not equipped then return nil, equippedError end
     for index, valueRow in ipairs(equipped) do
         local row, rowError = p.exact(
             valueRow,
             { "traitKey" },
             { "rarity", "level", "hammerRank" },
-            label .. ".equipped[" .. index .. "]"
+            label .. "[" .. index .. "]"
         )
         if not row then return nil, rowError end
         if not p.str(row.traitKey, label .. ".traitKey")
@@ -143,6 +137,19 @@ local function validateTraits(value, label)
             return p.fail(label .. " has invalid equipped trait")
         end
     end
+    return equipped
+end
+
+local function validateTraits(value, label)
+    local record, errorMessage = p.exact(
+        value,
+        { "equipped", "slots", "elements", "godRarityCounts", "upgradableCount", "bannedTraitKeys" },
+        {},
+        label
+    )
+    if not record then return nil, errorMessage end
+    local _, equippedError = equippedTraits(record.equipped, label .. ".equipped")
+    if equippedError then return nil, equippedError end
     local slots, slotsError = p.arr(record.slots, label .. ".slots", 6)
     if not slots then return nil, slotsError end
     local slotKeys = {
@@ -647,5 +654,7 @@ function diagnostics.expand(value, label, framing)
     end
     return result
 end
+
+diagnostics.equippedTraits = equippedTraits
 
 return diagnostics

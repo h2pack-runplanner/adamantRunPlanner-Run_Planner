@@ -2,6 +2,8 @@ local p = type(import) == "function" and import("mods/protocol/primitives.lua")
     or require("mods.protocol.primitives")
 local rewards = type(import) == "function" and import("mods/protocol/rewards.lua")
     or require("mods.protocol.rewards")
+local diagnostics = type(import) == "function" and import("mods/protocol/diagnostics.lua")
+    or require("mods.protocol.diagnostics")
 
 local overview = {}
 local generatedEncounter = type(import) == "function" and import("mods/protocol/generated_encounter.lua")
@@ -403,10 +405,35 @@ local function fields(value, label)
     return record
 end
 
+-- Expected modeled trait inventory when the Hub is left after the fountain use.
+local function hubDepartureConformance(value, label)
+    local record, errorMessage = p.exact(value, { "facts", "traits" }, {}, label)
+    if not record then return nil, errorMessage end
+    local facts, factsError = p.arr(record.facts, label .. ".facts")
+    if not facts then return nil, factsError end
+    for index, factValue in ipairs(facts) do
+        local fact, factError = p.exact(factValue, { "kind" }, {}, label .. ".facts[" .. index .. "]")
+        if not fact then return nil, factError end
+        if fact.kind ~= "traitInventory" then return p.fail(label .. ".facts[" .. index .. "].kind is unsupported") end
+    end
+    if #facts ~= 1 then return p.fail(label .. ".facts must name the trait inventory once") end
+    local traits, traitsError = p.exact(record.traits, { "equipped" }, {}, label .. ".traits")
+    if not traits then return nil, traitsError end
+    local equipped, equippedError = diagnostics.equippedTraits(traits.equipped, label .. ".traits.equipped")
+    if not equipped then return nil, equippedError end
+    local seen = {}
+    for _, row in ipairs(equipped) do
+        if seen[row.traitKey] then return p.fail(label .. ".traits.equipped has duplicate traits") end
+        seen[row.traitKey] = true
+    end
+    return record
+end
+
 -- The one Hub-owned fountain use, after its completed preceding room visits.
 local function hubFountain(value, requiredVisitCount, label)
     local record, errorMessage = p.exact(
-        value, { "kind", "owner", "interactionKey", "precedingVisitCount" }, { "aromaticPhialTarget" }, label
+        value, { "kind", "owner", "interactionKey", "precedingVisitCount" },
+        { "aromaticPhialTarget", "departureConformance" }, label
     )
     if not record then return nil, errorMessage end
     if record.kind ~= "fountainUse" or record.interactionKey ~= "fountain"
@@ -421,6 +448,11 @@ local function hubFountain(value, requiredVisitCount, label)
     if record.aromaticPhialTarget ~= nil
         and not p.str(record.aromaticPhialTarget, label .. ".aromaticPhialTarget") then
         return p.fail(label .. " has invalid Aromatic Phial target")
+    end
+    if record.departureConformance ~= nil then
+        local _, departureError = hubDepartureConformance(
+            record.departureConformance, label .. ".departureConformance")
+        if departureError then return nil, departureError end
     end
     return record
 end

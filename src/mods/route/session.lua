@@ -140,15 +140,15 @@ function routeSession.holdsHubFountain(route, claim)
         and route.currentOccurrence == nil and route.index == claim.index
 end
 
--- Leaving the Hub from the fountain's position: "fulfilled", "incomplete", or
--- "unobserved" when the fountain was already spent before this route saw any use.
+-- Leaving the Hub from the fountain's position: "fulfilled", "incomplete" (claimed,
+-- unfinished), "missed" (skipped or used elsewhere), or "unobserved" (already spent).
 function routeSession.hubFountainDeparture(route, nativeUsed)
     local hub, carrier = hubFountainPosition(route)
     if hub == nil then return nil end
     local claim = route.hubFountainClaim
     if claim ~= nil then return claim.completed and "fulfilled" or "incomplete", hub, carrier end
     if nativeUsed and not route.hubFountainObserved then return "unobserved", hub, carrier end
-    return "incomplete", hub, carrier
+    return "missed", hub, carrier
 end
 
 local function guideNext(current, target)

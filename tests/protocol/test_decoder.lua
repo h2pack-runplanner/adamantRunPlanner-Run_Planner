@@ -1912,3 +1912,35 @@ function TestProtocol.testHubFountainUseDecodesStrictlyWithinItsRequiredVisits()
         lu.assertStrContains(errorMessage, case[2])
     end
 end
+
+function TestProtocol.testHubDepartureConformanceDecodesOneTraitInventoryFrame()
+    local function withDeparture(text)
+        local plan = decode("surface-n")
+        for _, occurrence in ipairs(plan.occurrences) do
+            if occurrence.overview.hub ~= nil then
+                occurrence.overview.hub.fountain.departureConformance = assert(json.decode(text))
+                return overview.decode(occurrence.overview, "overview")
+            end
+        end
+    end
+    local rows = '"traits":{"equipped":[{"traitKey":"A","rarity":"Heroic","level":1},{"traitKey":"B"}]}'
+    lu.assertNotNil(withDeparture('{"facts":[{"kind":"traitInventory"}],' .. rows .. '}'))
+    lu.assertNotNil(protocol.decode(decode("surface-n-phial-intermediate-fountain")))
+    for _, case in ipairs({
+        { '{"facts":[],' .. rows .. '}', "trait inventory once" },
+        { '{"facts":[{"kind":"traitInventory"},{"kind":"traitInventory"}],' .. rows .. '}', "trait inventory once" },
+        { '{"facts":[{"kind":"elementCounts"}],' .. rows .. '}', "kind is unsupported" },
+        { '{"facts":[{"kind":"traitInventory","extra":1}],' .. rows .. '}', "unknown field extra" },
+        { '{"facts":[{"kind":"traitInventory"}]}', "missing traits" },
+        { '{"facts":[{"kind":"traitInventory"}],' .. rows .. ',"extra":1}', "unknown field extra" },
+        { '{"facts":[{"kind":"traitInventory"}],"traits":{"equipped":[],"slots":[]}}', "unknown field slots" },
+        { '{"facts":[{"kind":"traitInventory"}],"traits":{"equipped":[{"traitKey":"A"},{"traitKey":"A"}]}}',
+            "duplicate traits" },
+        { '{"facts":[{"kind":"traitInventory"}],"traits":{"equipped":[{"traitKey":"A","hammerRank":"RankIII"}]}}',
+            "invalid equipped trait" },
+    }) do
+        local decoded, errorMessage = withDeparture(case[1])
+        lu.assertNil(decoded)
+        lu.assertStrContains(errorMessage, case[2])
+    end
+end

@@ -7,6 +7,10 @@ local ephyra = type(import) == "function" and import("mods/navigation/ephyra.lua
     or require("mods.navigation.ephyra")
 local exitProtection = type(import) == "function" and import("mods/navigation/exit_protection.lua")
     or require("mods.navigation.exit_protection")
+local conformance = type(import) == "function" and import("mods/protocol/conformance.lua")
+    or require("mods.protocol.conformance")
+local proof = type(import) == "function" and import("mods/room/conformance/proof.lua")
+    or require("mods.room.conformance.proof")
 local hooks = {}
 
 local function orderedDoors(value)
@@ -385,21 +389,20 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
             if proved then proved, errorValue = doors.proveAdditional(occurrence, additional) end
             return proved, errorValue
         end,
-        -- Leaving the Hub at the fountain's position closes its Hub-owned use.
+        -- Leaving the Hub at the fountain's position proves its interval's published
+        -- trait inventory; the use itself is only diagnostic.
         proveHubDeparture = function(state, currentRun)
             local nativeRoom = currentRun and currentRun.CurrentRoom
             if ephyra.hubFountainObjectId(nativeRoom) == nil then return true end
             local outcome, hub, carrier = routeSession.hubFountainDeparture(
                 state.route, ephyra.hubFountainUsed(nativeRoom))
-            if outcome == nil or outcome == "fulfilled" then return true end
-            if outcome == "unobserved" then
-                -- Spent before this session saw it; its Phial outcome is unknown, not proved.
-                session.diagnostic(state, "hub-fountain", "unobserved", carrier)
-                return true
-            end
-            return nil, {
-                checkpoint = "obligation:hubDeparture", expected = hub.fountain.owner, observed = outcome,
-            }
+            if outcome == nil then return true end
+            if outcome ~= "fulfilled" then session.diagnostic(state, "hub-fountain", outcome, carrier) end
+            local departure = hub.fountain.departureConformance
+            if departure == nil then return true end
+            local expected = conformance.hubDepartureExpected(departure).traitInventory
+            local observed = session.readConformance("traitInventory", currentRun, _G.GameState, expected)
+            return proof.compare("hub-departure-conformance:traitInventory", expected, observed)
         end,
         resolveNativeRoom = function(state, nativeRoomData)
             return ephyra.finalHandoff(state, routeSession, nativeRoomData)

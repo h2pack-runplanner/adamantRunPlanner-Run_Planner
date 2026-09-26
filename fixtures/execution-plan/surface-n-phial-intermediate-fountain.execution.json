@@ -628,7 +628,18 @@
             "owner": "[\"hubFountain\",\"Surface\",\"N\",\"hub\"]",
             "interactionKey": "fountain",
             "precedingVisitCount": 3,
-            "aromaticPhialTarget": "AresSpecialBoon"
+            "aromaticPhialTarget": "AresSpecialBoon",
+            "departureConformance": {
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Heroic", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            }
           }
         }
       },
@@ -2468,5 +2479,5 @@
       }
     }
   ],
-  "planFingerprint": "28e1956c"
+  "planFingerprint": "1e41cde4"
 }

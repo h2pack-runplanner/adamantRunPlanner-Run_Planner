@@ -103,6 +103,11 @@ local function admissionStateValue(entry, kind)
     return nil
 end
 
+-- A Hub departure frame names its modeled traits only; none are proved absent.
+function conformance.hubDepartureExpected(departure)
+    return { traitInventory = traitInventoryEntryExpected(departure) }
+end
+
 function conformance.admissionExpected(value)
     local entry = value and value.roomEntered or value
     if type(entry) ~= "table" then return nil, "postboss admission requires roomEntered diagnostics" end
