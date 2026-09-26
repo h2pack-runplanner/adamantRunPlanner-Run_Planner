@@ -472,6 +472,55 @@ function TestEncounters.testPublishedStoryCarrierIsForcedProvenAndBound()
     lu.assertEquals(mismatch, { kind = "encounter", expected = "Story_Chronos_01", observed = "Empty" })
 end
 
+function TestEncounters.testPublishedFirstTartarusCombatInstallsItsExactIntroDefinition()
+    local file = assert(io.open("fixtures/execution-plan/underworld-fghi.execution.json", "rb"))
+    local plan = assert(protocol.decode(assert(json.decode(file:read("*a")))))
+    file:close()
+    local occurrence
+    for _, id in ipairs(plan.selectedOccurrenceIds) do
+        local candidate = plan.occurrencesById[id]
+        if candidate.gameName:match("^I_Combat") then occurrence = candidate; break end
+    end
+    lu.assertNotNil(occurrence)
+    local phase = occurrence.overview.encounterPhases[1]
+    lu.assertEquals(phase.encounterKey, "GeneratedIChronosIntro")
+
+    local module, callbacks = capture()
+    local registry = require("mods.room.timeline.encounters.phases").create()
+    local state = { state = "synchronized" }
+    local nativeRoom = { Name = occurrence.gameName, __runPlannerExecutionRoomId = occurrence.id }
+    local room = {
+        occurrence = function() return occurrence end,
+        encounterAt = function(_, index) return occurrence.overview.encounterPhases[index] end,
+        bindEncounter = function(_, native, slotKey) return registry.bind(occurrence, native, slotKey) end,
+    }
+    local diagnostics = {}
+    encounterHooks.attach(module, { diagnostic = function(_, checkpoint)
+        diagnostics[#diagnostics + 1] = checkpoint
+    end }, function() return state end, function() end, room)
+    local declaration = { Name = phase.encounterKey, InheritFrom = { "GeneratedI" }, DifficultyModifier = 85 }
+    local priorGame = _G.game
+    _G.game = {
+        EncounterData = { [phase.encounterKey] = declaration },
+        IsEncounterEligible = function(run, destination, candidate)
+            lu.assertEquals(run.BiomeEncounterDepth, 1)
+            lu.assertIs(destination, nativeRoom)
+            lu.assertIs(candidate, declaration)
+            return true
+        end,
+    }
+    local run = { BiomeEncounterDepth = 1 }
+    local selected = callbacks.ChooseEncounter(nil, {}, function(currentRun)
+        lu.assertIs(currentRun.ForceNextEncounterData, declaration)
+        return { Name = currentRun.ForceNextEncounterData.Name }
+    end, run, nativeRoom, {})
+    _G.game = priorGame
+    lu.assertNil(run.ForceNextEncounterData)
+    lu.assertEquals(diagnostics, {})
+    lu.assertEquals(registry.forNative(selected).phase.encounterKey, phase.encounterKey)
+    lu.assertTrue(registry.prove(occurrence, { Encounter = selected }))
+end
+
 function TestEncounters.testGeneratedCompositionUsesTheExistingExactPhaseCarrier()
     local module, callbacks = capture()
     local occurrence = { id = "same-generated", overview = { encounterPhases = {

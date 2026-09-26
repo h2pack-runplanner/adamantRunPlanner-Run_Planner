@@ -5478,7 +5478,7 @@
           "producerLifecycleKey": "ClockworkGoalRoom"
         },
         "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "GeneratedI_GoalReward", "kind": "combat" }
+          { "slotKey": "Encounter", "encounterKey": "GeneratedIChronosIntro", "kind": "combat" }
         ],
         "requiredObjects": []
       },
@@ -5711,9 +5711,7 @@
           "producerLifecycleKey": "RoomReward",
           "resolvedStoreKey": "TartarusRewards"
         },
-        "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "GeneratedI_Small", "kind": "combat" }
-        ],
+        "encounterPhases": [],
         "requiredObjects": []
       },
       "timeline": { "transactions": [], "dependencies": [], "obligations": [] },
@@ -6002,5 +6000,5 @@
       }
     }
   ],
-  "planFingerprint": "89b4f759"
+  "planFingerprint": "326424fe"
 }
