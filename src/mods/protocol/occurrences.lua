@@ -448,10 +448,21 @@ function occurrences.decode(value, selected, label)
         local row, rowError = p.exact(
             valueRow,
             { "id", "owner", "biomeKey", "gameName", "kind", "overview", "timeline", "roomGuide", "doors" },
-            { "anomaly", "resumeBoundary", "roomExitConformance", "diagnostics" },
+            { "anomaly", "resumeBoundary", "roomExitConformance", "diagnostics", "suppressedNpcShopping" },
             label .. "[" .. index .. "]"
         )
         if not row then return nil, rowError end
+        if row.suppressedNpcShopping ~= nil then
+            local families, familiesError = p.arr(row.suppressedNpcShopping, label .. ".suppressedNpcShopping")
+            if not families then return nil, familiesError end
+            local seen = {}
+            for _, family in ipairs(families) do
+                if (family ~= "Nemesis" and family ~= "Heracles") or seen[family] then
+                    return p.fail(label .. ".suppressedNpcShopping has an unsupported or duplicate family")
+                end
+                seen[family] = true
+            end
+        end
         if not p.str(row.id, label .. ".id", 256)
             or ids[row.id]
             or not p.str(row.owner, label .. ".owner", p.MAX_OWNER_STRING)

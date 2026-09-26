@@ -6,6 +6,9 @@ local resources = type(import) == "function"
 local fields = type(import) == "function"
     and import("mods/room/features/fields.lua")
     or require("mods.room.features.fields")
+local npcShopping = type(import) == "function"
+    and import("mods/room/features/npc_shopping.lua")
+    or require("mods.room.features.npc_shopping")
 local hooks = {}
 
 function hooks.attach(module, session, getState, report, room)
@@ -73,6 +76,7 @@ function hooks.attach(module, session, getState, report, room)
 
     resources.attach(module, getState, report)
     fields.attach(module, session, getState, report, room)
+    npcShopping.attach(module, session, getState, report, room)
 
     return {
         currentAdditional = function() return pendingAdditional end,

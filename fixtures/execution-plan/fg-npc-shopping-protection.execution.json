@@ -2287,7 +2287,8 @@
             }
           }
         }
-      }
+      },
+      "suppressedNpcShopping": ["Nemesis"]
     },
     {
       "id": "golden-f-preboss-free",
@@ -2992,7 +2993,7 @@
           "resolvedStoreKey": "RunProgress"
         },
         "encounterPhases": [
-          { "slotKey": "Encounter", "encounterKey": "GeneratedG", "kind": "combat" }
+          { "slotKey": "Encounter", "encounterKey": "NemesisCombatG", "kind": "combat" }
         ],
         "requiredObjects": []
       },
@@ -3849,5 +3850,5 @@
       }
     }
   ],
-  "planFingerprint": "fed697f8"
+  "planFingerprint": "cc755ff4"
 }
