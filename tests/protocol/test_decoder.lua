@@ -1884,7 +1884,6 @@ function TestProtocol.testHubFountainUseDecodesStrictlyWithinItsRequiredVisits()
         function(hub) hub.fountain.precedingVisitCount = 3 end,
         function(hub) hub.fountain.precedingVisitCount = hub.requiredVisitCount end,
         function(hub) hub.fountain.aromaticPhialTarget = "ZeusWeaponBoon" end,
-        function(hub) hub.requiredVisitCount = #hub.slots end,
     }) do
         local decoded, errorMessage = hubPlan(accepted)
         lu.assertNotNil(decoded, errorMessage)
@@ -1892,6 +1891,9 @@ function TestProtocol.testHubFountainUseDecodesStrictlyWithinItsRequiredVisits()
     for _, case in ipairs({
         { function(hub) hub.requiredVisitCount = nil end, "missing requiredVisitCount" },
         { function(hub) hub.fountain = nil end, "missing fountain" },
+        { function(hub) hub.departures = nil end, "missing departures" },
+        { function(hub) table.remove(hub.departures) end, "departures has invalid length" },
+        { function(hub) hub.departures[2].precedingVisitCount = 0 end, "precedingVisitCount order" },
         { function(hub) hub.requiredVisitCount = 0 end, "requiredVisitCount" },
         { function(hub) hub.requiredVisitCount = #hub.slots + 1 end, "requiredVisitCount" },
         { function(hub) hub.requiredVisitCount = 2.5 end, "requiredVisitCount" },
@@ -1918,7 +1920,9 @@ function TestProtocol.testHubDepartureConformanceDecodesOneTraitInventoryFrame()
         local plan = decode("surface-n")
         for _, occurrence in ipairs(plan.occurrences) do
             if occurrence.overview.hub ~= nil then
-                occurrence.overview.hub.fountain.departureConformance = assert(json.decode(text))
+                local departure = assert(json.decode(text))
+                departure.precedingVisitCount = 0
+                occurrence.overview.hub.departures[1] = departure
                 return overview.decode(occurrence.overview, "overview")
             end
         end

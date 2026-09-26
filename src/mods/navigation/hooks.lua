@@ -389,16 +389,17 @@ function hooks.attach(module, session, getState, report, routeSession, room, tra
             if proved then proved, errorValue = doors.proveAdditional(occurrence, additional) end
             return proved, errorValue
         end,
-        -- Leaving the Hub at the fountain's position proves its interval's published
-        -- trait inventory; the use itself is only diagnostic.
+        -- Every Hub departure proves its published inventory; fountain timing
+        -- remains diagnostic rather than a separate obligation.
         proveHubDeparture = function(state, currentRun)
             local nativeRoom = currentRun and currentRun.CurrentRoom
             if ephyra.hubFountainObjectId(nativeRoom) == nil then return true end
-            local outcome, hub, carrier = routeSession.hubFountainDeparture(
+            local outcome, _, carrier = routeSession.hubFountainDeparture(
                 state.route, ephyra.hubFountainUsed(nativeRoom))
-            if outcome == nil then return true end
-            if outcome ~= "fulfilled" then session.diagnostic(state, "hub-fountain", outcome, carrier) end
-            local departure = hub.fountain.departureConformance
+            if outcome ~= nil and outcome ~= "fulfilled" then
+                session.diagnostic(state, "hub-fountain", outcome, carrier)
+            end
+            local departure = routeSession.hubDeparture(state.route)
             if departure == nil then return true end
             local expected = conformance.hubDepartureExpected(departure).traitInventory
             local observed = session.readConformance("traitInventory", currentRun, _G.GameState, expected)

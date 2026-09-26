@@ -405,10 +405,12 @@ local function fields(value, label)
     return record
 end
 
--- Expected modeled trait inventory when the Hub is left after the fountain use.
+-- Expected modeled trait inventory at one ordered Hub departure.
 local function hubDepartureConformance(value, label)
-    local record, errorMessage = p.exact(value, { "facts", "traits" }, {}, label)
+    local record, errorMessage = p.exact(value, { "precedingVisitCount", "facts", "traits" }, {}, label)
     if not record then return nil, errorMessage end
+    local _, countError = p.int(record.precedingVisitCount, label .. ".precedingVisitCount", 0)
+    if countError then return nil, countError end
     local facts, factsError = p.arr(record.facts, label .. ".facts")
     if not facts then return nil, factsError end
     for index, factValue in ipairs(facts) do
@@ -433,7 +435,7 @@ end
 local function hubFountain(value, requiredVisitCount, label)
     local record, errorMessage = p.exact(
         value, { "kind", "owner", "interactionKey", "precedingVisitCount" },
-        { "aromaticPhialTarget", "departureConformance" }, label
+        { "aromaticPhialTarget" }, label
     )
     if not record then return nil, errorMessage end
     if record.kind ~= "fountainUse" or record.interactionKey ~= "fountain"
@@ -448,11 +450,6 @@ local function hubFountain(value, requiredVisitCount, label)
     if record.aromaticPhialTarget ~= nil
         and not p.str(record.aromaticPhialTarget, label .. ".aromaticPhialTarget") then
         return p.fail(label .. " has invalid Aromatic Phial target")
-    end
-    if record.departureConformance ~= nil then
-        local _, departureError = hubDepartureConformance(
-            record.departureConformance, label .. ".departureConformance")
-        if departureError then return nil, departureError end
     end
     return record
 end
@@ -571,7 +568,7 @@ function overview.decode(value, label)
     end
     if record.hub ~= nil then
         local hub, hubError = p.exact(record.hub,
-            { "room", "slots", "finalHandoff", "requiredVisitCount", "fountain" }, {}, label .. ".hub")
+            { "room", "slots", "finalHandoff", "requiredVisitCount", "fountain", "departures" }, {}, label .. ".hub")
         if not hub then return nil, hubError end
         local room = p.exact(hub.room, { "gameName" }, {}, label .. ".hub.room")
         if not room or not p.str(room.gameName, label .. ".hub.room.gameName") then
@@ -596,6 +593,16 @@ function overview.decode(value, label)
         end
         local _, fountainError = hubFountain(hub.fountain, required, label .. ".hub.fountain")
         if fountainError then return nil, fountainError end
+        local departures, departuresError = p.arr(hub.departures, label .. ".hub.departures")
+        if not departures then return nil, departuresError end
+        if #departures ~= required + 1 then return p.fail(label .. ".hub.departures has invalid length") end
+        for index, valueRow in ipairs(departures) do
+            local departure, departureError = hubDepartureConformance(valueRow, label .. ".hub.departures[" .. index .. "]")
+            if not departure then return nil, departureError end
+            if departure.precedingVisitCount ~= index - 1 then
+                return p.fail(label .. ".hub.departures has invalid precedingVisitCount order")
+            end
+        end
     end
     if record.localSlots ~= nil then
         local slots, slotsError = p.arr(record.localSlots, label .. ".localSlots")

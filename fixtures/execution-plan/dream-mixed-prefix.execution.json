@@ -3194,7 +3194,104 @@
             "owner": "[\"hubFountain\",\"Dream\",\"N\",\"hub\"]",
             "interactionKey": "fountain",
             "precedingVisitCount": 0
-          }
+          },
+          "departures": [
+            {
+              "precedingVisitCount": 0,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HeraWeaponBoon", "rarity": "Epic", "level": 3 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 1,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HeraWeaponBoon", "rarity": "Epic", "level": 3 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesSpecialBoon", "rarity": "Common" }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 2,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HeraWeaponBoon", "rarity": "Epic", "level": 3 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                  { "traitKey": "HeraSpecialBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 3,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HeraWeaponBoon", "rarity": "Epic", "level": 3 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                  { "traitKey": "HeraSpecialBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 4,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                  { "traitKey": "HeraSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresWeaponBoon", "rarity": "Heroic", "level": 3 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 5,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                  { "traitKey": "AresWeaponBoon", "rarity": "Heroic", "level": 3 },
+                  { "traitKey": "ApolloSpecialBoon", "rarity": "Rare", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 6,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "StaffLongAttackTrait", "hammerRank": "RankI" },
+                  { "traitKey": "HermesSpecialBoon", "rarity": "Common" },
+                  { "traitKey": "AresWeaponBoon", "rarity": "Heroic", "level": 3 },
+                  { "traitKey": "ApolloSpecialBoon", "rarity": "Rare", "level": 1 }
+                ]
+              }
+            }
+          ]
         }
       },
       "timeline": {
@@ -4824,5 +4921,5 @@
       }
     }
   ],
-  "planFingerprint": "9cbffa74"
+  "planFingerprint": "3d0d8385"
 }

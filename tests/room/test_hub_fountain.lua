@@ -9,7 +9,6 @@ local guide = require("mods.room.guide")
 local navigationHooks = require("mods.navigation.hooks")
 local roomHooks = require("mods.room.hooks")
 local runtimeSession = require("mods.runtime.session")
-local coordinator = require("mods.room.coordinator")
 
 TestHubFountain = {}
 
@@ -39,6 +38,14 @@ local function advance(state, index)
 end
 
 local function trait(name, rarity) return { Name = name, Rarity = rarity } end
+
+local function departureTraits(state)
+    local result = {}
+    for _, row in ipairs(assert(route.hubDeparture(state.route)).traits.equipped) do
+        result[#result + 1] = trait(row.traitKey, row.rarity)
+    end
+    return result
+end
 
 local function attach(state, options)
     options = options or {}
@@ -362,7 +369,7 @@ end
 
 function TestHubFountain.testDueForcedUseMatchesTheHubDepartureInventory()
     local plan = loadPlan(PHIAL_FIXTURE)
-    lu.assertNotNil(hubOf(plan).fountain.departureConformance)
+    lu.assertEquals(#hubOf(plan).departures, 7)
     local state = hubState(plan)
     local hooks = attach(state)
     withRun(phialTraits(), function(run)
@@ -388,37 +395,33 @@ function TestHubFountain.testSkippedPhialUseIsATraitInventoryMismatchAtItsDepart
     end)
 end
 
-function TestHubFountain.testEarlyPhialUseIsJudgedByItsUpgradeAtTheDueDeparture()
-    for _, case in ipairs({ { "ApolloWeaponBoon", false }, { "AresSpecialBoon", true } }) do
+function TestHubFountain.testEarlyPhialUseMismatchesAtTheImmediateHubDeparture()
+    for _, target in ipairs({ "ApolloWeaponBoon", "AresSpecialBoon" }) do
         local plan = loadPlan(PHIAL_FIXTURE)
         local state = hubState(plan)
         local hooks = attach(state)
         withRun(phialTraits(), function(run)
             advance(state, 7)
             local _, delayed = useFountain(hooks, { ObjectId = HUB_FOUNTAIN }, run.Hero.Traits[5])
-            delayed(upgradeNatively(case[1]))
+            delayed(upgradeNatively(target))
             lu.assertNil(state.route.hubFountainClaim)
             leaveHub(state)
-            advance(state, 9)
-            lu.assertEquals(leaveHub(state), missed())
-            if case[2] then
-                lu.assertEquals(state.state, "synchronized")
-            else
-                assertTraitMismatch(state)
-            end
+            assertTraitMismatch(state)
         end)
     end
 end
 
-function TestHubFountain.testUseWithoutPublishedInventoryIsOnlyDiagnosticWhenSkippedOrMisordered()
+function TestHubFountain.testNeutralUseIsOnlyDiagnosticWhenSkippedOrMisordered()
     local plan = loadPlan("surface-n")
-    lu.assertNil(hubOf(plan).fountain.departureConformance)
+    lu.assertEquals(#hubOf(plan).departures, 7)
     local state = hubState(plan)
     local hooks = attach(state)
-    withRun({}, function()
+    withRun({}, function(run)
         advance(state, 3)
+        run.Hero.Traits = departureTraits(state)
         lu.assertEquals(leaveHub(state), missed())
         advance(state, 6)
+        run.Hero.Traits = departureTraits(state)
         useFountain(hooks, { ObjectId = HUB_FOUNTAIN })
         lu.assertEquals(leaveHub(state), {})
         lu.assertEquals(state.state, "synchronized")
@@ -445,9 +448,7 @@ function TestHubFountain.testSpentFountainAfterResyncIsDiagnosticAndStillChecksI
         local state = hubState(plan)
         withRun(case[3], function(run)
             advance(state, case[2])
-            for _, value in ipairs(run.Hero.Traits) do
-                if value.Name == "AresSpecialBoon" then value.Rarity = "Heroic" end
-            end
+            run.Hero.Traits = departureTraits(state)
             run.CurrentRoom.ObjectStates = { [HUB_FOUNTAIN] = { UseableOff = true } }
             state.route = assert(route.newAt(plan, case[2]))
             lu.assertNil(route.dueHubFountain(state.route, true))
@@ -461,55 +462,25 @@ function TestHubFountain.testSpentFountainAfterResyncIsDiagnosticAndStillChecksI
     end
 end
 
--- Room exits compare their own entry and exit, planned against the pre-fountain rarity.
-function TestHubFountain.testEarlyMatchingUpgradeBeforeAnInventoryVisitMismatchesThatRoomExit()
-    local plan = loadPlan(PHIAL_FIXTURE)
-    local state = hubState(plan)
-    state.room = coordinator.new(plan, function(errorValue, expected, observed)
-        return runtimeSession.mismatch(state, errorValue, expected, observed)
-    end, {
-        onFault = function(errorValue) return runtimeSession.fault(state, errorValue) end,
-        readConformance = runtimeSession.readConformance,
-    })
-    local hooks = attach(state)
-    withRun(phialTraits(), function(run)
-        advance(state, 6)
-        local ares = run.Hero.Traits[2]
-        local _, delayed = useFountain(hooks, { ObjectId = HUB_FOUNTAIN }, run.Hero.Traits[5])
-        delayed(upgradeNatively("AresSpecialBoon"))
-        lu.assertEquals(ares.Rarity, "Heroic")
-        lu.assertEquals(leaveHub(state), {})
-
-        local visit = route.expected(state.route)
-        lu.assertEquals(visit.id, "surface-n-miniBoss01")
-        assert(route.enter(state.route, visit.id, visit.gameName))
-        assert(coordinator.enter(state, visit))
-        run.CurrentRoom = { Name = visit.gameName }
-        local expected = visit.conformanceExpected
-        local traits = {}
-        for _, row in ipairs(expected.traitInventory.present) do
-            traits[#traits + 1] = row.traitKey == "AresSpecialBoon" and ares or trait(row.traitKey, row.rarity)
-        end
-        run.Hero.Traits, run.Hero.Elements = traits, expected.elementCounts
-
-        local callbacks = {}
-        local module = { hooks = { wrap = function(name, _, callback) callbacks[name] = callback end } }
-        roomHooks.attach(module, runtimeSession, function() return state end, function() end, route,
-            coordinator, nil, { proveOutgoingDoors = function() return true end },
-            { synchronizeStartingRoom = function() return true end })
-        local priorCount = _G.GetTraitCount
-        _G.GetTraitCount = function() return 1 end
-        callbacks.LeaveRoom(nil, {}, function() return "left" end, run, {})
-        _G.GetTraitCount = priorCount
-    end)
-    lu.assertEquals(state.state, "desynchronized")
-    local mismatch = state.firstMismatch
-    lu.assertEquals(mismatch.checkpoint, "room-exit-conformance:traitInventory")
-    local function rarity(inventory)
-        for _, row in ipairs(inventory.present) do
-            if row.traitKey == "AresSpecialBoon" then return row.rarity end
+-- Every return selects its own inventory, including the final Preboss handoff.
+function TestHubFountain.testEveryHubDepartureChecksInventoryWithoutPhial()
+    local plan = loadPlan("surface-n")
+    local hub = hubOf(plan)
+    local checked = {}
+    for index = 1, #plan.selectedOccurrenceIds do
+        local state = hubState(plan)
+        state.route = assert(route.newAt(plan, index))
+        local departure = route.hubDeparture(state.route)
+        if departure then
+            checked[departure.precedingVisitCount] = true
+            withRun(departureTraits(state), function(run)
+                leaveHub(state)
+                lu.assertEquals(state.state, "synchronized")
+                run.Hero.Traits = {}
+                leaveHub(state)
+                assertTraitMismatch(state)
+            end)
         end
     end
-    lu.assertEquals(rarity(mismatch.expected), "Common")
-    lu.assertEquals(rarity(mismatch.observed), "Heroic")
+    for position = 0, hub.requiredVisitCount do lu.assertTrue(checked[position]) end
 end

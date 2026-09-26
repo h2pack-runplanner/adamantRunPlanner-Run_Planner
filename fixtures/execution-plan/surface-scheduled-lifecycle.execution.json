@@ -997,7 +997,96 @@
             "owner": "[\"hubFountain\",\"Surface\",\"N\",\"hub\"]",
             "interactionKey": "fountain",
             "precedingVisitCount": 0
-          }
+          },
+          "departures": [
+            {
+              "precedingVisitCount": 0,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 1,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 2,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 3,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 4,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 5,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "BoonGrowthBoon", "rarity": "Epic" }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 6,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "BoonGrowthBoon", "rarity": "Epic" },
+                  { "traitKey": "StaffDoubleAttackTrait", "hammerRank": "RankI" }
+                ]
+              }
+            }
+          ]
         }
       },
       "timeline": {
@@ -8310,5 +8399,5 @@
       }
     }
   ],
-  "planFingerprint": "4d4e17de"
+  "planFingerprint": "977d2a53"
 }

@@ -942,7 +942,96 @@
             "owner": "[\"hubFountain\",\"Surface\",\"N\",\"hub\"]",
             "interactionKey": "fountain",
             "precedingVisitCount": 0
-          }
+          },
+          "departures": [
+            {
+              "precedingVisitCount": 0,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 1,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 2,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 3,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 4,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 5,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 }
+                ]
+              }
+            },
+            {
+              "precedingVisitCount": 6,
+              "facts": [{ "kind": "traitInventory" }],
+              "traits": {
+                "equipped": [
+                  { "traitKey": "ApolloWeaponBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSpecialBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "HermesWeaponBoon", "rarity": "Common" },
+                  { "traitKey": "HephaestusCastBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "AresSprintBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "ApolloManaBoon", "rarity": "Common", "level": 1 },
+                  { "traitKey": "SpellPotionTrait" }
+                ]
+              }
+            }
+          ]
         }
       },
       "timeline": {
@@ -6477,5 +6566,5 @@
       }
     }
   ],
-  "planFingerprint": "79a047ab"
+  "planFingerprint": "f212e26b"
 }

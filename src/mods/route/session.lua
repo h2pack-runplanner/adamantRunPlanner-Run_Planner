@@ -79,9 +79,9 @@ local function hubForRoom(route, occurrenceId)
     return nil
 end
 
--- The Hub fountain's ordered position: the cursor waits in the Hub for its next
--- visit or final handoff after exactly its preceding completed visits.
-local function hubFountainPosition(route)
+-- The cursor waits in the Hub for its next visit or final handoff, identified
+-- by the number of completed main-room visits (not side-room excursions).
+local function hubDeparturePosition(route)
     if route == nil or route.currentOccurrence ~= nil then return nil end
     local expected = routeSession.expected(route)
     if expected == nil then return nil end
@@ -95,11 +95,22 @@ local function hubFountainPosition(route)
             for index = 1, route.index - 1 do
                 if slotIds[route.plan.selectedOccurrenceIds[index]] then visits = visits + 1 end
             end
-            if visits ~= hub.fountain.precedingVisitCount then return nil end
-            return hub, carrier
+            return hub, carrier, visits
         end
     end
     return nil
+end
+
+function routeSession.hubDeparture(route)
+    local hub, carrier, visits = hubDeparturePosition(route)
+    if hub == nil then return nil end
+    return hub.departures[visits + 1], carrier
+end
+
+local function hubFountainPosition(route)
+    local hub, carrier, visits = hubDeparturePosition(route)
+    if hub == nil or visits ~= hub.fountain.precedingVisitCount then return nil end
+    return hub, carrier
 end
 
 -- Due at its position while unclaimed and the native fountain is still unused.
